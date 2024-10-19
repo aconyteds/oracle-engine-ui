@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-bunx prettier --write .
+bunx prettier --write "$(git diff --cached --name-only --diff-filter=d | grep -E '\.(js|ts|tsx|jsx|json|css|md)$')"
+git add .
