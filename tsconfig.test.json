@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+      "types": ["vitest/globals"],
+      // other options like "jsx", "moduleResolution", etc.
+    },
+    "include": ["src", "**/*.test.ts", "**/*.test.tsx"]
+  }
+  
