@@ -5,7 +5,9 @@ name: Deploy to Firebase Hosting on PR
 "on": pull_request
 
 permissions:
-  contents: "write"
+  contents: "read"
+  deployments: "write"
+
 jobs:
   build_and_preview:
     if: "${{ github.event.pull_request.head.repo.full_name == github.repository }}"
@@ -33,4 +35,5 @@ jobs:
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ORACLE_ENGINE_7DFA6 }}"
+          expires: 1d
           projectId: oracle-engine-7dfa6
