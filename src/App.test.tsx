@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import App from "./App";
-import { LogEvent } from "./firebase";
+import { LogEvent } from "./components/firebase";
 
 vi.mock("./firebase", () => ({
   LogEvent: vi.fn(),
