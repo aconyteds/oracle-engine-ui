@@ -16,6 +16,8 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -62,36 +64,51 @@ export const Login: React.FC = () => {
       <Container>
         <form onSubmit={onSubmit}>
           <VStack spacing={4} align="stretch">
-            <Heading>Welcome to Oracle-Engine</Heading>
-            <FormControl>
-              <Text>Email</Text>
-              <Input
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </FormControl>
-            <FormControl>
-              <Text>Password</Text>
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </FormControl>
-            {error && <Text color="red.500">{error}</Text>}
-            <Button type="submit" colorScheme="blue" onClick={handleLogin}>
-              Login
-            </Button>
+            <Heading textAlign={"center"}>Welcome to Oracle-Engine</Heading>
             {allowRegistration && (
-              <Button colorScheme="green" onClick={handleRegister}>
-                Register
-              </Button>
+              <>
+                <FormControl>
+                  <Text>Email</Text>
+                  <Input
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <Text>Password</Text>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </FormControl>
+                {error && <Text color="red.500">{error}</Text>}
+                <Button type="submit" colorScheme="blue" onClick={handleLogin}>
+                  Login
+                </Button>
+                (
+                <Button colorScheme="green" onClick={handleRegister}>
+                  Register
+                </Button>
+                )
+              </>
             )}
             (
             <Button colorScheme="red" onClick={handleGoogleSignIn}>
-              Sign in with Google
+              <Flex
+                justifyContent="center"
+                alignItems="baseline"
+                flexDirection="row"
+                width={"100%"}
+                gap={4}
+              >
+                <Text as="span">
+                  <FontAwesomeIcon icon={faGoogle} />
+                </Text>
+                <Text as="span">Sign in with Google</Text>
+              </Flex>
             </Button>
             )
           </VStack>
