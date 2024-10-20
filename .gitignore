@@ -26,4 +26,6 @@ dist-ssr
 package-lock.json
 # We don't use webpack
 webpack*
+.env
+.env.*
 
