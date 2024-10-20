@@ -38,3 +38,4 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ORACLE_ENGINE_7DFA6 }}"
           expires: 1d
           projectId: oracle-engine-7dfa6
+          channelId: "pr-${{ github.event.number }}"
