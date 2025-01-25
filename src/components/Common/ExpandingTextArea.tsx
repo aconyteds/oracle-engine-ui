@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, KeyboardEvent, useState } from "react";
+import React, { useRef, useEffect, KeyboardEvent } from "react";
 import { FormControl, FormControlProps } from "react-bootstrap";
 
 type ExpandingTextAreaProps = {
