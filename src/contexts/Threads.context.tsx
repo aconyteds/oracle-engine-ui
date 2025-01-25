@@ -6,6 +6,7 @@ import {
     useGetThreadByIdQuery,
     useCreateMessageMutation,
     useGenerateMessageSubscription,
+    Role,
 } from "@graphql";
 import {
     createContext,
@@ -16,6 +17,7 @@ import {
     useState,
 } from "react";
 import { useArray, useMap } from "@hooks";
+import { useToaster } from "./Toaster.context";
 
 type ThreadsContextPayload = {
     threadList: ThreadDetailsFragment[];
@@ -52,13 +54,17 @@ const generatingThreads = new Set<string>();
 export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     children,
 }) => {
+    const { toast } = useToaster();
     const {
         array: threadList,
         rebase: setThreadList,
         getItem: getThread,
     } = useMap<string, ThreadDetailsFragment>([]);
-    const { array: messageList, set: setMessageList } =
-        useArray<MessageDetailsFragment>([]);
+    const {
+        array: messageList,
+        set: setMessageList,
+        push: addMessage,
+    } = useArray<MessageDetailsFragment>([]);
     const [selectedThread, setSelectedThread] =
         useState<ThreadDetailsFragment | null>(null);
     const { data, loading } = useGetMyThreadsQuery();
@@ -79,6 +85,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     const [createMessage] = useCreateMessageMutation();
     const [generating, setGenerating] = useState(false);
     const [newMessageContent, setNewMessageContent] = useState("");
+
     useGenerateMessageSubscription({
         variables: {
             generateMessageInput: {
@@ -145,6 +152,12 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
 
     const sendMessage = useCallback(
         async (content: string) => {
+            if (!content) {
+                if (selectedThread) {
+                    generatingThreads.add(selectedThread.id);
+                }
+                return;
+            }
             const response = await createMessage({
                 variables: {
                     createMessageInput: {
@@ -155,13 +168,24 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             });
             const threadId = response.data?.createMessage?.message?.threadId;
             if (!threadId) {
-                // TODO:: Toast error
+                toast.danger({
+                    title: "Thread Creation Error",
+                    message:
+                        "There was an error creating the thread, we will not be able to have a conversation. Please check your connection and try again.",
+                    duration: 5000,
+                });
                 return;
             }
             if (!selectedThread) {
                 selectThread(
                     response.data?.createMessage?.message?.threadId ?? null
                 );
+            } else {
+                addMessage({
+                    id: `user-added-message-${Date.now()}`,
+                    content,
+                    role: Role.User,
+                });
             }
             generatingThreads.add(threadId);
         },

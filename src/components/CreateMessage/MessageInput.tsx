@@ -4,6 +4,7 @@ import { Col, Row, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
 import { useThreadsContext } from "@context";
+import "./MessageInput.scss";
 
 export const MessageInput = () => {
     const { sendMessage } = useThreadsContext();
@@ -28,6 +29,9 @@ export const MessageInput = () => {
                     <ExpandingTextArea
                         onChange={handleChange}
                         onSubmit={handleSubmit}
+                        styleProps={{
+                            className: "no-highlight",
+                        }}
                     />
                 </Col>
                 <Col xs="auto">

@@ -1,11 +1,12 @@
 import React, { useRef, useEffect, KeyboardEvent, useState } from "react";
-import { FormControl } from "react-bootstrap";
+import { FormControl, FormControlProps } from "react-bootstrap";
 
 type ExpandingTextAreaProps = {
     maxHeight?: string;
     onSubmit?: (text: string) => void;
     onChange?: (text: string) => void;
     placeholder?: string;
+    styleProps?: FormControlProps;
 };
 
 export const ExpandingTextArea: React.FC<ExpandingTextAreaProps> = ({
@@ -13,6 +14,7 @@ export const ExpandingTextArea: React.FC<ExpandingTextAreaProps> = ({
     onSubmit,
     onChange,
     placeholder = "Enter your message here",
+    styleProps,
 }) => {
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -59,6 +61,7 @@ export const ExpandingTextArea: React.FC<ExpandingTextAreaProps> = ({
 
     return (
         <FormControl
+            {...styleProps}
             as="textarea"
             ref={textAreaRef}
             onChange={adjustHeight}
