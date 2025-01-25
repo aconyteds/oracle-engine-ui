@@ -1,0 +1,14 @@
+.root-container {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+
+    .content-container {
+        display: grid;
+        grid-template-columns: minmax(100px, max-content) auto;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+}

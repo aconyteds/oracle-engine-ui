@@ -1,16 +1,19 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
-import "./index.css";
+import App from "@/App";
 import "./components/firebase.ts";
-import { ColorModeScript } from "@chakra-ui/react";
-import theme from "./theme.tsx";
+import client from "./apolloClient";
+import { ApolloProvider } from "@apollo/client";
+
+import "./theme/main.scss";
+import { ToasterProvider } from "@context";
 
 createRoot(document.getElementById("root")!).render(
-  <>
-    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     <StrictMode>
-      <App />
+        <ApolloProvider client={client}>
+            <ToasterProvider>
+                <App />
+            </ToasterProvider>
+        </ApolloProvider>
     </StrictMode>
-  </>
 );

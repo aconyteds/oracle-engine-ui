@@ -1,0 +1,24 @@
+fragment MessageDetails on Message {
+    id
+    role
+    content
+}
+
+mutation CreateMessage($createMessageInput: CreateMessageInput!) {
+    createMessage(input: $createMessageInput) {
+        message {
+            threadId
+            ...MessageDetails
+        }
+    }
+}
+
+subscription GenerateMessage($generateMessageInput: GenerateMessageInput!) {
+    generateMessage(input: $generateMessageInput) {
+        content
+        responseType
+        message {
+            ...MessageDetails
+        }
+    }
+}

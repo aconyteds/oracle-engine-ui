@@ -1,0 +1,10 @@
+.main-container {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+
+    .message-container {
+        overflow-y: auto;
+    }
+}
