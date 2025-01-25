@@ -12,6 +12,7 @@ export const MessageInput = () => {
 
     const handleSubmit = (text: string) => {
         sendMessage(text);
+        setText("");
     };
 
     const handleChange = (text: string) => {
