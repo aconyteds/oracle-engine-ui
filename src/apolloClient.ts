@@ -7,7 +7,8 @@ import {
     ApolloLink,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
-import { WebSocketLink } from "@apollo/client/link/ws";
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { createClient } from "graphql-ws";
 import { getMainDefinition, Observable } from "@apollo/client/utilities";
 
 // Environment variables
@@ -60,18 +61,17 @@ const authLink = setContext((_, { headers }) => {
 });
 
 // WebSocket link for subscriptions
-const wsLink = new WebSocketLink({
-    uri: wsUrl, // e.g., ws://localhost:4000/graphql
-    options: {
-        reconnect: true,
+const wsLink = new GraphQLWsLink(
+    createClient({
+        url: wsUrl,
         connectionParams: () => ({
             headers: {
                 Authorization: authToken ? `Bearer ${authToken}` : null,
             },
             Authorization: authToken ? `Bearer ${authToken}` : null,
         }),
-    },
-});
+    })
+);
 
 // Use split to direct queries/mutations to HTTP and subscriptions to WebSocket
 const splitLink = split(
