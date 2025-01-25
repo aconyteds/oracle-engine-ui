@@ -13,7 +13,7 @@ export const ThreadItem: React.FC<ThreadItemProps> = ({ threadId, title }) => {
     const buttonClass = `${selectedThreadId === threadId ? "active" : ""} btn btn-dark`;
 
     return (
-        <Col>
+        <Col xs="auto">
             <Button
                 variant="plain"
                 onClick={() => selectThread(threadId)}
