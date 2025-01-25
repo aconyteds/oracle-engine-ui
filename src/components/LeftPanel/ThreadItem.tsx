@@ -1,6 +1,6 @@
 import React from "react";
 import { useThreadsContext } from "@context";
-import { Button } from "react-bootstrap";
+import { Button, Col, Row } from "react-bootstrap";
 
 type ThreadItemProps = {
     threadId: string;
@@ -8,10 +8,20 @@ type ThreadItemProps = {
 };
 
 export const ThreadItem: React.FC<ThreadItemProps> = ({ threadId, title }) => {
-    const { selectThread } = useThreadsContext();
+    const { selectThread, selectedThreadId, generating } = useThreadsContext();
+
+    const buttonClass = `${selectedThreadId === threadId ? "active" : ""} btn btn-dark`;
+
     return (
-        <Button variant="plain" onClick={() => selectThread(threadId)}>
-            {title}
-        </Button>
+        <Col>
+            <Button
+                variant="plain"
+                onClick={() => selectThread(threadId)}
+                className={buttonClass}
+                disabled={generating}
+            >
+                {title}
+            </Button>
+        </Col>
     );
 };

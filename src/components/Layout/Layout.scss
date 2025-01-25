@@ -6,7 +6,8 @@
 
     .content-container {
         display: grid;
-        grid-template-columns: minmax(100px, max-content) auto;
+        grid-template-columns: minmax(max-content, 15vw) auto;
+        gap: 1rem;
         height: 100%;
         width: 100%;
         overflow: hidden;

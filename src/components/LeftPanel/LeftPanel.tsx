@@ -4,16 +4,21 @@ import { ThreadItem } from "./ThreadItem";
 import { Row, Button, Col } from "react-bootstrap";
 
 export const LeftPanel: React.FC = () => {
-    const { threadList, selectThread } = useThreadsContext();
+    const { threadList, selectThread, generating } = useThreadsContext();
 
     return (
-        <Row className="pt-2 h-100 flex-column">
-            <Col className="mb-4" xs="auto">
-                <Button onClick={() => selectThread(null)}>
-                    Create Thread
-                </Button>
-            </Col>
-            <Col>
+        <Col className="h-100 pt-2 pb-2 border-end border-1">
+            <Row>
+                <Col className="mb-4" xs="auto">
+                    <Button
+                        onClick={() => selectThread(null)}
+                        disabled={generating}
+                    >
+                        Create Thread
+                    </Button>
+                </Col>
+            </Row>
+            <Row className="flex-column gap-2">
                 {threadList.map((thread) => (
                     <ThreadItem
                         key={thread.id}
@@ -21,7 +26,7 @@ export const LeftPanel: React.FC = () => {
                         title={thread.title}
                     />
                 ))}
-            </Col>
-        </Row>
+            </Row>
+        </Col>
     );
 };
