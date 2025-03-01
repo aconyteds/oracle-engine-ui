@@ -3,47 +3,54 @@ import { useThreadsContext } from "@context";
 import { Col, Container, Row } from "react-bootstrap";
 import "./Main.scss";
 import { MessageInput } from "../CreateMessage";
+import { GeneratingMessage, Message } from "../Messages";
+import { MessageDetailsFragment } from "@graphql";
 
 export const Main: React.FC = () => {
-    const { selectedThread, messageList, newMessageContent } =
-        useThreadsContext();
+    const { selectedThread, messageList, setGenerating } = useThreadsContext();
+
+    const onGenerationComplete = (message: MessageDetailsFragment) => {
+        if (!selectedThread) return;
+        setGenerating(false);
+        // Append the generated message to the thread.
+        // This is a simplified version of the actual implementation.
+        // In reality, we would use the `sendMessage` function from the context.
+        // This is just to show the basic idea.
+        messageList.push(message);
+    };
 
     return (
         <div className="main-container">
-            <Row>
-                <Col xs="auto">
-                    <h1>{selectedThread?.title}</h1>
-                </Col>
-            </Row>
-            {selectedThread === null ? (
-                "Select a thread"
-            ) : (
-                <div className="message-container">
+            <div>
+                <Row>
+                    <Col xs="auto">
+                        <h1>{selectedThread?.title}</h1>
+                    </Col>
+                </Row>
+            </div>
+            <div className="message-container">
+                {selectedThread === null ? (
+                    "Select a thread"
+                ) : (
                     <Container className="gap-1">
-                        {messageList.map(({ content, role, id }) => (
-                            <Row xs="auto" key={id}>
-                                <Col>
-                                    <span>{role}</span>
-                                    <div>{content}</div>
-                                </Col>
-                            </Row>
+                        {messageList.map((message) => (
+                            <Message key={message.id} {...message} />
                         ))}
-                        {newMessageContent && (
-                            <Row xs="auto">
-                                <Col>
-                                    <span>AI</span>
-                                    <div>{newMessageContent}</div>
-                                </Col>
-                            </Row>
+                        {selectedThread.generating && (
+                            <GeneratingMessage
+                                onGenerationComplete={onGenerationComplete}
+                            />
                         )}
                     </Container>
-                </div>
-            )}
-            <Row>
-                <Col>
-                    <MessageInput />
-                </Col>
-            </Row>
+                )}
+            </div>
+            <div>
+                <Row>
+                    <Col>
+                        <MessageInput />
+                    </Col>
+                </Row>
+            </div>
         </div>
     );
 };

@@ -2,12 +2,16 @@ import { useState } from "react";
 import { ExpandingTextArea } from "../Common";
 import { Col, Row, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
+import {
+    faWandMagicSparkles,
+    faSpinner,
+    faStop,
+} from "@fortawesome/free-solid-svg-icons";
 import { useThreadsContext } from "@context";
 import "./MessageInput.scss";
 
 export const MessageInput = () => {
-    const { sendMessage } = useThreadsContext();
+    const { sendMessage, generating } = useThreadsContext();
     const [text, setText] = useState("");
 
     const handleSubmit = (text: string) => {
@@ -24,7 +28,7 @@ export const MessageInput = () => {
     };
 
     return (
-        <div className="position-relative border border-1 border-bottom-0 rounded-top pb-1">
+        <div className="message-input-container">
             <Row direction="row" pr="2" gap="2">
                 <Col>
                     <ExpandingTextArea
@@ -35,13 +39,34 @@ export const MessageInput = () => {
                         }}
                     />
                 </Col>
-                <Col xs="auto">
+                <Col xs="auto" className="pe-2">
                     <Button
                         onClick={handleButtonClick}
-                        title="Send a Message to the AI"
+                        title={
+                            generating
+                                ? "Stop Generation"
+                                : "Send a Message to the AI"
+                        }
                         className="mt-2"
+                        disabled={generating}
                     >
-                        <FontAwesomeIcon icon={faWandMagicSparkles} />
+                        {generating ? (
+                            <div className="position-relative">
+                                <FontAwesomeIcon icon={faSpinner} spin />
+                                <FontAwesomeIcon
+                                    icon={faStop}
+                                    className="position-absolute"
+                                    style={{
+                                        fontSize: "0.6em",
+                                        top: "50%",
+                                        left: "50%",
+                                        transform: "translate(-50%, -50%)",
+                                    }}
+                                />
+                            </div>
+                        ) : (
+                            <FontAwesomeIcon icon={faWandMagicSparkles} />
+                        )}
                     </Button>
                 </Col>
             </Row>

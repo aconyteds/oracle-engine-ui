@@ -6,8 +6,8 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
 
 const GlowingIcon = styled(FontAwesomeIcon)`
-    filter: drop-shadow(0 0 4px ${(props) => props.color});
-    font-size: 0.8em;
+    filter: drop-shadow(0 0 0.5em ${(props) => props.color});
+    font-size: 0.5em;
 `;
 
 export const HealthCheck = () => {
@@ -50,12 +50,12 @@ export const HealthCheck = () => {
     const statusColor = getHealthStatus();
 
     return (
-        <Row className="align-items-center fs-6">
-            <Col xs="auto" className="overflow-visible">
+        <Row className="align-items-center" style={{ fontSize: "0.8em" }}>
+            <Col xs="auto" className="overflow-visible pe-0">
                 <GlowingIcon
                     icon={faCircle}
                     color={statusColor}
-                    className="m-2"
+                    style={{ margin: "0.5em 1em" }}
                 />
             </Col>
             <Col xs="auto" className="p-0">

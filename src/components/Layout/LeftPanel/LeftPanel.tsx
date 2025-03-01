@@ -2,7 +2,7 @@ import React from "react";
 import { useThreadsContext } from "@context";
 import { ThreadItem } from "./ThreadItem";
 import { Row, Button, Col } from "react-bootstrap";
-import { HealthCheck } from "../HealthCheck";
+import { HealthCheck } from "../../HealthCheck";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import "./LeftPanel.scss";
@@ -12,7 +12,7 @@ export const LeftPanel: React.FC = () => {
 
     return (
         <div className="left-panel">
-            <Row className="flex-shrink-0 mb-4">
+            <Row className="flex-shrink-0 mb-4 ps-2">
                 <Col xs="auto">
                     <Button
                         onClick={() => selectThread(null)}
@@ -25,7 +25,7 @@ export const LeftPanel: React.FC = () => {
             </Row>
 
             {/* Scrollable thread list */}
-            <Row className="flex-grow-1 flex-column gap-2 overflow-auto align-items-start">
+            <Row className="thread-list">
                 {threadList.map((thread) => (
                     <ThreadItem
                         key={thread.id}

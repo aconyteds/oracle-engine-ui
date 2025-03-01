@@ -1,7 +1,7 @@
 import React from "react";
 import { Main } from "./Main";
 import { Header } from "./Header";
-import { LeftPanel } from "../LeftPanel";
+import { LeftPanel } from "./LeftPanel";
 import "./Layout.scss";
 
 export const Layout: React.FC = () => {
@@ -12,9 +12,9 @@ export const Layout: React.FC = () => {
             </div>
             <div className="content-container">
                 <LeftPanel />
-                <span>
+                <div className="main-panel">
                     <Main />
-                </span>
+                </div>
             </div>
         </div>
     );

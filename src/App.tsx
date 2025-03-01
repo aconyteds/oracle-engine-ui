@@ -12,7 +12,7 @@ const App: React.FC = () => {
 
     return (
         <UserProvider>
-            <Container fluid className="h-100 ps-0">
+            <Container fluid className="h-100 ps-0 pe-0">
                 <Router>
                     <Routes>
                         <Route path="/login" element={<Login />} />
