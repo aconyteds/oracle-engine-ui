@@ -3,7 +3,7 @@ import { Row, Col } from "react-bootstrap";
 
 export const Header: React.FC = () => {
     return (
-        <header>
+        <header className="ms-2">
             <Row justifyContent="space-between">
                 <Col xs="auto">
                     <h1>Oracle-Engine</h1>

@@ -3,18 +3,22 @@ import { useThreadsContext } from "@context";
 import { ThreadItem } from "./ThreadItem";
 import { Row, Button, Col } from "react-bootstrap";
 import { HealthCheck } from "../HealthCheck";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import "./LeftPanel.scss";
 
 export const LeftPanel: React.FC = () => {
     const { threadList, selectThread, generating } = useThreadsContext();
 
     return (
-        <Col className="h-100 pt-2 pb-2 border-end border-1 d-flex flex-column">
+        <div className="left-panel">
             <Row className="flex-shrink-0 mb-4">
                 <Col xs="auto">
                     <Button
                         onClick={() => selectThread(null)}
                         disabled={generating}
                     >
+                        <FontAwesomeIcon icon={faPlus} className="me-2" />
                         Create Thread
                     </Button>
                 </Col>
@@ -37,6 +41,6 @@ export const LeftPanel: React.FC = () => {
                     <HealthCheck />
                 </Col>
             </Row>
-        </Col>
+        </div>
     );
 };
