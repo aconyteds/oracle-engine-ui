@@ -3,7 +3,7 @@ import { useThreadsContext } from "@context";
 import { Col, Container, Row } from "react-bootstrap";
 import "./Main.scss";
 import { MessageInput } from "../CreateMessage";
-import { GeneratingMessage, Message } from "../Messages";
+import { EmptyChat, GeneratingMessage, Message } from "../Messages";
 import { MessageDetailsFragment } from "@graphql";
 
 export const Main: React.FC = () => {
@@ -19,6 +19,10 @@ export const Main: React.FC = () => {
         setGenerating(false);
         addMessage(message);
     };
+
+    if (!selectedThread) {
+        return <EmptyChat />;
+    }
 
     return (
         <div className="main-container">
