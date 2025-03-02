@@ -1,5 +1,5 @@
 // GeneratedMessageSubscriber.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
     MessageDetailsFragment,
     useGenerateMessageSubscription,
@@ -16,12 +16,6 @@ export const GeneratingMessage: React.FC<GeneratingMessageProps> = ({
 }) => {
     const { selectedThread } = useThreadsContext();
     const [generatedContent, setGeneratedContent] = useState("");
-    // Use a ref to avoid stale closures when appending content
-    const contentRef = useRef(generatedContent);
-
-    useEffect(() => {
-        contentRef.current = generatedContent;
-    }, [generatedContent]);
 
     useGenerateMessageSubscription({
         variables: {
@@ -32,22 +26,28 @@ export const GeneratingMessage: React.FC<GeneratingMessageProps> = ({
         // We always subscribe as long as this component is rendered.
         skip: !selectedThread?.generating,
         onData: ({ data }) => {
-            if (!data?.data?.generateMessage) return;
-            const { content, message: newMessage } =
-                data?.data?.generateMessage;
+            const generateMessage = data?.data?.generateMessage;
+            if (!generateMessage) return;
+
+            const { content, message: newMessage } = generateMessage;
             if (newMessage) {
+                // Reset when the message is sent
+                setGeneratedContent("");
                 onGenerationComplete(newMessage);
                 return;
             }
             // Append generated content.
-            setGeneratedContent((prev) => {
-                return prev + content;
-            });
-        },
-        onComplete: () => {
-            selectedThread!.generating = false;
+            setGeneratedContent((prev) => prev + content);
         },
     });
 
-    return <Message content={generatedContent} role="AI" id="generating" />;
+    if (!selectedThread?.generating) return null;
+
+    return (
+        <Message
+            content={generatedContent}
+            role="AI Generating"
+            id="generating"
+        />
+    );
 };

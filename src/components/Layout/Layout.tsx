@@ -7,7 +7,7 @@ import "./Layout.scss";
 export const Layout: React.FC = () => {
     return (
         <div className="root-container">
-            <div>
+            <div className="header-container">
                 <Header />
             </div>
             <div className="content-container">

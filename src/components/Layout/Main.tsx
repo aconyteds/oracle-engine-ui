@@ -16,8 +16,8 @@ export const Main: React.FC = () => {
         // This is a simplified version of the actual implementation.
         // In reality, we would use the `sendMessage` function from the context.
         // This is just to show the basic idea.
-        addMessage(message);
         setGenerating(false);
+        addMessage(message);
     };
 
     return (
@@ -37,11 +37,9 @@ export const Main: React.FC = () => {
                         {messageList.map((message) => (
                             <Message key={message.id} {...message} />
                         ))}
-                        {selectedThread.generating && (
-                            <GeneratingMessage
-                                onGenerationComplete={onGenerationComplete}
-                            />
-                        )}
+                        <GeneratingMessage
+                            onGenerationComplete={onGenerationComplete}
+                        />
                     </Container>
                 )}
             </div>

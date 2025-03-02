@@ -8,6 +8,13 @@ import styled from "styled-components";
 const GlowingIcon = styled(FontAwesomeIcon)`
     filter: drop-shadow(0 0 0.5em ${(props) => props.color});
     font-size: 0.5em;
+    width: 1em !important;
+    display: inline-block;
+`;
+
+const HealthRow = styled(Row)`
+    width: fit-content;
+    margin: 0;
 `;
 
 export const HealthCheck = () => {
@@ -50,17 +57,18 @@ export const HealthCheck = () => {
     const statusColor = getHealthStatus();
 
     return (
-        <Row className="align-items-center" style={{ fontSize: "0.8em" }}>
-            <Col xs="auto" className="overflow-visible pe-0">
+        <HealthRow className="align-items-center" style={{ fontSize: "0.8em" }}>
+            <Col xs="auto" className="p-0">
                 <GlowingIcon
                     icon={faCircle}
                     color={statusColor}
                     style={{ margin: "0.5em 1em" }}
+                    fixedWidth
                 />
             </Col>
             <Col xs="auto" className="p-0">
                 {healthy ? "Healthy" : "Unhealthy"}
             </Col>
-        </Row>
+        </HealthRow>
     );
 };
