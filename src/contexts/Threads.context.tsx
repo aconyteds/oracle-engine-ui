@@ -5,7 +5,6 @@ import {
     useGetMyThreadsQuery,
     useGetThreadByIdQuery,
     useCreateMessageMutation,
-    Role,
 } from "@graphql";
 import {
     createContext,
@@ -33,6 +32,7 @@ type ThreadsContextPayload = {
     sendMessage: (content: string) => Promise<void>;
     generating: boolean;
     setGenerating: (generating: boolean) => void;
+    addMessage: (message: MessageDetailsFragment) => void;
 };
 
 const ThreadsContext = createContext<ThreadsContextPayload | undefined>(
@@ -101,15 +101,19 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             const thread = getThread(threadId);
             if (!thread) return;
             const updatedThread = { ...thread, generating };
+            const reordered = [
+                updatedThread,
+                ...threadList.filter((t) => t.id !== threadId),
+            ];
             // Rebuild the map using the current threadList array.
             const newMap = new Map(
-                threadList.map((t) => [
+                reordered.map((t) => [
                     t.id,
                     t.id === threadId ? updatedThread : t,
                 ])
             );
             setThreadList(newMap);
-            // If the updated thread is the one selected, update selectedThread.
+            // If the updated thread is the one selected, update selectedThread with the new version.
             if (selectedThread?.id === threadId) {
                 setSelectedThread(updatedThread);
             }
@@ -123,27 +127,31 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             if (!selectedThread) return;
             updateThreadGenerating(selectedThread.id, generating);
             setStoredThreadId(selectedThread.id);
-            if (!generating) {
-                refetch();
-            }
         },
         [selectedThread, updateThreadGenerating]
     );
 
-    // Modify the selectThread callback to store the thread ID
     const selectThread = useCallback(
         (threadId: string | null) => {
+            if (threadList.length === 0) {
+                return;
+            }
             if (!threadId) {
                 setSelectedThread(null);
                 setStoredThreadId(null);
                 return;
             }
             const thread = getThread(threadId);
-            if (!thread) return;
-            setSelectedThread(thread ?? null);
+            if (!thread) {
+                // Clear stored thread if it no longer exists
+                setSelectedThread(null);
+                setStoredThreadId(null);
+                return;
+            }
+            setSelectedThread(thread);
             setStoredThreadId(threadId);
         },
-        [getThread, setStoredThreadId]
+        [threadList, getThread, setStoredThreadId]
     );
 
     useEffect(() => {
@@ -162,19 +170,23 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
         );
     }, [data, loading, setThreadList]);
 
-    // Add a new useEffect to handle initial load and thread existence check
     useEffect(() => {
         if (loading || !threadList.length) return;
+        let threadId = storedThreadId;
         if (!newThreadRef.current) {
+            if (!threadId) {
+                selectThread(null);
+                return;
+            }
             // Check if the stored thread still exists in the list
             const threadExists = threadList.some(
-                (thread) => thread.id === storedThreadId
+                (thread) => thread.id === threadId
             );
 
             selectThread(threadExists ? storedThreadId : null);
             return;
         }
-        const threadId = newThreadRef.current;
+        threadId = newThreadRef.current;
         const thread = getThread(threadId);
         if (!thread) {
             // WE BUSY, thread not loaded yet.
@@ -206,7 +218,17 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                     },
                 },
             });
-            const threadId = response.data?.createMessage?.message?.threadId;
+            if (!response.data?.createMessage?.message) {
+                toast.danger({
+                    title: "Message Creation Error",
+                    message:
+                        "There was an error creating the message, please check your connection and try again.",
+                    duration: 5000,
+                });
+                return;
+            }
+            const { threadId, ...messageFragment } =
+                response.data?.createMessage?.message;
             if (!threadId) {
                 toast.danger({
                     title: "Thread Creation Error",
@@ -220,14 +242,11 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             if (!selectedThread) {
                 // Store the thread ID to be selected after refetch
                 newThreadRef.current = threadId;
-                refetch();
+                // Refresh the thread list for the newest thread
+                await refetch();
             } else {
                 // For existing threads, update immediately
-                addMessage({
-                    id: `user-added-message-${Date.now()}`,
-                    content,
-                    role: Role.User,
-                });
+                addMessage(messageFragment);
                 updateThreadGenerating(threadId, true);
             }
         },
@@ -253,6 +272,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             // deriving generating from the selected thread’s flag
             generating: selectedThread?.generating ?? false,
             setGenerating,
+            addMessage,
         }),
         [
             threadList,
@@ -262,6 +282,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             messageList,
             sendMessage,
             setGenerating,
+            addMessage,
         ]
     );
 

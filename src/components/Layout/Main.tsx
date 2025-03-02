@@ -7,16 +7,17 @@ import { GeneratingMessage, Message } from "../Messages";
 import { MessageDetailsFragment } from "@graphql";
 
 export const Main: React.FC = () => {
-    const { selectedThread, messageList, setGenerating } = useThreadsContext();
+    const { selectedThread, messageList, setGenerating, addMessage } =
+        useThreadsContext();
 
     const onGenerationComplete = (message: MessageDetailsFragment) => {
         if (!selectedThread) return;
-        setGenerating(false);
         // Append the generated message to the thread.
         // This is a simplified version of the actual implementation.
         // In reality, we would use the `sendMessage` function from the context.
         // This is just to show the basic idea.
-        messageList.push(message);
+        addMessage(message);
+        setGenerating(false);
     };
 
     return (
