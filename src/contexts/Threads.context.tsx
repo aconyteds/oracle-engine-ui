@@ -101,13 +101,9 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             const thread = getThread(threadId);
             if (!thread) return;
             const updatedThread = { ...thread, generating };
-            const reordered = [
-                updatedThread,
-                ...threadList.filter((t) => t.id !== threadId),
-            ];
             // Rebuild the map using the current threadList array.
             const newMap = new Map(
-                reordered.map((t) => [
+                threadList.map((t) => [
                     t.id,
                     t.id === threadId ? updatedThread : t,
                 ])
@@ -118,7 +114,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                 setSelectedThread(updatedThread);
             }
         },
-        [getThread, threadList, setThreadList, selectedThread]
+        [threadList, selectedThread]
     );
 
     // In the ThreadsProvider component, add the setGenerating callback before the context payload
@@ -154,6 +150,8 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
         [threadList, getThread, setStoredThreadId]
     );
 
+    // Used to initialize the threadList with the data from the query
+    // Only should fire after a refetch, or on the initial load
     useEffect(() => {
         if (loading) return;
 
@@ -168,7 +166,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                 data.threads.map((t) => [t.id, { ...t, generating: false }])
             )
         );
-    }, [data, loading, setThreadList]);
+    }, [data, loading]);
 
     useEffect(() => {
         if (loading || !threadList.length) return;
