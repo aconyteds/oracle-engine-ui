@@ -3,39 +3,45 @@
 
 name: Deploy to Firebase Hosting on merge
 "on":
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
 permissions:
-  checks: write
-  contents: read
-  pull-requests: write
+    checks: write
+    contents: read
+    pull-requests: write
 jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    build_and_deploy:
+        runs-on: ubuntu-latest
+        env:
+            VITE_API_URL: "${{ vars.VITE_API_URL }}"
+            VITE_ALLOW_REGISTRATION: "${{ vars.VITE_ALLOW_REGISTRATION }}"
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: "latest"
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: bun install
+            - name: Set up Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: "latest"
 
-      - name: Test
-        run: bun run test
+            - name: Install dependencies
+              run: |
+                  bun install
+                  bun run codegen
 
-      - name: Build
-        run: bun run build
+            - name: Test
+              run: bun run test
 
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ORACLE_ENGINE_7DFA6 }}"
-          channelId: live
-          projectId: oracle-engine-7dfa6
+            - name: Build
+              run: bun run build
+
+            - name: Deploy to Firebase Hosting
+              uses: FirebaseExtended/action-hosting-deploy@v0
+              with:
+                  repoToken: "${{ secrets.GITHUB_TOKEN }}"
+                  firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ORACLE_ENGINE_7DFA6 }}"
+                  channelId: live
+                  projectId: oracle-engine-7dfa6

@@ -1,61 +1,133 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, vi } from "vitest";
 import { Login } from "./Login";
 import { fireEvent, screen, render, act } from "../../test-utils";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { useUserContext } from "@context";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 
 // Mock Firebase Authentication Functions
-vi.mock("firebase/auth", () => ({
-  signInWithEmailAndPassword: vi.fn(),
-  GoogleAuthProvider: vi.fn(),
-  signInWithPopup: vi.fn(),
-  getAuth: vi.fn(),
-}));
-
 vi.mock("../firebase");
+vi.mock("firebase/auth", () => ({
+    signInWithEmailAndPassword: vi.fn(),
+    GoogleAuthProvider: vi.fn(),
+    signInWithPopup: vi.fn(),
+    getAuth: vi.fn(),
+}));
+vi.mock("../../apolloClient");
+vi.mock("@context");
 
 describe("Login Component", () => {
-  it("should show registration options when VITE_ALLOW_REGISTRATION is true", async () => {
-    render(<Login />, { env: { VITE_ALLOW_REGISTRATION: "true" } });
+    const mockUserContext = {
+        isLoggedIn: false,
+        setIsLoggedIn: vi.fn(),
+        handleLogin: vi.fn(),
+    };
 
-    // Verify that the registration button is visible
-    const registerButton = screen.getByText("Register");
-    expect(registerButton).toBeInTheDocument();
-  });
-
-  it("should hide registration options when VITE_ALLOW_REGISTRATION is false", async () => {
-    render(<Login />, { env: { VITE_ALLOW_REGISTRATION: "false" } });
-
-    // Verify that the registration button is not visible
-    const registerButton = screen.queryByText("Register");
-    expect(registerButton).toBeNull();
-  });
-
-  it("should call Firebase signInWithEmailAndPassword on login", async () => {
-    const mockSignin = vi.fn().mockResolvedValue({
-      user: { uid: "mock-uid", email: "mock@example.com" },
-    });
-    vi.mocked(signInWithEmailAndPassword).mockImplementation(mockSignin);
-
-    render(<Login />, { env: { VITE_ALLOW_REGISTRATION: "true" } });
-
-    // Simulate user input
-    const emailInput = screen.getByPlaceholderText("Email");
-    const passwordInput = screen.getByPlaceholderText("Password");
-
-    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password" } });
-
-    // Simulate clicking login button
-    const loginButton = screen.getByText("Login");
-    await act(async () => {
-      fireEvent.click(loginButton);
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.mocked(useUserContext).mockReturnValue(mockUserContext);
+        vi.mocked(signInWithEmailAndPassword).mockReset();
+        vi.mocked(signInWithPopup).mockReset();
     });
 
-    // Check if Firebase mock function was called
-    expect(mockSignin).toHaveBeenCalledWith(
-      expect.anything(),
-      "test@example.com",
-      "password"
-    );
-  });
+    test("should render without crashing", () => {
+        render(<Login />);
+        expect(screen.getByTestId("login-form")).toBeInTheDocument();
+    });
+
+    test("should show registration options when VITE_ALLOW_REGISTRATION is true", () => {
+        const { getByText } = render(<Login />, {
+            env: { VITE_ALLOW_REGISTRATION: "true" },
+        });
+
+        expect(getByText("Email")).toBeInTheDocument();
+        expect(getByText("Password")).toBeInTheDocument();
+        expect(getByText("Register")).toBeInTheDocument();
+        expect(getByText("Login")).toBeInTheDocument();
+    });
+
+    test("should hide registration options when VITE_ALLOW_REGISTRATION is false", () => {
+        const { queryByText, getByText } = render(<Login />, {
+            env: { VITE_ALLOW_REGISTRATION: "false" },
+        });
+
+        expect(queryByText("Email")).not.toBeInTheDocument();
+        expect(queryByText("Password")).not.toBeInTheDocument();
+        expect(queryByText("Register")).not.toBeInTheDocument();
+        expect(queryByText("Login")).not.toBeInTheDocument();
+        expect(getByText("Sign in with Google")).toBeInTheDocument();
+    });
+
+    test("should call Firebase signInWithEmailAndPassword on login", async () => {
+        const mockSignin = vi.fn().mockResolvedValue({
+            user: { uid: "mock-uid", email: "mock@example.com" },
+        });
+        vi.mocked(signInWithEmailAndPassword).mockImplementation(mockSignin);
+
+        render(<Login />, { env: { VITE_ALLOW_REGISTRATION: "true" } });
+
+        fireEvent.change(screen.getByPlaceholderText("Email"), {
+            target: { value: "test@example.com" },
+        });
+        fireEvent.change(screen.getByPlaceholderText("Password"), {
+            target: { value: "password" },
+        });
+
+        await act(async () => {
+            fireEvent.click(screen.getByText("Login"));
+        });
+
+        expect(mockSignin).toHaveBeenCalledWith(
+            expect.anything(),
+            "test@example.com",
+            "password"
+        );
+    });
+
+    test("should handle Google sign-in", async () => {
+        const mockSetIsLoggedIn = vi.fn();
+        vi.mocked(useUserContext).mockReturnValue({
+            ...mockUserContext,
+            setIsLoggedIn: mockSetIsLoggedIn,
+        });
+
+        const mockGoogleSignin = vi.fn().mockResolvedValue({
+            user: {
+                uid: "mock-uid",
+                email: "mock@example.com",
+                getIdToken: () => Promise.resolve("mock-token"),
+            },
+        });
+        vi.mocked(signInWithPopup).mockImplementation(mockGoogleSignin);
+
+        render(<Login />, { env: { VITE_ALLOW_REGISTRATION: "true" } });
+
+        await act(async () => {
+            fireEvent.click(screen.getByText("Sign in with Google"));
+        });
+
+        expect(mockGoogleSignin).toHaveBeenCalled();
+        expect(mockSetIsLoggedIn).toHaveBeenCalled();
+    });
+
+    test("should display error message on login failure", async () => {
+        vi.mocked(signInWithEmailAndPassword).mockRejectedValue(
+            new Error("Failed to login")
+        );
+
+        render(<Login />, { env: { VITE_ALLOW_REGISTRATION: "true" } });
+
+        await act(async () => {
+            fireEvent.change(screen.getByPlaceholderText("Email"), {
+                target: { value: "test@example.com" },
+            });
+            fireEvent.change(screen.getByPlaceholderText("Password"), {
+                target: { value: "password" },
+            });
+            fireEvent.click(screen.getByText("Login"));
+        });
+
+        expect(
+            screen.getByText("Failed to log in. Please check your credentials.")
+        ).toBeInTheDocument();
+    });
 });

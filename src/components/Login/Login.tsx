@@ -6,10 +6,10 @@ import {
     signInWithPopup,
     UserCredential,
 } from "firebase/auth";
-import { Button, Row, Container, Form, Col } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Button, Row, Form, Col } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { useNavigate } from "react-router-dom";
 import { setAuthToken } from "../../apolloClient";
 import { useUserContext } from "@context";
 
@@ -73,7 +73,11 @@ export const Login: React.FC = () => {
     return (
         <Row className="h-100 justify-content-center align-items-center">
             <Col xs="auto">
-                <Form onSubmit={onSubmit} className="row-gap-1">
+                <Form
+                    onSubmit={onSubmit}
+                    className="row-gap-1"
+                    data-testid="login-form"
+                >
                     <Row>
                         <h3 className="text-center">
                             Welcome to Oracle-Engine

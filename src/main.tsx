@@ -10,10 +10,10 @@ import { ToasterProvider } from "@context";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        <ApolloProvider client={client}>
-            <ToasterProvider>
+        <ToasterProvider>
+            <ApolloProvider client={client}>
                 <App />
-            </ToasterProvider>
-        </ApolloProvider>
+            </ApolloProvider>
+        </ToasterProvider>
     </StrictMode>
 );
