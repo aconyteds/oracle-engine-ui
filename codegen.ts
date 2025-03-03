@@ -4,7 +4,7 @@ const config: CodegenConfig = {
     // ...
     generates: {
         "./src/graphql/generated.ts": {
-            schema: "http://localhost:4000/graphql",
+            schema: process.env.VITE_API_URL || "http://localhost:4000/graphql",
             documents: "./src/graphql/*.graphql",
             plugins: [
                 "typescript",
