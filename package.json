@@ -25,7 +25,6 @@
         "@popperjs/core": "^2.11.8",
         "bootstrap": "^5.3.3",
         "firebase": "^10.14.1",
-        "firebase-admin": "^13.1.0",
         "graphql": "^16.9.0",
         "graphql-ws": "^6.0.2",
         "react": "^18.3.1",
