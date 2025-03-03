@@ -1,0 +1,54 @@
+$enable-gradients: true;
+$enable-shadows: true;
+
+$offcanvas-box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175);
+
+@import "bootstrap/scss/bootstrap";
+// Import Bootstrap's core files (order is important)
+// @use "bootstrap/scss/functions" as *;
+// @use "bootstrap/scss/mixins" as *;
+// @use "bootstrap/scss/variables" as *;
+
+// Import Bootswatch variables to override defaults
+@import "./Sketchy/variables.scss";
+
+// Import Bootstrap components
+// @use "bootstrap/scss/root" as *;
+// @use "bootstrap/scss/reboot" as *;
+// @use "bootstrap/scss/type" as *;
+// @use "bootstrap/scss/images" as *;
+// @use "bootstrap/scss/code" as *;
+// @use "bootstrap/scss/grid" as *;
+// @use "bootstrap/scss/tables" as *;
+// @use "bootstrap/scss/forms" as *;
+// @use "bootstrap/scss/buttons" as *;
+// @use "bootstrap/scss/transitions" as *;
+// @use "bootstrap/scss/dropdown" as *;
+// @use "bootstrap/scss/button-group" as *;
+// @use "bootstrap/scss/input-group" as *;
+// @use "bootstrap/scss/custom-forms" as *;
+// @use "bootstrap/scss/nav" as *;
+// @use "bootstrap/scss/navbar" as *;
+// @use "bootstrap/scss/card" as *;
+// @use "bootstrap/scss/modal" as *;
+// @use "bootstrap/scss/tooltip" as *;
+// @use "bootstrap/scss/popover" as *;
+// @use "bootstrap/scss/carousel" as *;
+// @use "bootstrap/scss/utilities" as *;
+
+// Import Bootswatch-specific styles
+@import "./Sketchy/bootswatch.scss";
+
+
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+}

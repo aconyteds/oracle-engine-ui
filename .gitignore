@@ -28,4 +28,5 @@ package-lock.json
 webpack*
 .env
 .env.*
+*generated*
 

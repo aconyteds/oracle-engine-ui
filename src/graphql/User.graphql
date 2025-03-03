@@ -1,0 +1,7 @@
+# Query to get the Current User's details, requires the AuthHeader to be set
+query CurrentUser {
+    currentUser {
+        id
+        name
+    }
+}

@@ -1,7 +1,12 @@
 {
-  "compilerOptions": {
-    "types": ["vitest/globals"]
-    // other options like "jsx", "moduleResolution", etc.
-  },
-  "include": ["src", "**/*.test.ts", "**/*.test.tsx"]
+    "compilerOptions": {
+        "types": ["vitest/globals"],
+        "paths": {
+            "@graphql": ["./src/graphql/generated.ts"],
+            "@hooks": ["./src/hooks/index.tsx"],
+            "@context": ["./src/contexts/index.tsx"]
+        }
+        // other options like "jsx", "moduleResolution", etc.
+    },
+    "include": ["src", "**/*.test.ts", "**/*.test.tsx"]
 }

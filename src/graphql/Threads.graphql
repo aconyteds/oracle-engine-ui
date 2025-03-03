@@ -1,0 +1,22 @@
+fragment ThreadDetails on Thread {
+    id
+    lastUsed
+    title
+}
+
+query GetThreadByID($getThreadInput: GetThreadInput!) {
+    getThread(input: $getThreadInput) {
+        thread {
+            ...ThreadDetails
+            messages {
+                ...MessageDetails
+            }
+        }
+    }
+}
+
+query GetMyThreads {
+    threads {
+        ...ThreadDetails
+    }
+}

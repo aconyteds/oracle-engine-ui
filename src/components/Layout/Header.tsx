@@ -1,16 +1,14 @@
 import React from "react";
-import { Flex, Heading, Text } from "@chakra-ui/react";
-import { ThemePicker } from "../Common";
+import { Row, Col } from "react-bootstrap";
 
 export const Header: React.FC = () => {
-  return (
-    <header>
-      <Flex justifyContent="space-between">
-        <Heading>Oracle-Engine</Heading>
-        <Text>
-          <ThemePicker />
-        </Text>
-      </Flex>
-    </header>
-  );
+    return (
+        <header className="ps-2">
+            <Row className="justify-content-between align-items-center">
+                <Col xs="auto">
+                    <h1>Oracle-Engine</h1>
+                </Col>
+            </Row>
+        </header>
+    );
 };
