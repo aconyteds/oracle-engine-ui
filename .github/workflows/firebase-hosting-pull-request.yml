@@ -37,6 +37,13 @@ jobs:
             - name: Build
               run: bun run build
 
+            - name: Add PR preview domain to Firebase Authentication
+              run: |
+                  bun run scripts/addAuthorizedDomain.ts
+              env:
+                  FIREBASE_SERVICE_ACCOUNT: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ORACLE_ENGINE_7DFA6 }}"
+                  GITHUB_PR_NUMBER: "${{ github.event.number }}"
+
             - name: Deploy to Firebase Hosting Preview Channel
               uses: FirebaseExtended/action-hosting-deploy@v0
               with:
