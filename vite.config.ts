@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -8,7 +9,7 @@ export default defineConfig({
     plugins: [react(), tsconfigPaths()],
     test: {
         environment: "jsdom", // Use jsdom to simulate a browser environment
-        setupFiles: "./setupTests.ts", // Optional setup file
+        setupFiles: "setupTests.ts", // Optional setup file
         globals: true, // Enable Jest-like global variables (describe, it, expect)
     },
     resolve: {

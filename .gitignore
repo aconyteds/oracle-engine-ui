@@ -29,4 +29,4 @@ webpack*
 .env
 .env.*
 *generated*
-
+tsconfig.tsbuildinfo

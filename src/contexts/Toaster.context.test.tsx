@@ -4,21 +4,27 @@ import { ToasterProvider, useToaster } from "./Toaster.context";
 
 vi.mock("react-bootstrap", () => ({
     Toast: Object.assign(
-        ({ children, onClose }: any) => (
+        ({
+            children,
+            onClose,
+        }: {
+            children: React.ReactNode;
+            onClose: () => void;
+        }) => (
             <div data-testid="mock-toast" onClick={onClose}>
                 {children}
             </div>
         ),
         {
-            Header: ({ children }: any) => (
+            Header: ({ children }: { children: React.ReactNode }) => (
                 <div data-testid="mock-toast-header">{children}</div>
             ),
-            Body: ({ children }: any) => (
+            Body: ({ children }: { children: React.ReactNode }) => (
                 <div data-testid="mock-toast-body">{children}</div>
             ),
         }
     ),
-    ToastContainer: ({ children }: any) => (
+    ToastContainer: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="mock-toast-container">{children}</div>
     ),
 }));
