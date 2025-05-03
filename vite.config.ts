@@ -1,16 +1,10 @@
-import { defineConfig } from "vite";
+import { defineConfig, UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "path";
 
-// https://vitejs.dev/config/
-export default defineConfig({
+export const sharedConfig: UserConfig = {
     plugins: [react(), tsconfigPaths()],
-    test: {
-        environment: "jsdom", // Use jsdom to simulate a browser environment
-        setupFiles: "./setupTests.ts", // Optional setup file
-        globals: true, // Enable Jest-like global variables (describe, it, expect)
-    },
     resolve: {
         alias: {
             "@graphql": path.resolve(__dirname, "src/graphql/generated.ts"), // Create alias for the generated file
@@ -22,10 +16,10 @@ export default defineConfig({
     css: {
         preprocessorOptions: {
             scss: {
-                sassOptions: {
-                    quietDeps: true,
-                },
+                quietDeps: true,
             },
         },
     },
-});
+};
+
+export default defineConfig(sharedConfig);

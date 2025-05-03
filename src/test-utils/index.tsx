@@ -31,7 +31,7 @@ const customRender = (
 ) => {
     // Override environment variables
     for (const [key, value] of Object.entries(env)) {
-        (import.meta.env as any)[key] = value;
+        (import.meta.env as Record<string, string | undefined>)[key] = value;
     }
 
     return render(ui, { wrapper: AllProviders, ...options });

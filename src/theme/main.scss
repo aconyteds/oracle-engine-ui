@@ -1,7 +1,7 @@
 $enable-gradients: true;
 $enable-shadows: true;
 
-$offcanvas-box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175);
+$offcanvas-box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
 
 @import "bootstrap/scss/bootstrap";
 // Import Bootstrap's core files (order is important)
@@ -39,16 +39,15 @@ $offcanvas-box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175);
 // Import Bootswatch-specific styles
 @import "./Sketchy/bootswatch.scss";
 
-
 body,
 #root {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  width: 100vw;
-  display: grid;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  overflow: hidden;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    display: grid;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+    overflow: hidden;
 }

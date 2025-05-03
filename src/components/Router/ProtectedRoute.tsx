@@ -5,15 +5,15 @@ import { auth } from "../firebase";
 import { Loader } from "../Loader";
 
 interface ProtectedRouteProps {
-  children: React.ReactElement;
+    children: React.ReactElement;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const [user, loading] = useAuthState(auth);
+    const [user, loading] = useAuthState(auth);
 
-  if (loading) {
-    return <Loader />;
-  }
+    if (loading) {
+        return <Loader />;
+    }
 
-  return user ? children : <Navigate to="/login" />;
+    return user ? children : <Navigate to="/login" />;
 };
