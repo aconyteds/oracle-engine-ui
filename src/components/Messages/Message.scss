@@ -12,7 +12,14 @@
     }
 
     .message-content {
-        white-space: pre-wrap;
         word-break: break-word;
+
+        // Override default margins from markdown components for tighter spacing
+        p:last-child,
+        ul:last-child,
+        ol:last-child,
+        blockquote:last-child {
+            margin-bottom: 0;
+        }
     }
 }

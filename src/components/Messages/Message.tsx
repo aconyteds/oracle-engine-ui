@@ -1,5 +1,6 @@
 import React from "react";
 import { Col, Row } from "react-bootstrap";
+import { MarkdownRenderer } from "../Common";
 import "./Message.scss";
 
 interface MessageProps {
@@ -14,7 +15,9 @@ export const Message: React.FC<MessageProps> = ({ content, role, id }) => {
             <Col>
                 <div className="message">
                     <span className="message-role">{role}</span>
-                    <div className="message-content">{content}</div>
+                    <div className="message-content">
+                        <MarkdownRenderer content={content} />
+                    </div>
                 </div>
             </Col>
         </Row>
