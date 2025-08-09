@@ -1,6 +1,5 @@
-import React, { useCallback } from "react";
+import React from "react";
 import ReactMarkdown from "react-markdown";
-import { useToaster } from "@context";
 import { CodeBlock } from "./CodeBlock";
 
 interface MarkdownRendererProps {
@@ -10,34 +9,10 @@ interface MarkdownRendererProps {
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     content,
 }) => {
-    const { toast } = useToaster();
-
-    const copyToClipboard = useCallback(
-        async (code: string) => {
-            try {
-                await navigator.clipboard.writeText(code);
-                toast.info({
-                    title: "Copied!",
-                    message: "Code copied to clipboard",
-                    duration: 2000,
-                });
-            } catch {
-                toast.danger({
-                    title: "Copy Failed",
-                    message: "Failed to copy code to clipboard",
-                    duration: 3000,
-                });
-            }
-        },
-        [toast]
-    );
-
     return (
         <ReactMarkdown
             components={{
-                code: (props) => (
-                    <CodeBlock {...props} onCopy={copyToClipboard} />
-                ),
+                code: (props) => <CodeBlock {...props} />,
                 h1: ({ children }) => <h1 className="h4 mb-3">{children}</h1>,
                 h2: ({ children }) => <h2 className="h5 mb-3">{children}</h2>,
                 h3: ({ children }) => <h3 className="h6 mb-2">{children}</h3>,
