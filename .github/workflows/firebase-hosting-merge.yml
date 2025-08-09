@@ -37,7 +37,7 @@ jobs:
                   
                   while [ $elapsed -lt $timeout ]; do
                       echo "Pinging server... (attempt $((elapsed/interval + 1)))"
-                      if curl -f -s --max-time 10 "$VITE_API_URL" > /dev/null 2>&1; then
+                      if curl -f -s --max-time 10 -H "apollo-require-preflight: true" "$VITE_API_URL" > /dev/null 2>&1; then
                           echo "✅ Server is awake and responding!"
                           break
                       fi
