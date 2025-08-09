@@ -1,0 +1,44 @@
+name: "Wake up GraphQL server"
+description: "Pings the GraphQL server with a health check query until it responds"
+inputs:
+  api-url:
+    description: "The GraphQL server URL to ping"
+    required: true
+  timeout:
+    description: "Timeout in seconds (default: 300)"
+    required: false
+    default: "300"
+  interval:
+    description: "Interval between attempts in seconds (default: 10)"
+    required: false
+    default: "10"
+runs:
+  using: "composite"
+  steps:
+    - name: Wake up GraphQL server
+      shell: bash
+      run: |
+        echo "Attempting to wake up GraphQL server at ${{ inputs.api-url }}"
+        timeout=${{ inputs.timeout }}
+        interval=${{ inputs.interval }}
+        elapsed=0
+
+        while [ $elapsed -lt $timeout ]; do
+            echo "Pinging server... (attempt $((elapsed/interval + 1)))"
+            if curl -f -s --max-time 10 \
+                -X POST \
+                -H "Content-Type: application/json" \
+                -H "apollo-require-preflight: true" \
+                -d '{"query": "{ healthCheck }"}' \
+                "${{ inputs.api-url }}" > /dev/null 2>&1; then
+                echo "✅ Server is awake and responding!"
+                exit 0
+            fi
+            
+            echo "Server not responding, waiting ${interval}s..."
+            sleep $interval
+            elapsed=$((elapsed + interval))
+        done
+
+        echo "❌ Timeout: Server did not respond within $((timeout/60)) minutes"
+        exit 1
