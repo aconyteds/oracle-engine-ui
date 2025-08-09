@@ -1,0 +1,143 @@
+// Dark theme variables for Sketchy
+// Based on Sketchy 5.3.3 with dark mode adaptations
+
+//
+// Color system (Dark Mode)
+//
+
+$white-dark: #1a1a1a !default;
+$gray-100-dark: #212529 !default;
+$gray-200-dark: #2c3034 !default;
+$gray-300-dark: #3a3f47 !default;
+$gray-400-dark: #495057 !default;
+$gray-500-dark: #6c757d !default;
+$gray-600-dark: #868e96 !default;
+$gray-700-dark: #adb5bd !default;
+$gray-800-dark: #ced4da !default;
+$gray-900-dark: #f8f9fa !default;
+$black-dark: #ffffff !default;
+
+$primary-dark: $gray-700-dark !default;
+$secondary-dark: $gray-600-dark !default;
+$success-dark: #198754 !default;
+$info-dark: #0dcaf0 !default;
+$warning-dark: #ffc107 !default;
+$danger-dark: #dc3545 !default;
+$light-dark: $gray-100-dark !default;
+$dark-dark: $gray-800-dark !default;
+
+// Apply dark theme variables when theme-dark class is present
+.theme-dark {
+    --bs-body-bg: #{$white-dark};
+    --bs-body-color: #{$gray-800-dark};
+    --bs-primary: #{$primary-dark};
+    --bs-secondary: #{$secondary-dark};
+    --bs-success: #{$success-dark};
+    --bs-info: #{$info-dark};
+    --bs-warning: #{$warning-dark};
+    --bs-danger: #{$danger-dark};
+    --bs-light: #{$light-dark};
+    --bs-dark: #{$dark-dark};
+
+    // Border colors
+    --bs-border-color: #{$gray-600-dark};
+    --bs-border-color-translucent: rgba(134, 142, 150, 0.175);
+
+    // Component specific overrides
+    .card {
+        --bs-card-bg: #{$gray-100-dark};
+        --bs-card-border-color: #{$gray-600-dark};
+    }
+
+    .toast {
+        --bs-toast-bg: #{$gray-100-dark};
+        --bs-toast-border-color: #{$gray-600-dark};
+        --bs-toast-header-color: #{$gray-800-dark};
+        --bs-toast-header-bg: #{$gray-200-dark};
+        --bs-toast-header-border-color: #{$gray-600-dark};
+    }
+
+    .table {
+        --bs-table-bg: #{$gray-100-dark};
+        --bs-table-border-color: #{$gray-600-dark};
+
+        th,
+        td {
+            background-color: var(--bs-table-bg);
+            border-color: var(--bs-table-border-color);
+        }
+    }
+
+    .form-control {
+        --bs-form-control-bg: #{$gray-100-dark};
+        --bs-form-control-border-color: #{$gray-600-dark};
+        --bs-form-control-color: #{$gray-800-dark};
+    }
+
+    .btn-outline-primary {
+        --bs-btn-color: #{$primary-dark};
+        --bs-btn-border-color: #{$primary-dark};
+        --bs-btn-hover-bg: #{$primary-dark};
+        --bs-btn-hover-border-color: #{$primary-dark};
+        --bs-btn-hover-color: #{$gray-100-dark};
+    }
+
+    .dropdown-menu {
+        --bs-dropdown-bg: #{$gray-100-dark};
+        --bs-dropdown-border-color: #{$gray-600-dark};
+        --bs-dropdown-color: #{$gray-800-dark};
+        --bs-dropdown-link-color: #{$gray-800-dark};
+        --bs-dropdown-link-hover-bg: #{$gray-200-dark};
+    }
+
+    .nav-tabs {
+        --bs-nav-tabs-border-color: #{$gray-600-dark};
+        --bs-nav-tabs-link-hover-border-color: #{$gray-600-dark};
+        --bs-nav-tabs-link-active-color: #{$gray-800-dark};
+        --bs-nav-tabs-link-active-bg: #{$gray-100-dark};
+        --bs-nav-tabs-link-active-border-color: #{$gray-600-dark};
+    }
+
+    .navbar {
+        &.bg-light {
+            --bs-navbar-bg: #{$gray-100-dark};
+            --bs-navbar-border-color: #{$gray-600-dark};
+        }
+    }
+
+    // Code blocks should remain dark even in dark theme for consistency
+    .card {
+        &.bg-dark {
+            --bs-card-bg: #1e1e1e;
+            --bs-card-color: #f8f8f2;
+        }
+    }
+
+    // Message input container styling
+    .message-input-container {
+        --bs-bg-opacity: 0.8;
+        backdrop-filter: blur(10px);
+    }
+
+    // Improve message contrast in dark theme
+    .message {
+        &.bg-light {
+            --bs-bg-opacity: 0.9;
+            background-color: #{$gray-200-dark} !important;
+            color: #{$gray-800-dark} !important;
+        }
+
+        &.bg-primary {
+            --bs-bg-opacity: 1;
+        }
+    }
+
+    // Better shadows for dark theme
+    .shadow-sm {
+        box-shadow: 0 0.125rem 0.25rem rgba(255, 255, 255, 0.075) !important;
+    }
+
+    .shadow-lg {
+        box-shadow: 0 1rem 3rem rgba(255, 255, 255, 0.175) !important;
+    }
+}
