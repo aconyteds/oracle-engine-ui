@@ -5,31 +5,33 @@ import { Login } from "./components/Login";
 import { ProtectedRoute } from "./components/Router";
 import { LogEvent } from "./components/firebase";
 import { Layout } from "./components/Layout";
-import { ThreadsProvider, UserProvider } from "@context";
+import { ThreadsProvider, UserProvider, ThemeProvider } from "@context";
 
 const App: React.FC = () => {
     LogEvent("load");
 
     return (
-        <UserProvider>
-            <Container fluid className="h-100 ps-0 pe-0">
-                <Router>
-                    <Routes>
-                        <Route path="/login" element={<Login />} />
-                        <Route
-                            path="/"
-                            element={
-                                <ProtectedRoute>
-                                    <ThreadsProvider>
-                                        <Layout />
-                                    </ThreadsProvider>
-                                </ProtectedRoute>
-                            }
-                        />
-                    </Routes>
-                </Router>
-            </Container>
-        </UserProvider>
+        <ThemeProvider>
+            <UserProvider>
+                <Container fluid className="h-100 ps-0 pe-0">
+                    <Router>
+                        <Routes>
+                            <Route path="/login" element={<Login />} />
+                            <Route
+                                path="/"
+                                element={
+                                    <ProtectedRoute>
+                                        <ThreadsProvider>
+                                            <Layout />
+                                        </ThreadsProvider>
+                                    </ProtectedRoute>
+                                }
+                            />
+                        </Routes>
+                    </Router>
+                </Container>
+            </UserProvider>
+        </ThemeProvider>
     );
 };
 

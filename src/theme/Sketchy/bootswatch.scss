@@ -418,6 +418,21 @@ select.form-control {
 
     &-header {
         font-family: $headings-font-family;
+
+        .btn-close {
+            position: relative;
+            top: auto;
+            right: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &::before {
+                position: static;
+                top: auto;
+                right: auto;
+            }
+        }
     }
 }
 

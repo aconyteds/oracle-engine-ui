@@ -28,14 +28,14 @@ export const MessageInput = () => {
     };
 
     return (
-        <div className="message-input-container">
+        <div className="message-input-container bg-body-secondary shadow-lg rounded-top p-3 border border-bottom-0">
             <Row direction="row" pr="2" gap="2">
                 <Col>
                     <ExpandingTextArea
                         onChange={handleChange}
                         onSubmit={handleSubmit}
                         styleProps={{
-                            className: "no-highlight",
+                            className: "no-highlight border-0 bg-transparent",
                         }}
                     />
                 </Col>
@@ -49,6 +49,7 @@ export const MessageInput = () => {
                         }
                         className="mt-2"
                         disabled={generating}
+                        variant="primary"
                     >
                         {generating ? (
                             <div className="position-relative">
