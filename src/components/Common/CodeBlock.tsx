@@ -1,6 +1,6 @@
 import React from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Card, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
@@ -28,11 +28,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     }
 
     return (
-        <Card className="mb-3">
+        <Card>
             <Card.Header className="d-flex justify-content-between align-items-center bg-dark text-white">
-                <span className="text-capitalize">
-                    {language || "Code"}
-                </span>
+                <span className="text-capitalize">{language || "Code"}</span>
                 <Button
                     variant="outline-light"
                     size="sm"
@@ -43,12 +41,12 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                     Copy
                 </Button>
             </Card.Header>
-            <Card.Body className="p-0">
+            <Card.Body className="p-0 pb-1 bg-dark border-top">
                 <SyntaxHighlighter
-                    style={atomDark}
+                    style={oneDark}
                     language={language}
                     PreTag="div"
-                    className="mb-0"
+                    className="mb-0 mt-0"
                 >
                     {code}
                 </SyntaxHighlighter>

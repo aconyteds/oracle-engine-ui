@@ -35,7 +35,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     return (
         <ReactMarkdown
             components={{
-                code: (props) => <CodeBlock {...props} onCopy={copyToClipboard} />,
+                code: (props) => (
+                    <CodeBlock {...props} onCopy={copyToClipboard} />
+                ),
                 h1: ({ children }) => <h1 className="h4 mb-3">{children}</h1>,
                 h2: ({ children }) => <h2 className="h5 mb-3">{children}</h2>,
                 h3: ({ children }) => <h3 className="h6 mb-2">{children}</h3>,
