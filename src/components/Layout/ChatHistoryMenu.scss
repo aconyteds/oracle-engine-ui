@@ -1,0 +1,16 @@
+.chat-history-dropdown {
+    min-width: 250px;
+    max-width: 350px;
+
+    .thread-list {
+        max-height: 50vh;
+        overflow-y: auto;
+
+        .dropdown-item {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.9rem;
+        }
+    }
+}

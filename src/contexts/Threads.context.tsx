@@ -2,10 +2,16 @@ import {
     GetThreadByIdQueryVariables,
     MessageDetailsFragment,
     ThreadDetailsFragment,
-    useGetThreadByIdQuery,
     useCreateMessageMutation,
     useGetMyThreadsLazyQuery,
+    useGetThreadByIdQuery,
 } from "@graphql";
+import {
+    useArray,
+    useMap,
+    useMessageGeneration,
+    useSessionStorage,
+} from "@hooks";
 import {
     createContext,
     useCallback,
@@ -14,24 +20,18 @@ import {
     useMemo,
     useState,
 } from "react";
-import { useArray, useMap, useSessionStorage } from "@hooks";
 import { useToaster } from "./Toaster.context";
 
-export type ThreadDetails = ThreadDetailsFragment & {
-    generating: boolean;
-};
-
 type ThreadsContextPayload = {
-    threadList: ThreadDetails[];
+    threadList: ThreadDetailsFragment[];
     loading: boolean;
     selectThread: (threadId: string | null) => void;
-    selectedThread: ThreadDetails | null;
+    selectedThread: ThreadDetailsFragment | null;
     selectedThreadId: string;
     messageList: MessageDetailsFragment[];
     sendMessage: (content: string) => Promise<void>;
-    generating: boolean;
-    setGenerating: (generating: boolean) => void;
-    addMessage: (message: MessageDetailsFragment) => void;
+    isGenerating: boolean;
+    generatingContent: string;
 };
 
 const ThreadsContext = createContext<ThreadsContextPayload | undefined>(
@@ -62,18 +62,30 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     const {
         array: threadList,
         rebase: setThreadList,
-        getItem: getThread,
         clear: clearThreads,
-        setItem: setThread,
-    } = useMap<string, ThreadDetails>([]);
+    } = useMap<string, ThreadDetailsFragment>([]);
     const {
         array: messageList,
         set: setMessageList,
         push: addMessage,
     } = useArray<MessageDetailsFragment>([]);
-    const [selectedThread, setSelectedThread] = useState<ThreadDetails | null>(
-        null
-    );
+    const [selectedThread, setSelectedThread] =
+        useState<ThreadDetailsFragment | null>(null);
+
+    // Use the message generation hook
+    const { isGenerating, generatingContent, startGeneration, stopGeneration } =
+        useMessageGeneration({
+            onMessageComplete: (message) => {
+                addMessage(message);
+            },
+            onError: (error) => {
+                toast.danger({
+                    title: "Generation Error",
+                    message: error.message || "Failed to generate message",
+                    duration: 5000,
+                });
+            },
+        });
 
     const variables = useMemo<GetThreadByIdQueryVariables>(() => {
         return {
@@ -85,19 +97,18 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     const [getMyThreads, { loading }] = useGetMyThreadsLazyQuery({
         fetchPolicy: "network-only",
     });
-    const {
-        data: selectedThreadData,
-        loading: loadingSelectedThread,
-        refetch: refetchThreadMessages,
-    } = useGetThreadByIdQuery({
-        variables,
-        skip: !selectedThread,
-        fetchPolicy: "network-only",
-    });
+    const { data: selectedThreadData, loading: loadingSelectedThread } =
+        useGetThreadByIdQuery({
+            variables,
+            skip: !selectedThread,
+            fetchPolicy: "network-only",
+        });
     const [createMessage] = useCreateMessageMutation();
 
     const processThreadData = useCallback(
-        async (threadId?: string): Promise<Map<string, ThreadDetails>> => {
+        async (
+            threadId?: string
+        ): Promise<Map<string, ThreadDetailsFragment>> => {
             const { data } = await getMyThreads();
 
             if (!data?.threads) {
@@ -105,11 +116,8 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                 return new Map();
             }
 
-            const threadMap = new Map<string, ThreadDetails>(
-                data.threads.map((t) => [
-                    t.id,
-                    { ...t, generating: t.id === threadId },
-                ])
+            const threadMap = new Map<string, ThreadDetailsFragment>(
+                data.threads.map((t) => [t.id, t])
             );
 
             setThreadList(threadMap);
@@ -125,7 +133,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             setSelectedThread(thread);
             return threadMap;
         },
-        [getMyThreads]
+        [getMyThreads, clearThreads, setStoredThreadId, setThreadList]
     );
 
     // Initial load
@@ -141,7 +149,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             }
             setSelectedThread(thread);
         });
-    }, []);
+    }, [processThreadData, setStoredThreadId, storedThreadId]);
 
     // Fetches the messages for the currently selected thread
     useEffect(() => {
@@ -153,49 +161,33 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             return;
         }
         setMessageList(currThreadMessages);
-    }, [selectedThreadData, loadingSelectedThread]);
-
-    // Helper: Update the generating flag on a thread in our map and update the selectedThread if needed.
-    const updateThreadGenerating = useCallback(
-        (threadId: string, generating: boolean) => {
-            const thread = getThread(threadId);
-            if (!thread) return;
-            const updatedThread = { ...thread, generating };
-            setThread(threadId, updatedThread);
-            // If the updated thread is the one selected, update selectedThread with the new version.
-
-            if (
-                JSON.stringify(selectedThread) !== JSON.stringify(updatedThread)
-            ) {
-                setSelectedThread(updatedThread);
-            }
-        },
-        [getThread, setThread, selectedThread]
-    );
+    }, [selectedThreadData, loadingSelectedThread, setMessageList]);
 
     const selectThread = useCallback(
         (threadId: string | null) => {
-            if (threadList.length === 0) {
-                return;
-            }
             if (!threadId) {
                 setSelectedThread(null);
                 setStoredThreadId(null);
+                // Stop generation if switching away
+                if (isGenerating) {
+                    stopGeneration();
+                }
                 return;
             }
-            const thread = getThread(threadId);
+            const thread = threadList.find((t) => t.id === threadId);
             if (!thread) {
                 return;
             }
             setSelectedThread(thread);
             setStoredThreadId(threadId);
         },
-        [threadList, getThread, setStoredThreadId]
+        [threadList, setStoredThreadId, isGenerating, stopGeneration]
     );
 
     const sendMessage = useCallback(
         async (content: string) => {
             try {
+                // Step 1: Create the message
                 const response = await createMessage({
                     variables: {
                         createMessageInput: {
@@ -204,19 +196,33 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                         },
                     },
                 });
+
                 const newMessage = response.data?.createMessage?.message;
                 if (!newMessage) {
                     throw new Error("No message returned.");
                 }
                 const { threadId, ...messageFragment } = newMessage;
 
-                await processThreadData(threadId);
-                if (!selectedThread) {
-                    return;
+                // Step 2: Handle thread selection
+                const isNewThread = !selectedThread?.id;
+                if (isNewThread) {
+                    // Step 3: Refresh thread list to get the new thread
+                    const threadMap = await processThreadData(threadId);
+                    const thread = threadMap.get(threadId);
+                    if (!thread) {
+                        throw new Error("Thread not found after creation.");
+                    }
+                    setStoredThreadId(threadId);
                 }
+
+                // Step 4: Add user message to list (optimistic update)
                 addMessage(messageFragment);
-                refetchThreadMessages();
-            } catch (error) {
+                // Note: We don't refetch messages here because we're adding them optimistically
+                // The AI message will be added via onMessageComplete callback
+
+                // Step 5: Start generation (this opens the WS connection)
+                startGeneration(threadId);
+            } catch (_error) {
                 toast.danger({
                     title: "Message Creation Error",
                     message:
@@ -230,21 +236,13 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             createMessage,
             toast,
             addMessage,
-            updateThreadGenerating,
             processThreadData,
+            setStoredThreadId,
+            startGeneration,
         ]
     );
 
-    // In the ThreadsProvider component, add the setGenerating callback before the context payload
-    const setGenerating = useCallback(
-        (generating: boolean) => {
-            if (!selectedThread) return;
-            updateThreadGenerating(selectedThread.id, generating);
-            setStoredThreadId(selectedThread.id);
-        },
-        [selectedThread, updateThreadGenerating]
-    );
-
+    // biome-ignore lint/correctness/useExhaustiveDependencies: messageList is intentionally excluded to prevent infinite re-renders. Consumers get updates via the array reference.
     const threadsContextPayload = useMemo<ThreadsContextPayload>(
         () => ({
             threadList,
@@ -254,20 +252,18 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             selectedThreadId: selectedThread?.id ?? "",
             messageList,
             sendMessage,
-            // deriving generating from the selected thread’s flag
-            generating: selectedThread?.generating ?? false,
-            setGenerating,
-            addMessage,
+            isGenerating,
+            generatingContent,
         }),
         [
             threadList,
             loading,
             selectThread,
             selectedThread,
-            messageList.length,
             sendMessage,
-            setGenerating,
-            addMessage,
+            messageList.length,
+            isGenerating,
+            generatingContent,
         ]
     );
 

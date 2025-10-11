@@ -1,8 +1,8 @@
-import { describe, expect, vi } from "vitest";
-import { Login } from "./Login";
-import { fireEvent, screen, render, act } from "../../test-utils";
 import { useUserContext } from "@context";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { describe, expect, vi } from "vitest";
+import { act, fireEvent, render, screen } from "../../test-utils";
+import { Login } from "./Login";
 
 // Mock Firebase Authentication Functions
 vi.mock("../firebase");

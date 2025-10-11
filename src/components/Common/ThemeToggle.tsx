@@ -1,12 +1,12 @@
+import {
+    faChevronDown,
+    faDesktop,
+    faMoon,
+    faSun,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Button, Dropdown } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faSun,
-    faMoon,
-    faDesktop,
-    faChevronDown,
-} from "@fortawesome/free-solid-svg-icons";
 import { useTheme } from "../../hooks/useTheme";
 
 export const ThemeToggle: React.FC = () => {

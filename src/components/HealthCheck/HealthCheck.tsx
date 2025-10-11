@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { useHealthCheckSubscription } from "@graphql";
-import { Col, Row } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useHealthCheckSubscription } from "@graphql";
+import { useEffect, useState } from "react";
+import { Col, Row } from "react-bootstrap";
 import styled from "styled-components";
 
 const GlowingIcon = styled(FontAwesomeIcon)`

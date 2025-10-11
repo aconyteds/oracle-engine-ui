@@ -1,6 +1,6 @@
+import { RenderOptions, render } from "@testing-library/react";
 import React, { ReactNode } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import { render, RenderOptions } from "@testing-library/react";
 import { vi } from "vitest";
 
 // Mock `useNavigate` hook

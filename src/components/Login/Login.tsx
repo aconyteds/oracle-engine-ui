@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import { auth, googleProvider } from "../firebase";
+import { useUserContext } from "@context";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
     signInWithPopup,
     UserCredential,
 } from "firebase/auth";
-import { Button, Row, Form, Col } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import React, { useState } from "react";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { setAuthToken } from "../../apolloClient";
-import { useUserContext } from "@context";
+import { auth, googleProvider } from "../firebase";
 
 export const Login: React.FC = () => {
     const [email, setEmail] = useState("");
@@ -38,7 +38,7 @@ export const Login: React.FC = () => {
                 password
             );
             await handleSuccessfulLogin(userCredentials);
-        } catch (e) {
+        } catch (_e) {
             setError("Failed to log in. Please check your credentials.");
         }
     };
@@ -51,7 +51,7 @@ export const Login: React.FC = () => {
                 password
             );
             await handleSuccessfulLogin(userCredentials);
-        } catch (e) {
+        } catch (_e) {
             setError("Failed to register. Please try again.");
         }
     };
@@ -60,7 +60,7 @@ export const Login: React.FC = () => {
         try {
             const userCredentials = await signInWithPopup(auth, googleProvider);
             await handleSuccessfulLogin(userCredentials);
-        } catch (e) {
+        } catch (_e) {
             setError("Failed to sign in with Google. Please try again.");
         }
     };

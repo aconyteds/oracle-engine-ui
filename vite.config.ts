@@ -1,7 +1,7 @@
-import { defineConfig, UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tsconfigPaths from "vite-tsconfig-paths";
 import path from "path";
+import { defineConfig, UserConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export const sharedConfig: UserConfig = {
     plugins: [react(), tsconfigPaths()],

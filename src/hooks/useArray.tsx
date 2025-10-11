@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 
 export interface IUseArray<T> {
     array: T[];
@@ -13,33 +13,33 @@ export interface IUseArray<T> {
 export function useArray<T>(defaultValue: T[]): IUseArray<T> {
     const [array, setArray] = useState<T[]>(defaultValue);
 
-    function push(element: T) {
+    const push = useCallback((element: T) => {
         setArray((a) => [...a, element]);
-    }
+    }, []);
 
-    function filter(callback: () => boolean) {
+    const filter = useCallback((callback: () => boolean) => {
         setArray((a) => a.filter(callback));
-    }
+    }, []);
 
-    function update(index: number, newElement: T) {
+    const update = useCallback((index: number, newElement: T) => {
         setArray((a) => {
             const newArray = [...a];
             newArray[index] = newElement;
             return newArray;
         });
-    }
+    }, []);
 
-    function remove(index: number) {
+    const remove = useCallback((index: number) => {
         setArray((a) => {
             const newArray = [...a];
             newArray.splice(index, 1);
             return newArray;
         });
-    }
+    }, []);
 
-    function clear() {
+    const clear = useCallback(() => {
         setArray([]);
-    }
+    }, []);
 
     return { array, set: setArray, push, filter, update, remove, clear };
 }

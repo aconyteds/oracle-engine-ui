@@ -1,15 +1,15 @@
 import {
     ApolloClient,
-    InMemoryCache,
-    HttpLink,
-    split,
-    from,
     ApolloLink,
+    from,
+    HttpLink,
+    InMemoryCache,
+    split,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
-import { createClient } from "graphql-ws";
 import { getMainDefinition, Observable } from "@apollo/client/utilities";
+import { createClient } from "graphql-ws";
 
 // Environment variables
 const apiUrl = import.meta.env.VITE_API_URL; // HTTP endpoint

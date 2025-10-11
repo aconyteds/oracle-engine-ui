@@ -10,7 +10,9 @@ export const auth = {
     signOut: vi.fn(() => Promise.resolve()),
     onAuthStateChanged: vi.fn((callback) => {
         // Mock a listener that simulates being called and returns an unsubscribe function
-        const unsubscribe = () => {};
+        const unsubscribe = () => {
+            // Intentionally empty - mock unsubscribe function
+        };
         callback({ uid: "test-user", email: "test@example.com" });
         return unsubscribe;
     }),

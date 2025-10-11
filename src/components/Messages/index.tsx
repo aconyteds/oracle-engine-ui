@@ -1,3 +1,3 @@
-export * from "./Message";
-export * from "./GeneratingMessage";
 export * from "./EmptyChat";
+export * from "./GeneratingMessage";
+export * from "./Message";

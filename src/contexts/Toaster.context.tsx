@@ -1,5 +1,5 @@
 import { useMap } from "@hooks";
-import React, { createContext, useContext, useCallback } from "react";
+import React, { createContext, useCallback, useContext } from "react";
 import { Toast, ToastContainer } from "react-bootstrap";
 
 interface ToastOptions {
@@ -47,35 +47,53 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
         removeItem,
     } = useMap<string, InternalToast>([]);
 
-    const addToast = useCallback((type: string, options: ToastOptions) => {
-        const id = Date.now();
-        const toast = {
-            id: id.toString(),
-            duration: 5000,
-            closable: false,
-            ...options,
-            type,
-        };
+    const addToast = useCallback(
+        (type: string, options: ToastOptions) => {
+            const id = Date.now();
+            const toast = {
+                id: id.toString(),
+                duration: 5000,
+                closable: false,
+                ...options,
+                type,
+            };
 
-        setItem(toast.id.toString(), toast);
+            setItem(toast.id.toString(), toast);
 
-        if (toast.duration === null) {
-            return;
-        }
-        setTimeout(() => {
-            removeItem(toast.id);
-        }, options.duration || 5000);
-    }, []);
+            if (toast.duration === null) {
+                return;
+            }
+            setTimeout(() => {
+                removeItem(toast.id);
+            }, options.duration || 5000);
+        },
+        [removeItem, setItem]
+    );
 
-    const success = (options: ToastOptions) => addToast("success", options);
-    const danger = (options: ToastOptions) => addToast("danger", options);
-    const warning = (options: ToastOptions) => addToast("warning", options);
-    const info = (options: ToastOptions) => addToast("info", options);
+    const success = useCallback(
+        (options: ToastOptions) => addToast("success", options),
+        [addToast]
+    );
+    const danger = useCallback(
+        (options: ToastOptions) => addToast("danger", options),
+        [addToast]
+    );
+    const warning = useCallback(
+        (options: ToastOptions) => addToast("warning", options),
+        [addToast]
+    );
+    const info = useCallback(
+        (options: ToastOptions) => addToast("info", options),
+        [addToast]
+    );
+
+    const contextValue = React.useMemo(
+        () => ({ toast: { success, danger, warning, info } }),
+        [success, danger, warning, info]
+    );
 
     return (
-        <ToasterContext.Provider
-            value={{ toast: { success, danger, warning, info } }}
-        >
+        <ToasterContext.Provider value={contextValue}>
             {children}
             <ToastContainer position="bottom-start" className="p-3">
                 {toasts.map((toast) => (

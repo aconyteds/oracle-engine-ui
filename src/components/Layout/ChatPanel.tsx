@@ -1,23 +1,23 @@
-import React from "react";
 import { useThreadsContext } from "@context";
+import React from "react";
 import { Container } from "react-bootstrap";
 import "./ChatPanel.scss";
 import { MessageInput } from "../CreateMessage";
-import { GeneratingMessage, Message } from "../Messages";
-import { MessageDetailsFragment } from "@graphql";
+import { Message } from "../Messages";
+import { ChatHistoryMenu } from "./ChatHistoryMenu";
 
 export const ChatPanel: React.FC = () => {
-    const { selectedThread, messageList, setGenerating, addMessage } =
+    const { selectedThread, messageList, isGenerating, generatingContent } =
         useThreadsContext();
-
-    const onGenerationComplete = (message: MessageDetailsFragment) => {
-        if (!selectedThread) return;
-        setGenerating(false);
-        addMessage(message);
-    };
 
     return (
         <div className="chat-panel">
+            <div className="chat-header">
+                <div className="chat-title">
+                    {selectedThread ? selectedThread.title : "New Chat"}
+                </div>
+                <ChatHistoryMenu />
+            </div>
             <div className="chat-messages">
                 {selectedThread === null ? (
                     <Container className="empty-state d-flex flex-column justify-content-center align-items-center h-100">
@@ -33,9 +33,13 @@ export const ChatPanel: React.FC = () => {
                         {messageList.map((message) => (
                             <Message key={message.id} {...message} />
                         ))}
-                        <GeneratingMessage
-                            onGenerationComplete={onGenerationComplete}
-                        />
+                        {isGenerating && (
+                            <Message
+                                content={generatingContent}
+                                role="AI Generating"
+                                id="generating"
+                            />
+                        )}
                     </Container>
                 )}
             </div>

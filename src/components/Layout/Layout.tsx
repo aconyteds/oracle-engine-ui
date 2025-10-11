@@ -1,9 +1,9 @@
 import React from "react";
-import { Main } from "./Main";
-import { Header } from "./Header";
-import { ChatPanel } from "./ChatPanel";
 import { ResizablePanel } from "../Common";
 import { HealthCheck } from "../HealthCheck";
+import { ChatPanel } from "./ChatPanel";
+import { Header } from "./Header";
+import { Main } from "./Main";
 import "./Layout.scss";
 
 export const Layout: React.FC = () => {

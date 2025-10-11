@@ -1,5 +1,5 @@
-import React from "react";
 import { useThreadsContext } from "@context";
+import React from "react";
 import { Button, Col } from "react-bootstrap";
 
 type ThreadItemProps = {
@@ -13,7 +13,8 @@ export const ThreadItem: React.FC<ThreadItemProps> = ({
     title,
     onSelect,
 }) => {
-    const { selectThread, selectedThreadId, generating } = useThreadsContext();
+    const { selectThread, selectedThreadId, isGenerating } =
+        useThreadsContext();
 
     const buttonClass = `w-100 ${selectedThreadId === threadId ? "active" : ""} btn btn-dark`;
 
@@ -31,7 +32,7 @@ export const ThreadItem: React.FC<ThreadItemProps> = ({
                 variant="plain"
                 onClick={handleClick}
                 className={buttonClass}
-                disabled={generating}
+                disabled={isGenerating}
             >
                 {title}
             </Button>

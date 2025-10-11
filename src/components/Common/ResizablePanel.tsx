@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./ResizablePanel.scss";
 
 type ResizablePanelProps = {
@@ -30,10 +30,15 @@ export const ResizablePanel: React.FC<ResizablePanelProps> = ({
 
             const containerRect = containerRef.current.getBoundingClientRect();
             const newWidth = e.clientX - containerRect.left;
-
-            if (newWidth >= minWidth && newWidth <= maxWidth) {
-                setLeftWidth(newWidth);
+            if (newWidth < minWidth) {
+                setLeftWidth(minWidth);
+                return;
             }
+            if (newWidth > maxWidth) {
+                setLeftWidth(maxWidth);
+                return;
+            }
+            setLeftWidth(newWidth);
         },
         [isResizing, minWidth, maxWidth]
     );
