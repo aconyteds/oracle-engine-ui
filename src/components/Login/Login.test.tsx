@@ -1,18 +1,25 @@
 import { useUserContext } from "@context";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { describe, expect, vi } from "vitest";
-import { act, fireEvent, render, screen } from "../../test-utils";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen } from "../../test-utils";
 import { Login } from "./Login";
 
 // Mock Firebase Authentication Functions
-vi.mock("../firebase");
+vi.mock("../firebase", () => ({
+    auth: {},
+    googleProvider: {},
+    LogEvent: vi.fn(),
+}));
 vi.mock("firebase/auth", () => ({
     signInWithEmailAndPassword: vi.fn(),
     GoogleAuthProvider: vi.fn(),
     signInWithPopup: vi.fn(),
-    getAuth: vi.fn(),
+    getAuth: vi.fn(() => ({})),
 }));
-vi.mock("../../apolloClient");
+vi.mock("../../apolloClient", () => ({
+    default: {},
+    setAuthToken: vi.fn(),
+}));
 vi.mock("@context");
 
 describe("Login Component", () => {
@@ -27,6 +34,11 @@ describe("Login Component", () => {
         vi.mocked(useUserContext).mockReturnValue(mockUserContext);
         vi.mocked(signInWithEmailAndPassword).mockReset();
         vi.mocked(signInWithPopup).mockReset();
+    });
+
+    afterEach(() => {
+        cleanup();
+        vi.clearAllMocks();
     });
 
     test("should render without crashing", () => {

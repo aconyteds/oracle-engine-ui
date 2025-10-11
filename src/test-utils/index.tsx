@@ -1,16 +1,6 @@
 import { RenderOptions, render } from "@testing-library/react";
 import React, { ReactNode } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import { vi } from "vitest";
-
-// Mock `useNavigate` hook
-vi.mock("react-router-dom", async () => {
-    const actual = await vi.importActual("react-router-dom");
-    return {
-        ...actual,
-        useNavigate: () => vi.fn(), // Mocked navigate function
-    };
-});
 
 interface WrapperProps {
     children: ReactNode;

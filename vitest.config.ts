@@ -8,6 +8,12 @@ export default mergeConfig(
             globals: true,
             environment: "jsdom",
             setupFiles: "./setupTests.ts",
+            pool: "forks",
+            poolOptions: {
+                forks: {
+                    singleFork: true,
+                },
+            },
         },
     })
 );
