@@ -1,4 +1,10 @@
-import React, { useState } from "react";
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 
 export interface IUseMap<K, V> {
     map: Map<K, V>;
@@ -12,26 +18,34 @@ export interface IUseMap<K, V> {
 
 export function useMap<K, V>(defaultValue: [K, V][]): IUseMap<K, V> {
     const [map, setMap] = useState<Map<K, V>>(new Map(defaultValue));
+    const mapRef = useRef<Map<K, V>>(map);
 
-    function setItem(key: K, value: V) {
+    // Keep ref in sync with state
+    useEffect(() => {
+        mapRef.current = map;
+    }, [map]);
+
+    const setItem = useCallback((key: K, value: V) => {
         setMap((m) => new Map(m).set(key, value));
-    }
+    }, []);
 
-    function removeItem(key: K) {
+    const removeItem = useCallback((key: K) => {
         setMap((m) => {
             const newMap = new Map(m);
             newMap.delete(key);
             return newMap;
         });
-    }
+    }, []);
 
-    function getItem(key: K) {
-        return map.get(key);
-    }
+    const getItem = useCallback((key: K) => {
+        return mapRef.current.get(key);
+    }, []);
 
-    function clear() {
+    const clear = useCallback(() => {
         setMap(new Map());
-    }
+    }, []);
+
+    const array = useMemo(() => Array.from(map.values()), [map]);
 
     return {
         map,
@@ -40,6 +54,6 @@ export function useMap<K, V>(defaultValue: [K, V][]): IUseMap<K, V> {
         removeItem,
         clear,
         getItem,
-        array: Array.from(map.values()),
+        array,
     };
 }

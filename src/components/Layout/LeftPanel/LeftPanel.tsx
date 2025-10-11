@@ -1,14 +1,14 @@
-import React from "react";
 import { useThreadsContext } from "@context";
-import { ThreadItem } from "./ThreadItem";
-import { Row, Button, Col } from "react-bootstrap";
-import { HealthCheck } from "../../HealthCheck";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import { Button, Col, Row } from "react-bootstrap";
+import { HealthCheck } from "../../HealthCheck";
+import { ThreadItem } from "./ThreadItem";
 import "./LeftPanel.scss";
 
 export const LeftPanel: React.FC = () => {
-    const { threadList, selectThread, generating } = useThreadsContext();
+    const { threadList, selectThread, isGenerating } = useThreadsContext();
 
     return (
         <div className="left-panel">
@@ -16,7 +16,7 @@ export const LeftPanel: React.FC = () => {
                 <Col xs="auto">
                     <Button
                         onClick={() => selectThread(null)}
-                        disabled={generating}
+                        disabled={isGenerating}
                     >
                         <FontAwesomeIcon icon={faPlus} className="me-2" />
                         Create Thread

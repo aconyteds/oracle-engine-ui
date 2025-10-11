@@ -8,22 +8,25 @@
     .header-container {
         width: 100%;
         padding: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
     }
 
     .content-container {
-        display: grid;
-        grid-template-columns: minmax(max-content, 15vw) 1fr;
-        gap: 1rem;
         height: 100%;
         width: 100%;
         overflow: hidden;
-        padding-inline-end: 0.25rem;
 
-        .main-panel {
-            border-left: 1px solid #dee2e6;
+        .chat-panel-container {
             height: 100%;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
-            padding-inline-start: 1rem;
+
+            .chat-panel-footer {
+                flex-shrink: 0;
+                padding: 0.5rem 1rem;
+                border-top: 1px solid #dee2e6;
+            }
         }
     }
 }

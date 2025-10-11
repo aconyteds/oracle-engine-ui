@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { ExpandingTextArea } from "../Common";
-import { Col, Row, Button } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useThreadsContext } from "@context";
 import {
-    faWandMagicSparkles,
     faSpinner,
     faStop,
+    faWandMagicSparkles,
 } from "@fortawesome/free-solid-svg-icons";
-import { useThreadsContext } from "@context";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState } from "react";
+import { Button, Col, Row } from "react-bootstrap";
+import { ExpandingTextArea } from "../Common";
 import "./MessageInput.scss";
 
 export const MessageInput = () => {
-    const { sendMessage, generating } = useThreadsContext();
+    const { sendMessage, isGenerating } = useThreadsContext();
     const [text, setText] = useState("");
 
     const handleSubmit = (text: string) => {
@@ -43,15 +43,15 @@ export const MessageInput = () => {
                     <Button
                         onClick={handleButtonClick}
                         title={
-                            generating
+                            isGenerating
                                 ? "Stop Generation"
                                 : "Send a Message to the AI"
                         }
                         className="mt-2"
-                        disabled={generating}
+                        disabled={isGenerating}
                         variant="primary"
                     >
-                        {generating ? (
+                        {isGenerating ? (
                             <div className="position-relative">
                                 <FontAwesomeIcon icon={faSpinner} spin />
                                 <FontAwesomeIcon

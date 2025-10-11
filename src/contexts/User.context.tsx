@@ -1,16 +1,16 @@
+import { useCurrentUserQuery } from "@graphql";
 import React, {
-    useContext,
-    useState,
     createContext,
     ReactNode,
-    useMemo,
-    useEffect,
     useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
 } from "react";
-import { useCurrentUserQuery } from "@graphql";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../components/firebase";
 import { setAuthToken } from "../apolloClient";
+import { auth } from "../components/firebase";
 import { Loader } from "../components/Loader";
 import { useToaster } from "./Toaster.context";
 
@@ -41,17 +41,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         skip: !isLoggedIn,
     });
 
-    const checkUser = async () => {
+    const checkUser = useCallback(async () => {
         if (!user) return;
         const token = await user.getIdToken();
         setAuthToken(token);
         setIsLoggedIn(true);
-    };
+    }, [user]);
 
     useEffect(() => {
         if (checkingUser) return;
         checkUser();
-    }, [checkingUser, user]);
+    }, [checkingUser, checkUser]);
 
     useEffect(() => {
         if (loading || !error) return;
@@ -60,11 +60,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
             message: error.message,
             duration: 5000,
         });
-    }, [loading, error]);
+    }, [loading, error, toast.danger]);
 
     const handleLogin = useCallback(() => {
         setIsLoggedIn(true);
-    }, [setIsLoggedIn]);
+    }, []);
 
     const userContextPayload = useMemo<UserContextPayload>(
         () => ({

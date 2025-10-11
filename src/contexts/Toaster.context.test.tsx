@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ToasterProvider, useToaster } from "./Toaster.context";
 
 vi.mock("react-bootstrap", () => ({
@@ -45,8 +45,8 @@ describe("ToasterContext", () => {
     });
 
     afterEach(() => {
+        cleanup();
         vi.clearAllMocks();
-        vi.clearAllTimers();
         vi.useRealTimers();
     });
 

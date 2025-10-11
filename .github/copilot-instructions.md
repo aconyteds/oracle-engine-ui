@@ -17,8 +17,9 @@ Always reference these instructions first and fallback to search or bash command
 - **CRITICAL**: GraphQL code generation requires a running GraphQL server at localhost:4000. If the server is not available, `bun run codegen` will fail with connection refused errors. This is expected behavior when working on frontend-only changes.
 - Build the application: `bun run build` -- takes ~11 seconds. NEVER CANCEL builds.
 - Run tests: `bun run test` -- takes ~3 seconds. Uses Vitest with jsdom environment.
-- Lint code: `bun run lint` -- takes ~3 seconds. Uses ESLint + Prettier. Warnings are acceptable.
-- Format code: `bun run format` -- takes ~1 second. Uses Prettier.
+- Lint code: `bun run lint` -- Uses Biome for linting and formatting checks.
+- Lint and fix: `bun run lint:write` -- Applies safe Biome fixes automatically.
+- Format code: `bun run format` -- Uses Biome formatter.
 
 ### Development Workflow
 
@@ -40,9 +41,9 @@ Always reference these instructions first and fallback to search or bash command
 
 - **MANDATORY**: Always test changes by running the development server and verifying the application loads correctly
 - The application should display "Welcome to Oracle-Engine" login screen with Google sign-in button
-- **CRITICAL**: Always run `bun run lint` before committing changes or the CI build will show warnings
-- **CRITICAL**: Always run `bun run format` to maintain code consistency
-- The pre-commit hook automatically runs `bunx lint-staged` to format staged files
+- **CRITICAL**: Always run `bun run lint` before committing changes to check for linting and formatting issues
+- **CRITICAL**: Use `bun run lint:write` or `bun run format` to automatically fix formatting issues
+- The pre-commit hook automatically runs `bunx lint-staged` to check and format staged files with Biome
 - Test the build process with `bun run build` to ensure TypeScript compilation succeeds
 
 ## Common Tasks
@@ -99,7 +100,7 @@ src/
 - `package.json`: Scripts and dependencies (uses Bun as package manager)
 - `vite.config.ts`: Build configuration with path aliases
 - `vitest.config.ts`: Test configuration
-- `eslint.config.js`: Linting rules with Prettier integration
+- `biome.json`: Biome configuration for linting and formatting (VCS integration enabled)
 - `firebase.json`: Firebase hosting configuration (serves from `dist/`)
 - `codegen.ts`: GraphQL code generation configuration
 - `.husky/pre-commit`: Runs lint-staged on commit
@@ -122,8 +123,10 @@ Environment variables required for CI:
 ## Development Notes
 
 - Uses Bun instead of npm/yarn for faster package management
+- Uses Biome for linting and formatting (replaced ESLint and Prettier)
 - TypeScript strict mode enabled with path aliases (`@graphql`, `@hooks`, `@context`)
-- Prettier configuration: 4-space tabs, semicolons, double quotes
-- ESLint ignores generated files (`**/generated.ts`, `**/*.generated.ts`)
+- Biome configuration: 4-space indentation, semicolons, double quotes, 80 char line width
+- Biome ignores generated files (`**/generated.ts`, `**/*.generated.ts`, `dist/`, `node_modules/`)
+- VCS integration enabled for Biome (git, main branch, uses .gitignore)
 - Firebase project: `oracle-engine-7dfa6`
 - Supports both development (`bun run dev`) and production (`bun run start`) modes

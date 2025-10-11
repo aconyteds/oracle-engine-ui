@@ -1,11 +1,11 @@
+import { ThemeProvider, ThreadsProvider, UserProvider } from "@context";
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Container } from "react-bootstrap";
-import { Login } from "./components/Login";
-import { ProtectedRoute } from "./components/Router";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { LogEvent } from "./components/firebase";
 import { Layout } from "./components/Layout";
-import { ThreadsProvider, UserProvider, ThemeProvider } from "@context";
+import { Login } from "./components/Login";
+import { ProtectedRoute } from "./components/Router";
 
 const App: React.FC = () => {
     LogEvent("load");

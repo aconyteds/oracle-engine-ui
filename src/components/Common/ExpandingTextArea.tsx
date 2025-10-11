@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, KeyboardEvent } from "react";
+import React, { KeyboardEvent, useCallback, useEffect, useRef } from "react";
 import { FormControl, FormControlProps } from "react-bootstrap";
 
 type ExpandingTextAreaProps = {
@@ -18,7 +18,7 @@ export const ExpandingTextArea: React.FC<ExpandingTextAreaProps> = ({
 }) => {
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-    const adjustHeight = () => {
+    const adjustHeight = useCallback(() => {
         const textarea = textAreaRef.current;
         if (textarea) {
             textarea.style.height = "auto";
@@ -36,7 +36,7 @@ export const ExpandingTextArea: React.FC<ExpandingTextAreaProps> = ({
             const newHeight = Math.min(scrollHeight, maxHeightPx);
             textarea.style.height = `${newHeight / 16}rem`; // Convert newHeight from px to rem
         }
-    };
+    }, [maxHeight]);
 
     const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
         if (!textAreaRef.current) return;
@@ -57,7 +57,7 @@ export const ExpandingTextArea: React.FC<ExpandingTextAreaProps> = ({
 
     useEffect(() => {
         adjustHeight();
-    }, []);
+    }, [adjustHeight]);
 
     return (
         <FormControl

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export function useLocalStorage<T>(
     key: string,
@@ -17,18 +17,26 @@ export function useLocalStorage<T>(
         }
     });
 
-    const setValue = (value: T | ((prev: T) => T)) => {
-        try {
-            const valueToStore =
-                value instanceof Function ? value(storedValue) : value;
-            setStoredValue(valueToStore);
-            if (typeof window !== "undefined") {
-                window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    const setValue = useCallback(
+        (value: T | ((prev: T) => T)) => {
+            try {
+                setStoredValue((prev) => {
+                    const valueToStore =
+                        value instanceof Function ? value(prev) : value;
+                    if (typeof window !== "undefined") {
+                        window.localStorage.setItem(
+                            key,
+                            JSON.stringify(valueToStore)
+                        );
+                    }
+                    return valueToStore;
+                });
+            } catch (error) {
+                console.error(error);
             }
-        } catch (error) {
-            console.error(error);
-        }
-    };
+        },
+        [key]
+    );
 
     return [storedValue, setValue];
 }
@@ -50,21 +58,26 @@ export function useSessionStorage<T>(
         }
     });
 
-    const setValue = (value: T | ((prev: T) => T)) => {
-        try {
-            const valueToStore =
-                value instanceof Function ? value(storedValue) : value;
-            setStoredValue(valueToStore);
-            if (typeof window !== "undefined") {
-                window.sessionStorage.setItem(
-                    key,
-                    JSON.stringify(valueToStore)
-                );
+    const setValue = useCallback(
+        (value: T | ((prev: T) => T)) => {
+            try {
+                setStoredValue((prev) => {
+                    const valueToStore =
+                        value instanceof Function ? value(prev) : value;
+                    if (typeof window !== "undefined") {
+                        window.sessionStorage.setItem(
+                            key,
+                            JSON.stringify(valueToStore)
+                        );
+                    }
+                    return valueToStore;
+                });
+            } catch (error) {
+                console.error(error);
             }
-        } catch (error) {
-            console.error(error);
-        }
-    };
+        },
+        [key]
+    );
 
     return [storedValue, setValue];
 }

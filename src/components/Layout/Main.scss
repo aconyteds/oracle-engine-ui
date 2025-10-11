@@ -1,20 +1,12 @@
-.main-container {
+.display-area {
     height: 100%;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    position: relative;
     overflow: hidden;
 
-    .message-container {
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column-reverse;
-        padding: 1rem 0;
-        margin-bottom: 0.5rem;
-
-        .container {
-            margin-top: auto;
-            display: flex;
-            flex-direction: column;
-        }
+    .display-content {
+        height: 100%;
+        width: 100%;
+        position: relative;
     }
 }
