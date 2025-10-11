@@ -14,7 +14,7 @@ import {
     useMemo,
     useState,
 } from "react";
-import { useArray, useMap, useLocalStorage } from "@hooks";
+import { useArray, useMap, useSessionStorage } from "@hooks";
 import { useToaster } from "./Toaster.context";
 
 export type ThreadDetails = ThreadDetailsFragment & {
@@ -56,10 +56,9 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     children,
 }) => {
     const { toast } = useToaster();
-    const [storedThreadId, setStoredThreadId] = useLocalStorage<string | null>(
-        "selectedThreadId",
-        null
-    );
+    const [storedThreadId, setStoredThreadId] = useSessionStorage<
+        string | null
+    >("selectedThreadId", null);
     const {
         array: threadList,
         rebase: setThreadList,
