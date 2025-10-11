@@ -5,18 +5,31 @@ import { Button, Col } from "react-bootstrap";
 type ThreadItemProps = {
     threadId: string;
     title: string;
+    onSelect?: () => void;
 };
 
-export const ThreadItem: React.FC<ThreadItemProps> = ({ threadId, title }) => {
+export const ThreadItem: React.FC<ThreadItemProps> = ({
+    threadId,
+    title,
+    onSelect,
+}) => {
     const { selectThread, selectedThreadId, generating } = useThreadsContext();
 
     const buttonClass = `w-100 ${selectedThreadId === threadId ? "active" : ""} btn btn-dark`;
+
+    const handleClick = () => {
+        if (onSelect) {
+            onSelect();
+        } else {
+            selectThread(threadId);
+        }
+    };
 
     return (
         <Col xs="12">
             <Button
                 variant="plain"
-                onClick={() => selectThread(threadId)}
+                onClick={handleClick}
                 className={buttonClass}
                 disabled={generating}
             >

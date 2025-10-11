@@ -1,7 +1,9 @@
 import React from "react";
 import { Main } from "./Main";
 import { Header } from "./Header";
-import { LeftPanel } from "./LeftPanel";
+import { ChatPanel } from "./ChatPanel";
+import { ResizablePanel } from "../Common";
+import { HealthCheck } from "../HealthCheck";
 import "./Layout.scss";
 
 export const Layout: React.FC = () => {
@@ -11,10 +13,18 @@ export const Layout: React.FC = () => {
                 <Header />
             </div>
             <div className="content-container">
-                <LeftPanel />
-                <div className="main-panel">
+                <ResizablePanel
+                    leftPanel={
+                        <div className="chat-panel-container">
+                            <ChatPanel />
+                            <div className="chat-panel-footer">
+                                <HealthCheck />
+                            </div>
+                        </div>
+                    }
+                >
                     <Main />
-                </div>
+                </ResizablePanel>
             </div>
         </div>
     );

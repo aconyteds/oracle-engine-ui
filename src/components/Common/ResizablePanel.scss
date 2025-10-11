@@ -1,0 +1,35 @@
+.resizable-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+
+    .resizable-left {
+        flex-shrink: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .resizable-divider {
+        width: 4px;
+        cursor: col-resize;
+        background-color: #dee2e6;
+        flex-shrink: 0;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: #adb5bd;
+        }
+
+        &:active {
+            background-color: #6c757d;
+        }
+    }
+
+    .resizable-right {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+    }
+}
