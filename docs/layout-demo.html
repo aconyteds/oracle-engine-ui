@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Layout Demo - Oracle Engine</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .root-container {
+                height: 100vh;
+                display: grid;
+                grid-template-rows: auto 1fr;
+            }
+
+            .header {
+                padding: 1rem;
+                border-bottom: 1px solid #dee2e6;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #f8f9fa;
+            }
+
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .hamburger {
+                padding: 0.5rem;
+                border: 1px solid #6c757d;
+                border-radius: 4px;
+                background: white;
+                cursor: pointer;
+            }
+
+            .title-section h1 {
+                margin: 0;
+                font-size: 1.5rem;
+            }
+
+            .title-section small {
+                color: #6c757d;
+            }
+
+            .content-container {
+                display: flex;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .chat-panel-container {
+                width: 400px;
+                display: flex;
+                flex-direction: column;
+                background: #ffffff;
+                border-right: 1px solid #dee2e6;
+            }
+
+            .divider {
+                width: 4px;
+                background: #dee2e6;
+                cursor: col-resize;
+                transition: background 0.2s;
+            }
+
+            .divider:hover {
+                background: #adb5bd;
+            }
+
+            .display-area {
+                flex: 1;
+                position: relative;
+                background: #f8f9fa;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #6c757d;
+            }
+
+            .chat-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .message {
+                padding: 1rem;
+                border-radius: 8px;
+                max-width: 80%;
+            }
+
+            .message.user {
+                background: #e3f2fd;
+                align-self: flex-end;
+                text-align: right;
+            }
+
+            .message.assistant {
+                background: #f5f5f5;
+                align-self: flex-start;
+            }
+
+            .message-label {
+                font-weight: bold;
+                margin-bottom: 0.5rem;
+                font-size: 0.875rem;
+            }
+
+            .chat-input {
+                padding: 1rem;
+                border-top: 1px solid #dee2e6;
+            }
+
+            .chat-input textarea {
+                width: 100%;
+                padding: 0.5rem;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                resize: vertical;
+                min-height: 60px;
+            }
+
+            .chat-footer {
+                padding: 0.5rem 1rem;
+                border-top: 1px solid #dee2e6;
+                background: #f8f9fa;
+                font-size: 0.875rem;
+                color: #6c757d;
+            }
+
+            .flyout {
+                position: fixed;
+                top: 0;
+                left: -300px;
+                width: 300px;
+                height: 100vh;
+                background: white;
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+                transition: left 0.3s;
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .flyout.open {
+                left: 0;
+            }
+
+            .flyout-header {
+                padding: 1rem;
+                border-bottom: 1px solid #dee2e6;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .flyout-body {
+                flex: 1;
+                overflow-y: auto;
+                padding: 1rem;
+            }
+
+            .flyout button.new-chat {
+                width: 100%;
+                padding: 0.5rem;
+                margin-bottom: 1rem;
+                border: 1px solid #0d6efd;
+                background: #0d6efd;
+                color: white;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            .thread-item {
+                padding: 0.75rem;
+                margin-bottom: 0.5rem;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .thread-item:hover {
+                background: #f8f9fa;
+            }
+
+            .thread-item.active {
+                background: #e3f2fd;
+                border-color: #0d6efd;
+            }
+
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: none;
+                z-index: 999;
+            }
+
+            .overlay.open {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="root-container">
+            <div class="header">
+                <div class="header-left">
+                    <button class="hamburger" onclick="toggleFlyout()">
+                        ☰
+                    </button>
+                    <div class="title-section">
+                        <h1>Oracle-Engine</h1>
+                        <small id="chatName">Sample Chat</small>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button>🌓</button>
+                </div>
+            </div>
+
+            <div class="content-container">
+                <div class="chat-panel-container">
+                    <div class="chat-panel">
+                        <div class="chat-messages">
+                            <div class="message user">
+                                <div class="message-label">User</div>
+                                <div>
+                                    Hello! Can you help me with my project?
+                                </div>
+                            </div>
+                            <div class="message assistant">
+                                <div class="message-label">Assistant</div>
+                                <div>
+                                    Of course! I'd be happy to help. What
+                                    project are you working on?
+                                </div>
+                            </div>
+                            <div class="message user">
+                                <div class="message-label">User</div>
+                                <div>
+                                    I'm building a React application with
+                                    TypeScript.
+                                </div>
+                            </div>
+                            <div class="message assistant">
+                                <div class="message-label">Assistant</div>
+                                <div>
+                                    Great choice! React with TypeScript provides
+                                    excellent type safety. What specific aspect
+                                    do you need help with?
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <textarea
+                                placeholder="Enter your message here"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div class="chat-footer">● Connected</div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="display-area">
+                    <div>
+                        <h2>Display Area</h2>
+                        <p>Relatively positioned space for draggable modals</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="overlay" id="overlay" onclick="toggleFlyout()"></div>
+        <div class="flyout" id="flyout">
+            <div class="flyout-header">
+                <h3>Chat History</h3>
+                <button onclick="toggleFlyout()">×</button>
+            </div>
+            <div class="flyout-body">
+                <button class="new-chat" onclick="selectChat(null)">
+                    + New Chat
+                </button>
+                <div class="thread-item active" onclick="selectChat('chat1')">
+                    Sample Chat
+                </div>
+                <div class="thread-item" onclick="selectChat('chat2')">
+                    Previous Conversation
+                </div>
+                <div class="thread-item" onclick="selectChat('chat3')">
+                    Another Chat
+                </div>
+                <div class="thread-item" onclick="selectChat('chat4')">
+                    Project Discussion
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function toggleFlyout() {
+                const flyout = document.getElementById("flyout");
+                const overlay = document.getElementById("overlay");
+                flyout.classList.toggle("open");
+                overlay.classList.toggle("open");
+            }
+
+            function selectChat(chatId) {
+                const chatName = document.getElementById("chatName");
+                if (chatId === null) {
+                    chatName.textContent = "New Chat";
+                } else {
+                    const chatMap = {
+                        chat1: "Sample Chat",
+                        chat2: "Previous Conversation",
+                        chat3: "Another Chat",
+                        chat4: "Project Discussion",
+                    };
+                    chatName.textContent = chatMap[chatId] || "Chat";
+                }
+
+                // Update active state
+                document.querySelectorAll(".thread-item").forEach((item) => {
+                    item.classList.remove("active");
+                });
+                if (chatId !== null) {
+                    event.target.classList.add("active");
+                }
+
+                toggleFlyout();
+            }
+
+            // Make divider draggable
+            const divider = document.querySelector(".divider");
+            const chatPanel = document.querySelector(".chat-panel-container");
+            let isResizing = false;
+
+            divider.addEventListener("mousedown", (e) => {
+                isResizing = true;
+                document.body.style.cursor = "col-resize";
+                document.body.style.userSelect = "none";
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (!isResizing) return;
+                const newWidth = e.clientX;
+                if (newWidth >= 300 && newWidth <= 800) {
+                    chatPanel.style.width = `${newWidth}px`;
+                }
+            });
+
+            document.addEventListener("mouseup", () => {
+                isResizing = false;
+                document.body.style.cursor = "";
+                document.body.style.userSelect = "";
+            });
+        </script>
+    </body>
+</html>
