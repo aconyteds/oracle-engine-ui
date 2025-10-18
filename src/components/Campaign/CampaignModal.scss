@@ -1,0 +1,39 @@
+// Campaign Modal Styles
+.modal {
+    .campaign-name-input {
+        &.is-invalid {
+            border-color: var(--bs-danger);
+        }
+    }
+
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control,
+    .form-select {
+        &:focus {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+        }
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        > div {
+            display: flex;
+            gap: 0.5rem;
+        }
+    }
+}
+
+// Delete confirmation modal
+.modal-body {
+    p {
+        margin-bottom: 0;
+    }
+}

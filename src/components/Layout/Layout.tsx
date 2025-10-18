@@ -1,4 +1,5 @@
 import React from "react";
+import { CampaignModal } from "../Campaign";
 import { ResizablePanel } from "../Common";
 import { HealthCheck } from "../HealthCheck";
 import { ChatPanel } from "./ChatPanel";
@@ -26,6 +27,7 @@ export const Layout: React.FC = () => {
                     <Main />
                 </ResizablePanel>
             </div>
+            <CampaignModal />
         </div>
     );
 };

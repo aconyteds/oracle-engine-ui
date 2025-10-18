@@ -1,8 +1,8 @@
+import { useTheme } from "@hooks";
 import { renderHook, waitFor } from "@testing-library/react";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { ThemeProvider } from "./Theme.context";
-import { useTheme } from "@hooks";
 
 // Mock useLocalStorage
 vi.mock("@hooks", async () => {

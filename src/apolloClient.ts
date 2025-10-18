@@ -10,6 +10,7 @@ import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition, Observable } from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
+import { getCurrentCampaignId } from "./contexts/Campaign.context";
 
 // Environment variables
 const apiUrl = import.meta.env.VITE_API_URL; // HTTP endpoint
@@ -50,12 +51,14 @@ const httpLink = new HttpLink({
     uri: apiUrl,
 });
 
-// Middleware to attach the Authorization header
+// Middleware to attach the Authorization and Campaign headers
 const authLink = setContext((_, { headers }) => {
+    const campaignId = getCurrentCampaignId();
     return {
         headers: {
             ...headers,
             Authorization: authToken ? `Bearer ${authToken}` : null,
+            "x-selected-campaign-id": campaignId || null,
         },
     };
 });
@@ -64,12 +67,17 @@ const authLink = setContext((_, { headers }) => {
 const wsLink = new GraphQLWsLink(
     createClient({
         url: wsUrl,
-        connectionParams: () => ({
-            headers: {
+        connectionParams: () => {
+            const campaignId = getCurrentCampaignId();
+            return {
+                headers: {
+                    Authorization: authToken ? `Bearer ${authToken}` : null,
+                    "x-selected-campaign-id": campaignId || null,
+                },
+                "x-selected-campaign-id": campaignId || null,
                 Authorization: authToken ? `Bearer ${authToken}` : null,
-            },
-            Authorization: authToken ? `Bearer ${authToken}` : null,
-        }),
+            };
+        },
     })
 );
 
