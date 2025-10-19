@@ -22,7 +22,7 @@ const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-type AvailableEvents = "load" | "error";
+type AvailableEvents = "load" | "error" | "waitlist_interest";
 
 export function LogEvent(
     eventName: AvailableEvents,

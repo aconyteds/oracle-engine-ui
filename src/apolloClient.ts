@@ -9,7 +9,7 @@ import {
 import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition, Observable } from "@apollo/client/utilities";
-import { createClient } from "graphql-ws";
+import { Client, createClient } from "graphql-ws";
 import { getCurrentCampaignId } from "./contexts/Campaign.context";
 
 // Environment variables
@@ -18,6 +18,9 @@ const wsUrl = import.meta.env.VITE_WS_URL; // WebSocket endpoint
 
 // Store token dynamically
 let authToken: string | null = null;
+
+// Store WebSocket client for reconnection
+let wsClient: Client | null = null;
 
 export const setAuthToken = (token: string | null) => {
     authToken = token;
@@ -63,11 +66,11 @@ const authLink = setContext((_, { headers }) => {
     };
 });
 
-// WebSocket link for subscriptions
-const wsLink = new GraphQLWsLink(
-    createClient({
+// Create WebSocket client with lazy connectionParams for token refresh
+function createWsClient(): Client {
+    return createClient({
         url: wsUrl,
-        connectionParams: () => {
+        connectionParams: async () => {
             const campaignId = getCurrentCampaignId();
             return {
                 headers: {
@@ -78,26 +81,57 @@ const wsLink = new GraphQLWsLink(
                 Authorization: authToken ? `Bearer ${authToken}` : null,
             };
         },
-    })
-);
+    });
+}
+
+// Initialize WebSocket client
+wsClient = createWsClient();
+
+// WebSocket link for subscriptions
+let wsLink = new GraphQLWsLink(wsClient);
 
 // Use split to direct queries/mutations to HTTP and subscriptions to WebSocket
-const splitLink = split(
-    ({ query }) => {
-        const definition = getMainDefinition(query);
-        return (
-            definition.kind === "OperationDefinition" &&
-            definition.operation === "subscription"
-        );
-    },
-    wsLink,
-    authLink.concat(httpLink) // Use authLink + httpLink for queries/mutations
-);
+function createSplitLink() {
+    return split(
+        ({ query }) => {
+            const definition = getMainDefinition(query);
+            return (
+                definition.kind === "OperationDefinition" &&
+                definition.operation === "subscription"
+            );
+        },
+        wsLink,
+        authLink.concat(httpLink) // Use authLink + httpLink for queries/mutations
+    );
+}
+
+let splitLink = createSplitLink();
 
 // Apollo Client
 const client = new ApolloClient({
     link: from([waitForTokenLink, splitLink]),
     cache: new InMemoryCache(),
 });
+
+/**
+ * Restarts the WebSocket client with a fresh token
+ * Called when the auth token is refreshed to re-establish subscriptions
+ */
+export function restartWsClient(): void {
+    if (wsClient) {
+        // Dispose of the old client (closes connection)
+        wsClient.dispose();
+    }
+
+    // Create new WebSocket client and link
+    wsClient = createWsClient();
+    wsLink = new GraphQLWsLink(wsClient);
+
+    // Recreate split link with new wsLink
+    splitLink = createSplitLink();
+
+    // Update Apollo Client's link
+    client.setLink(from([waitForTokenLink, splitLink]));
+}
 
 export default client;

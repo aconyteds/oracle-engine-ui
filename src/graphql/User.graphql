@@ -6,5 +6,6 @@ query CurrentUser {
         lastSelectedCampaign {
             id
         }
+        isActive
     }
 }

@@ -11,7 +11,7 @@ import { CampaignRequirement } from "./components/Campaign";
 import { LogEvent } from "./components/firebase";
 import { Layout } from "./components/Layout";
 import { Login } from "./components/Login";
-import { ProtectedRoute } from "./components/Router";
+import { ActiveUserRequirement, ProtectedRoute } from "./components/Router";
 
 const App: React.FC = () => {
     LogEvent("load");
@@ -28,11 +28,13 @@ const App: React.FC = () => {
                                     path="/"
                                     element={
                                         <ProtectedRoute>
-                                            <CampaignRequirement>
-                                                <ThreadsProvider>
-                                                    <Layout />
-                                                </ThreadsProvider>
-                                            </CampaignRequirement>
+                                            <ActiveUserRequirement>
+                                                <CampaignRequirement>
+                                                    <ThreadsProvider>
+                                                        <Layout />
+                                                    </ThreadsProvider>
+                                                </CampaignRequirement>
+                                            </ActiveUserRequirement>
                                         </ProtectedRoute>
                                     }
                                 />

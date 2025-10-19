@@ -172,35 +172,36 @@ export const CampaignProvider: React.FC<CampaignProviderProps> = ({
         setModalCampaign(null);
     }, []);
 
-    const refreshCampaigns =
-        useCallback(async (): Promise<RelevantCampaignDetailsFragment[]> => {
-            try {
-                const { data } = await refetchCampaigns();
-                if (data?.campaigns) {
-                    const campaigns =
-                        data.campaigns as RelevantCampaignDetailsFragment[];
-                    setCampaignList(campaigns);
-                    // If current campaign was updated, refresh it
-                    if (selectedCampaign) {
-                        const updated = campaigns.find(
-                            (c) => c.id === selectedCampaign.id
-                        );
-                        if (updated) {
-                            setSelectedCampaign(updated);
-                        }
+    const refreshCampaigns = useCallback(async (): Promise<
+        RelevantCampaignDetailsFragment[]
+    > => {
+        try {
+            const { data } = await refetchCampaigns();
+            if (data?.campaigns) {
+                const campaigns =
+                    data.campaigns as RelevantCampaignDetailsFragment[];
+                setCampaignList(campaigns);
+                // If current campaign was updated, refresh it
+                if (selectedCampaign) {
+                    const updated = campaigns.find(
+                        (c) => c.id === selectedCampaign.id
+                    );
+                    if (updated) {
+                        setSelectedCampaign(updated);
                     }
-                    return campaigns;
                 }
-                return [];
-            } catch (_error) {
-                toast.danger({
-                    title: "Error Refreshing Campaigns",
-                    message: "Failed to refresh campaign list.",
-                    duration: 5000,
-                });
-                return [];
+                return campaigns;
             }
-        }, [refetchCampaigns, selectedCampaign, toast]);
+            return [];
+        } catch (_error) {
+            toast.danger({
+                title: "Error Refreshing Campaigns",
+                message: "Failed to refresh campaign list.",
+                duration: 5000,
+            });
+            return [];
+        }
+    }, [refetchCampaigns, selectedCampaign, toast]);
 
     const campaignContextPayload = useMemo<CampaignContextPayload>(
         () => ({

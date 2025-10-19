@@ -23,6 +23,9 @@ export const ChatHistoryMenu: React.FC = () => {
 
     const showNewChatButton =
         selectedThread !== null || threadList.length === 0;
+    if (threadList.length === 0) {
+        return null;
+    }
     return (
         <Dropdown>
             <Dropdown.Toggle
@@ -38,15 +41,19 @@ export const ChatHistoryMenu: React.FC = () => {
             </Dropdown.Toggle>
 
             <Dropdown.Menu className="chat-history-dropdown" align="end">
-                <Dropdown.Header>Chat History</Dropdown.Header>
                 {selectedThread && (
                     <>
                         <Dropdown.Header className="text-primary">
                             {selectedThread.title}
                         </Dropdown.Header>
+                        <Dropdown.Divider />
                     </>
                 )}
-                <Dropdown.Divider />
+
+                {(!selectedThread && threadList.length > 0) ||
+                (selectedThread && threadList.length > 1) ? (
+                    <Dropdown.Header>Chat History</Dropdown.Header>
+                ) : null}
                 <div className="thread-list">
                     {threadList.map((thread) => {
                         if (selectedThread?.id === thread.id) {

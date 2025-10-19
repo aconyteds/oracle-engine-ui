@@ -1,26 +1,41 @@
-import { useTheme } from "@hooks";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import React from "react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    Mock,
+    test,
+    vi,
+} from "vitest";
+
+// Mock useLocalStorage from the storage module
+vi.mock("../hooks/useStorage", () => ({
+    useLocalStorage: vi.fn(),
+    useSessionStorage: vi.fn(),
+}));
+
+import { useLocalStorage } from "../hooks/useStorage";
+import { useTheme } from "../hooks/useTheme";
 import { ThemeProvider } from "./Theme.context";
 
-// Mock useLocalStorage
-vi.mock("@hooks", async () => {
-    const actual = await vi.importActual("@hooks");
-    return {
-        ...actual,
-        useLocalStorage: vi.fn(),
-    };
-});
+// Get reference to the mocked function
+const mockUseLocalStorage = vi.mocked(useLocalStorage);
 
 describe("ThemeProvider", () => {
-    let mockSetMode: ReturnType<typeof vi.fn>;
     let mockMatchMedia: ReturnType<typeof vi.fn>;
     let mockAddEventListener: ReturnType<typeof vi.fn>;
     let mockRemoveEventListener: ReturnType<typeof vi.fn>;
+    let mockSetMode: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
+        // Create a fresh setMode mock for each test
         mockSetMode = vi.fn();
+        mockUseLocalStorage.mockClear();
+        // Set default implementation for tests that don't override it
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         mockAddEventListener = vi.fn();
         mockRemoveEventListener = vi.fn();
 
@@ -41,10 +56,6 @@ describe("ThemeProvider", () => {
             value: mockMatchMedia,
         });
 
-        // Mock useLocalStorage to return mode state
-        const { useLocalStorage } = await import("@hooks");
-        vi.mocked(useLocalStorage).mockReturnValue(["system", mockSetMode]);
-
         // Clear document attributes
         document.documentElement.removeAttribute("data-bs-theme");
         document.body.className = "";
@@ -55,6 +66,8 @@ describe("ThemeProvider", () => {
     });
 
     test("should initialize with system theme mode", () => {
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
         );
@@ -66,6 +79,8 @@ describe("ThemeProvider", () => {
     });
 
     test("should detect dark system theme", () => {
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         mockMatchMedia.mockReturnValue({
             matches: true,
             media: "(prefers-color-scheme: dark)",
@@ -86,9 +101,8 @@ describe("ThemeProvider", () => {
         expect(result.current.theme).toBe("dark");
     });
 
-    test("should apply light mode when explicitly set", async () => {
-        const { useLocalStorage } = await import("@hooks");
-        vi.mocked(useLocalStorage).mockReturnValue(["light", mockSetMode]);
+    test("should apply light mode when explicitly set", () => {
+        mockUseLocalStorage.mockImplementation(() => ["light", mockSetMode]);
 
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
@@ -100,9 +114,8 @@ describe("ThemeProvider", () => {
         expect(result.current.theme).toBe("light");
     });
 
-    test("should apply dark mode when explicitly set", async () => {
-        const { useLocalStorage } = await import("@hooks");
-        vi.mocked(useLocalStorage).mockReturnValue(["dark", mockSetMode]);
+    test("should apply dark mode when explicitly set", () => {
+        mockUseLocalStorage.mockImplementation(() => ["dark", mockSetMode]);
 
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
@@ -115,8 +128,7 @@ describe("ThemeProvider", () => {
     });
 
     test("should set document attributes based on theme", async () => {
-        const { useLocalStorage } = await import("@hooks");
-        vi.mocked(useLocalStorage).mockReturnValue(["dark", mockSetMode]);
+        mockUseLocalStorage.mockImplementation(() => ["dark", mockSetMode]);
 
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
@@ -133,8 +145,7 @@ describe("ThemeProvider", () => {
     });
 
     test("should set light theme document attributes", async () => {
-        const { useLocalStorage } = await import("@hooks");
-        vi.mocked(useLocalStorage).mockReturnValue(["light", mockSetMode]);
+        mockUseLocalStorage.mockImplementation(() => ["light", mockSetMode]);
 
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
@@ -151,6 +162,8 @@ describe("ThemeProvider", () => {
     });
 
     test("should register system theme change listener", () => {
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
         );
@@ -167,6 +180,8 @@ describe("ThemeProvider", () => {
     });
 
     test("should cleanup event listener on unmount", () => {
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
         );
@@ -182,6 +197,8 @@ describe("ThemeProvider", () => {
     });
 
     test("should provide setMode function", () => {
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
         );
@@ -193,18 +210,24 @@ describe("ThemeProvider", () => {
     });
 
     test("should call setMode when changing theme mode", () => {
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
         );
 
         const { result } = renderHook(() => useTheme(), { wrapper });
 
-        result.current.setMode("dark");
+        act(() => {
+            result.current.setMode("dark");
+        });
 
         expect(mockSetMode).toHaveBeenCalledWith("dark");
     });
 
     test("should provide toggleTheme function", () => {
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
         );
@@ -215,7 +238,9 @@ describe("ThemeProvider", () => {
         expect(typeof result.current.toggleTheme).toBe("function");
     });
 
-    test("should toggle from system mode to opposite of current system theme", async () => {
+    test("should toggle from system mode to opposite of current system theme", () => {
+        mockUseLocalStorage.mockImplementation(() => ["system", mockSetMode]);
+
         // System theme is light (matches: false)
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
@@ -223,15 +248,16 @@ describe("ThemeProvider", () => {
 
         const { result } = renderHook(() => useTheme(), { wrapper });
 
-        result.current.toggleTheme();
+        act(() => {
+            result.current.toggleTheme();
+        });
 
         // System is light, so toggle should set to dark
         expect(mockSetMode).toHaveBeenCalledWith("dark");
     });
 
-    test("should toggle from dark to light mode", async () => {
-        const { useLocalStorage } = await import("@hooks");
-        vi.mocked(useLocalStorage).mockReturnValue(["dark", mockSetMode]);
+    test("should toggle from dark to light mode", () => {
+        mockUseLocalStorage.mockImplementation(() => ["dark", mockSetMode]);
 
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
@@ -239,14 +265,15 @@ describe("ThemeProvider", () => {
 
         const { result } = renderHook(() => useTheme(), { wrapper });
 
-        result.current.toggleTheme();
+        act(() => {
+            result.current.toggleTheme();
+        });
 
         expect(mockSetMode).toHaveBeenCalledWith("light");
     });
 
-    test("should toggle from light to dark mode", async () => {
-        const { useLocalStorage } = await import("@hooks");
-        vi.mocked(useLocalStorage).mockReturnValue(["light", mockSetMode]);
+    test("should toggle from light to dark mode", () => {
+        mockUseLocalStorage.mockImplementation(() => ["light", mockSetMode]);
 
         const wrapper = ({ children }: { children: React.ReactNode }) => (
             <ThemeProvider>{children}</ThemeProvider>
@@ -254,7 +281,9 @@ describe("ThemeProvider", () => {
 
         const { result } = renderHook(() => useTheme(), { wrapper });
 
-        result.current.toggleTheme();
+        act(() => {
+            result.current.toggleTheme();
+        });
 
         expect(mockSetMode).toHaveBeenCalledWith("dark");
     });

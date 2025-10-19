@@ -50,7 +50,6 @@ export const CampaignSelector: React.FC = () => {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu className="campaign-dropdown-menu">
-                    <Dropdown.Header>Campaigns</Dropdown.Header>
                     {selectedCampaign && (
                         <>
                             <Dropdown.Header className="text-primary">
@@ -65,7 +64,10 @@ export const CampaignSelector: React.FC = () => {
                             </Dropdown.Item>
                         </>
                     )}
-                    {campaignList.length > 0 && <Dropdown.Divider />}
+                    <Dropdown.Divider />
+                    {campaignList.length > 1 && (
+                        <Dropdown.Header>Campaigns</Dropdown.Header>
+                    )}
                     <div className="campaign-list">
                         {campaignList.map((campaign) => {
                             if (campaign.id === selectedCampaign?.id)
