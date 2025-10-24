@@ -1,7 +1,6 @@
 query AllMyCampaigns {
     campaigns {
-        id
-        name
+        ...RelevantCampaignDetails
     }
 }
 

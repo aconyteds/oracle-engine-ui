@@ -53,7 +53,12 @@ export const CampaignSelector: React.FC = () => {
                     {selectedCampaign && (
                         <>
                             <Dropdown.Header className="text-primary">
-                                {selectedCampaign.name}
+                                <h4>{selectedCampaign.name}</h4>
+                                {selectedCampaign.ruleset && (
+                                    <div className="campaign-ruleset text-muted">
+                                        {selectedCampaign.ruleset}
+                                    </div>
+                                )}
                             </Dropdown.Header>
                             <Dropdown.Item onClick={handleEditCampaign}>
                                 <FontAwesomeIcon

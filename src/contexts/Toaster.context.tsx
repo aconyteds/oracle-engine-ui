@@ -100,8 +100,10 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
                     <Toast
                         key={toast.id}
                         bg={toast.type}
-                        onClose={() =>
-                            toast.closable !== false && removeItem(toast.id)
+                        onClose={
+                            toast.closable
+                                ? () => removeItem(toast.id)
+                                : undefined
                         }
                         delay={toast.duration || 5000}
                         autohide={toast.closable !== false}

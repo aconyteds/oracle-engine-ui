@@ -107,7 +107,7 @@ export const CampaignProvider: React.FC<CampaignProviderProps> = ({
 
         if (!campaignToSelect && userData?.currentUser?.lastSelectedCampaign) {
             campaignToSelect = campaignList.find(
-                (c) => c.id === userData.currentUser.lastSelectedCampaign?.id
+                (c) => c.id === userData.currentUser?.lastSelectedCampaign?.id
             );
         }
 

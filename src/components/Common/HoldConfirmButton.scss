@@ -1,0 +1,39 @@
+// HoldConfirmButton styles
+.hold-confirm-button {
+    position: relative;
+    overflow: hidden;
+    // Ensure button content stays above progress bar
+    isolation: isolate;
+
+    .hold-confirm-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 0;
+        // Background color is set dynamically via inline styles
+        pointer-events: none;
+        z-index: 0;
+        // No transition during hold - width is controlled by requestAnimationFrame
+        // Transition only applies when width changes via state (reset to 0)
+        transition: width 0.2s ease-out;
+    }
+
+    .hold-confirm-content {
+        position: relative;
+        z-index: 1;
+        // Ensure content stays readable during progress
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    // Ensure proper border-radius is maintained for progress bar
+    &.btn-lg .hold-confirm-progress {
+        border-radius: inherit;
+    }
+
+    &.btn-sm .hold-confirm-progress {
+        border-radius: inherit;
+    }
+}

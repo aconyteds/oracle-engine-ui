@@ -426,12 +426,6 @@ select.form-control {
             display: flex;
             align-items: center;
             justify-content: center;
-
-            &::before {
-                position: static;
-                top: auto;
-                right: auto;
-            }
         }
     }
 }
@@ -483,12 +477,14 @@ pre {
 }
 
 .btn-close {
+    position: relative;
     background-image: none;
 
     &::before {
         position: absolute;
-        top: 0.8rem;
-        right: 1rem;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         content: "X";
     }
 }

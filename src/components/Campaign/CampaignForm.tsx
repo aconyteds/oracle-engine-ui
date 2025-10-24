@@ -11,6 +11,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useToaster } from "../../contexts/Toaster.context";
+import { HoldConfirmButton } from "../Common";
 
 // Hardcoded ruleset options
 export const RULESET_OPTIONS = [
@@ -27,9 +28,7 @@ export const RULESET_OPTIONS = [
 type CampaignFormProps = {
     campaign?: RelevantCampaignDetailsFragment | null;
     onSuccess: (campaign: RelevantCampaignDetailsFragment) => void;
-    onCancel?: () => void;
     onDelete?: () => void;
-    showCancel?: boolean;
     showDelete?: boolean;
     submitButtonText?: string;
     submitButtonClassName?: string;
@@ -38,9 +37,7 @@ type CampaignFormProps = {
 export const CampaignForm: React.FC<CampaignFormProps> = ({
     campaign,
     onSuccess,
-    onCancel,
     onDelete,
-    showCancel = false,
     showDelete = false,
     submitButtonText,
     submitButtonClassName = "w-100",
@@ -56,7 +53,6 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
     });
     const [debouncedName, setDebouncedName] = useState("");
     const [nameError, setNameError] = useState<string | null>(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const [createCampaign, { loading: creating }] = useCreateCampaignMutation();
     const [updateCampaign, { loading: updating }] = useUpdateCampaignMutation();
@@ -110,7 +106,6 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
             });
         }
         setNameError(null);
-        setShowDeleteConfirm(false);
     }, [campaign]);
 
     const handleInputChange = (
@@ -143,9 +138,9 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
                             input: {
                                 campaignId: campaign.id,
                                 name: formData.name.trim(),
-                                setting: formData.setting.trim() || null,
-                                tone: formData.tone.trim() || null,
-                                ruleset: formData.ruleset || null,
+                                setting: formData.setting.trim() ?? null,
+                                tone: formData.tone.trim() ?? null,
+                                ruleset: formData.ruleset ?? null,
                             },
                         },
                     });
@@ -176,7 +171,7 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
                         toast.success({
                             title: "Campaign Created",
                             message: `"${formData.name}" has been created successfully.`,
-                            duration: 3000,
+                            duration: 0,
                         });
                         onSuccess(newCampaign);
                     }
@@ -201,10 +196,6 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
         ]
     );
 
-    const handleDeleteClick = useCallback(() => {
-        setShowDeleteConfirm(true);
-    }, []);
-
     const handleDeleteConfirm = useCallback(async () => {
         if (!campaign) return;
 
@@ -219,7 +210,7 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
                 toast.success({
                     title: "Campaign Deleted",
                     message: `"${campaign.name}" has been deleted.`,
-                    duration: 3000,
+                    duration: 5000,
                 });
                 if (onDelete) {
                     onDelete();
@@ -234,42 +225,9 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
         }
     }, [campaign, deleteCampaign, toast, onDelete]);
 
-    const handleDeleteCancel = useCallback(() => {
-        setShowDeleteConfirm(false);
-    }, []);
-
     const isLoading = creating || updating || deleting;
     const canSubmit =
         formData.name.trim() && !isLoading && !nameExists && !validating;
-
-    // If showing delete confirmation, render that instead
-    if (showDeleteConfirm) {
-        return (
-            <div className="text-center">
-                <h5>Confirm Delete</h5>
-                <p className="mb-4">
-                    Are you sure you want to delete "{campaign?.name}"? This
-                    action cannot be undone.
-                </p>
-                <div className="d-flex gap-2 justify-content-center">
-                    <Button
-                        variant="secondary"
-                        onClick={handleDeleteCancel}
-                        disabled={deleting}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="danger"
-                        onClick={handleDeleteConfirm}
-                        disabled={deleting}
-                    >
-                        {deleting ? "Deleting..." : "Delete Campaign"}
-                    </Button>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <Form onSubmit={handleSubmit}>
@@ -299,7 +257,8 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
             <Form.Group className="mb-3" controlId="campaignSetting">
                 <Form.Label>Setting</Form.Label>
                 <Form.Control
-                    type="text"
+                    as="textarea"
+                    rows={3}
                     name="setting"
                     value={formData.setting}
                     onChange={handleInputChange}
@@ -311,7 +270,8 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
             <Form.Group className="mb-3" controlId="campaignTone">
                 <Form.Label>Tone</Form.Label>
                 <Form.Control
-                    type="text"
+                    as="textarea"
+                    rows={2}
                     name="tone"
                     value={formData.tone}
                     onChange={handleInputChange}
@@ -339,27 +299,19 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
 
             <div className="d-flex justify-content-between align-items-center gap-2">
                 {showDelete && isEditMode && (
-                    <Button
+                    <HoldConfirmButton
                         variant="danger"
-                        onClick={handleDeleteClick}
+                        onConfirm={handleDeleteConfirm}
                         disabled={isLoading}
+                        holdDuration={1500}
                     >
                         <FontAwesomeIcon icon={faTrash} className="me-2" />
                         Delete
-                    </Button>
+                    </HoldConfirmButton>
                 )}
                 {!showDelete && <div />}
 
                 <div className="d-flex gap-2">
-                    {showCancel && (
-                        <Button
-                            variant="secondary"
-                            onClick={onCancel}
-                            disabled={isLoading}
-                        >
-                            Cancel
-                        </Button>
-                    )}
                     <Button
                         variant="primary"
                         type="submit"

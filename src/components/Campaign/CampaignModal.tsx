@@ -1,5 +1,8 @@
 import { useCampaignContext } from "@context";
-import type { RelevantCampaignDetailsFragment } from "@graphql";
+import {
+    type RelevantCampaignDetailsFragment,
+    useGetCampaignByIdQuery,
+} from "@graphql";
 import React, { useCallback } from "react";
 import { Modal } from "react-bootstrap";
 import { CampaignForm } from "./CampaignForm";
@@ -14,7 +17,13 @@ export const CampaignModal: React.FC = () => {
         selectCampaign,
     } = useCampaignContext();
 
+    const { data } = useGetCampaignByIdQuery({
+        variables: { input: { campaignId: modalCampaign?.id || "" } },
+        skip: !modalCampaign?.id,
+    });
+
     const isEditMode = !!modalCampaign;
+    const campaignToEdit = data?.getCampaign?.campaign || modalCampaign;
 
     const handleSuccess = useCallback(
         async (campaign: RelevantCampaignDetailsFragment) => {
@@ -47,11 +56,9 @@ export const CampaignModal: React.FC = () => {
             </Modal.Header>
             <Modal.Body>
                 <CampaignForm
-                    campaign={modalCampaign}
+                    campaign={campaignToEdit}
                     onSuccess={handleSuccess}
-                    onCancel={closeCampaignModal}
                     onDelete={handleDelete}
-                    showCancel
                     showDelete
                 />
             </Modal.Body>

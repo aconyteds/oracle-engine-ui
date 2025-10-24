@@ -140,6 +140,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     );
 
     // Initial load - only run once on mount
+    // biome-ignore lint/correctness/useExhaustiveDependencies: This effect should only run once on mount to initialize thread state
     useEffect(() => {
         let mounted = true;
 
@@ -171,8 +172,6 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
         return () => {
             mounted = false;
         };
-        // Only run once on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Fetches the messages for the currently selected thread
