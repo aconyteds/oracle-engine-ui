@@ -15,6 +15,7 @@ export const Layout: React.FC = () => {
             </div>
             <div className="content-container">
                 <ResizablePanel
+                    id="layout-chat-panel"
                     leftPanel={
                         <div className="chat-panel-container">
                             <ChatPanel />
