@@ -21,11 +21,15 @@ export const ChatHistoryMenu: React.FC = () => {
         selectThread(threadId);
     };
 
-    const showNewChatButton =
-        selectedThread !== null || threadList.length === 0;
     if (threadList.length === 0) {
         return null;
     }
+
+    const showNewChatButton =
+        selectedThread !== null || threadList.length === 0;
+    const chatHistory = threadList.filter(
+        (thread) => !selectedThread || thread.id !== selectedThread.id
+    );
     return (
         <Dropdown>
             <Dropdown.Toggle
@@ -50,12 +54,11 @@ export const ChatHistoryMenu: React.FC = () => {
                     </>
                 )}
 
-                {(!selectedThread && threadList.length > 0) ||
-                (selectedThread && threadList.length > 1) ? (
+                {chatHistory.length > 0 ? (
                     <Dropdown.Header>Chat History</Dropdown.Header>
                 ) : null}
                 <div className="thread-list">
-                    {threadList.map((thread) => {
+                    {chatHistory.map((thread) => {
                         if (selectedThread?.id === thread.id) {
                             return null;
                         }

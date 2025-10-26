@@ -231,6 +231,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     }, [getMyThreads, clearThreads, setThreadList, toast]);
 
     // Refresh threads when campaign changes
+    // biome-ignore lint/correctness/useExhaustiveDependencies: This effect should only run when selectedCampaign.id changes
     useEffect(() => {
         const campaignId = selectedCampaign?.id;
         if (!campaignId) {
@@ -240,7 +241,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
         setSelectedThread(null);
         setStoredThreadId(null);
         refreshThreads();
-    }, [selectedCampaign?.id, setStoredThreadId, clearThreads, refreshThreads]);
+    }, [selectedCampaign?.id, setStoredThreadId, clearThreads]);
 
     const sendMessage = useCallback(
         async (content: string) => {

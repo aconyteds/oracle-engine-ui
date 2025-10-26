@@ -138,8 +138,8 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
                             input: {
                                 campaignId: campaign.id,
                                 name: formData.name.trim(),
-                                setting: formData.setting.trim() ?? null,
-                                tone: formData.tone.trim() ?? null,
+                                setting: formData.setting.trim(),
+                                tone: formData.tone.trim(),
                                 ruleset: formData.ruleset ?? null,
                             },
                         },
