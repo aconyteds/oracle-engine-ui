@@ -25,6 +25,7 @@
         "@fortawesome/free-solid-svg-icons": "^6.7.2",
         "@fortawesome/react-fontawesome": "^0.2.2",
         "@popperjs/core": "^2.11.8",
+        "@preact/signals-react": "^3.3.1",
         "@types/react-syntax-highlighter": "^15.5.13",
         "bootstrap": "^5.3.5",
         "firebase": "^10.14.1",

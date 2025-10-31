@@ -26,6 +26,7 @@
             "@graphql": ["./src/graphql/generated.ts"],
             "@hooks": ["./src/hooks/index.tsx"],
             "@context": ["./src/contexts/index.tsx"],
+            "@signals": ["./src/signals/index.ts"],
             "@/*": ["./src/*"]
         }
     },

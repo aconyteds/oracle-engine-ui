@@ -1,0 +1,54 @@
+// DraggableModal uses Bootstrap modal classes with custom positioning
+.draggable-modal-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 400px;
+    max-height: 80%;
+
+    .modal-content {
+        display: flex;
+        flex-direction: column;
+        max-height: inherit;
+        height: 100%;
+        position: relative;
+    }
+
+    // Resize handle in bottom-right corner
+    .resize-handle {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 20px;
+        height: 20px;
+        cursor: nwse-resize;
+        z-index: 10;
+
+        // Visual indicator
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 0 12px 12px;
+            border-color: transparent transparent var(--bs-border-color)
+                transparent;
+        }
+    }
+
+    .modal-header {
+        user-select: none;
+
+        &.dragging {
+            cursor: move !important;
+        }
+    }
+
+    .modal-body {
+        overflow-y: auto;
+        flex: 1;
+    }
+}
