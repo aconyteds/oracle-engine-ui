@@ -6,8 +6,9 @@ describe("DraggableModal Component", () => {
     const mockOnClose = vi.fn();
 
     const defaultProps: DraggableModalProps = {
-        assetType: "NPC",
+        title: "Test Modal",
         onClose: mockOnClose,
+        children: <div>Test Content</div>,
     };
 
     beforeEach(() => {
@@ -23,82 +24,45 @@ describe("DraggableModal Component", () => {
         expect(screen.getByTestId("draggable-modal")).toBeInTheDocument();
     });
 
-    test("should display default title for NPC without ID", () => {
-        render(<DraggableModal {...defaultProps} />);
-        expect(screen.getByText("NPC")).toBeInTheDocument();
-    });
-
-    test("should display title with ID when provided", () => {
-        render(<DraggableModal {...defaultProps} id="Bonesaw" />);
-        expect(screen.getByText("NPC: Bonesaw")).toBeInTheDocument();
-    });
-
-    test("should display custom title when provided", () => {
+    test("should display provided title", () => {
         render(<DraggableModal {...defaultProps} title="Custom Title" />);
         expect(screen.getByText("Custom Title")).toBeInTheDocument();
     });
 
+    test("should render children content", () => {
+        render(
+            <DraggableModal
+                {...defaultProps}
+                title="Test"
+                children={<div>Custom Child Content</div>}
+            />
+        );
+        expect(screen.getByText("Custom Child Content")).toBeInTheDocument();
+    });
+
     test("should call onClose when close button is clicked", () => {
         render(<DraggableModal {...defaultProps} />);
-        const closeButton = screen.getByTestId("draggable-modal-close");
+        const closeButton = screen.getByLabelText("Close");
         fireEvent.click(closeButton);
         expect(mockOnClose).toHaveBeenCalledTimes(1);
-    });
-
-    test("should render NPC content sections", () => {
-        render(<DraggableModal {...defaultProps} assetType="NPC" />);
-        expect(screen.getByText("Physical Description")).toBeInTheDocument();
-        expect(screen.getByText("Motivation")).toBeInTheDocument();
-        expect(screen.getByText("Mannerisms")).toBeInTheDocument();
-        expect(screen.getByText("DM Notes")).toBeInTheDocument();
-        expect(screen.getByText("Shared with Players")).toBeInTheDocument();
-    });
-
-    test("should render Location content sections", () => {
-        render(<DraggableModal {...defaultProps} assetType="Location" />);
-        expect(
-            screen.getByText("Description (Player-facing)")
-        ).toBeInTheDocument();
-        expect(screen.getByText("Current Condition")).toBeInTheDocument();
-        expect(screen.getByText("Points Of Interest")).toBeInTheDocument();
-        expect(screen.getByText("Characters")).toBeInTheDocument();
-        expect(screen.getByText("DM Notes")).toBeInTheDocument();
-        expect(screen.getByText("Shared with Players")).toBeInTheDocument();
-    });
-
-    test("should render POI content sections", () => {
-        render(<DraggableModal {...defaultProps} assetType="POI" />);
-        expect(screen.getByText("Description")).toBeInTheDocument();
-        expect(screen.getByText("Current Condition")).toBeInTheDocument();
-        expect(screen.getByText("Points Of Interest")).toBeInTheDocument();
-        expect(screen.getByText("Characters")).toBeInTheDocument();
-        expect(screen.getByText("DM Notes")).toBeInTheDocument();
-        expect(screen.getByText("Shared with Players")).toBeInTheDocument();
-    });
-
-    test("should render PLOT content sections", () => {
-        render(<DraggableModal {...defaultProps} assetType="PLOT" />);
-        expect(screen.getByText("Summary")).toBeInTheDocument();
-        expect(screen.getByText("Status")).toBeInTheDocument();
-        expect(screen.getByText("Urgency")).toBeInTheDocument();
-        expect(screen.getByText("Related")).toBeInTheDocument();
-        expect(screen.getByText("Progress")).toBeInTheDocument();
-        expect(screen.getByText("Notes")).toBeInTheDocument();
-        expect(screen.getByText("Shared with Players")).toBeInTheDocument();
     });
 
     test("should position modal at initial coordinates", () => {
         render(
             <DraggableModal {...defaultProps} initialX={200} initialY={150} />
         );
-        const modal = screen.getByTestId("draggable-modal");
-        expect(modal).toHaveStyle({ left: "200px", top: "150px" });
+        const wrapper = document.querySelector(".draggable-modal-wrapper");
+        expect(wrapper).toHaveStyle({
+            transform: "translate(200px, 150px)",
+        });
     });
 
     test("should use default position when not specified", () => {
         render(<DraggableModal {...defaultProps} />);
-        const modal = screen.getByTestId("draggable-modal");
-        expect(modal).toHaveStyle({ left: "100px", top: "100px" });
+        const wrapper = document.querySelector(".draggable-modal-wrapper");
+        expect(wrapper).toHaveStyle({
+            transform: "translate(100px, 100px)",
+        });
     });
 
     test("should start drag on mousedown on header", () => {
@@ -153,21 +117,25 @@ describe("DraggableModal Component", () => {
         expect(header).toBeInTheDocument();
     });
 
-    test("should display POI prefix in title", () => {
-        render(
-            <DraggableModal
-                {...defaultProps}
-                assetType="POI"
-                id="Main Cage Arena"
-            />
-        );
-        expect(screen.getByText("POI: Main Cage Arena")).toBeInTheDocument();
-    });
-
     test("should have draggable modal body with scrolling", () => {
         render(<DraggableModal {...defaultProps} />);
         const body = screen.getByTestId("draggable-modal-body");
         expect(body).toBeInTheDocument();
-        expect(body).toHaveClass("draggable-modal-body");
+        expect(body).toHaveClass("modal-body");
+    });
+
+    test("should render resize handle", () => {
+        render(<DraggableModal {...defaultProps} />);
+        const resizeHandle = screen.getByTestId("resize-handle");
+        expect(resizeHandle).toBeInTheDocument();
+    });
+
+    test("should start resize on mousedown on resize handle", () => {
+        render(<DraggableModal {...defaultProps} />);
+        const resizeHandle = screen.getByTestId("resize-handle");
+
+        fireEvent.mouseDown(resizeHandle, { clientX: 500, clientY: 400 });
+
+        expect(resizeHandle).toBeInTheDocument();
     });
 });

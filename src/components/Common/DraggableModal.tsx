@@ -1,40 +1,61 @@
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useModalZIndex } from "@signals";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./DraggableModal.scss";
 
-export type AssetType = "NPC" | "Location" | "POI" | "PLOT";
-
 export type DraggableModalProps = {
-    assetType: AssetType;
-    id?: string;
     onClose: () => void;
-    title?: string;
+    title: string;
+    children: React.ReactNode;
+    footer?: React.ReactNode;
     initialX?: number;
     initialY?: number;
+    modalId?: string; // Unique identifier for z-index management
 };
 
 export const DraggableModal: React.FC<DraggableModalProps> = ({
-    assetType,
-    id,
     onClose,
     title,
+    children,
+    footer,
     initialX = 100,
     initialY = 100,
+    modalId,
 }) => {
     const [position, setPosition] = useState({ x: initialX, y: initialY });
+    const [size, setSize] = useState({ width: 500, height: 0 }); // height 0 = auto
     const [isDragging, setIsDragging] = useState(false);
+    const [isResizing, setIsResizing] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [resizeStart, setResizeStart] = useState({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+    });
     const modalRef = useRef<HTMLDivElement>(null);
 
-    const getTitle = () => {
-        if (title) return title;
-        const prefix = assetType === "POI" ? "POI" : assetType;
-        return id ? `${prefix}: ${id}` : prefix;
-    };
+    // Generate a unique modal ID if not provided
+    const uniqueModalId = modalId || `modal-${title}-${new Date().getTime()}`;
+    const { zIndex, bringToFront } = useModalZIndex(uniqueModalId);
+
+    const handleModalClick = useCallback(() => {
+        // Bring this modal to front when clicked
+        bringToFront();
+    }, [bringToFront]);
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
+            // Bring to front when starting to drag
+            bringToFront();
+
+            // Prevent dragging when clicking close button or other interactive elements
+            if (
+                e.target instanceof HTMLElement &&
+                (e.target.closest("button") || e.target.closest(".btn-close"))
+            ) {
+                return;
+            }
+
             if (!modalRef.current) return;
 
             const rect = modalRef.current.getBoundingClientRect();
@@ -44,7 +65,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
             });
             setIsDragging(true);
         },
-        []
+        [bringToFront]
     );
 
     const handleMouseMove = useCallback(
@@ -77,7 +98,43 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
+        setIsResizing(false);
     }, []);
+
+    // Resize handlers
+    const handleResizeStart = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            e.stopPropagation(); // Prevent drag from starting
+            bringToFront();
+
+            if (!modalRef.current) return;
+
+            const rect = modalRef.current.getBoundingClientRect();
+            setResizeStart({
+                x: e.clientX,
+                y: e.clientY,
+                width: rect.width,
+                height: rect.height,
+            });
+            setIsResizing(true);
+        },
+        [bringToFront]
+    );
+
+    const handleResizeMove = useCallback(
+        (e: MouseEvent) => {
+            if (!isResizing || !modalRef.current) return;
+
+            const deltaX = e.clientX - resizeStart.x;
+            const deltaY = e.clientY - resizeStart.y;
+
+            const newWidth = Math.max(400, resizeStart.width + deltaX);
+            const newHeight = Math.max(200, resizeStart.height + deltaY);
+
+            setSize({ width: newWidth, height: newHeight });
+        },
+        [isResizing, resizeStart]
+    );
 
     useEffect(() => {
         if (isDragging) {
@@ -85,8 +142,14 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
             document.addEventListener("mouseup", handleMouseUp);
             document.body.style.cursor = "move";
             document.body.style.userSelect = "none";
+        } else if (isResizing) {
+            document.addEventListener("mousemove", handleResizeMove);
+            document.addEventListener("mouseup", handleMouseUp);
+            document.body.style.cursor = "nwse-resize";
+            document.body.style.userSelect = "none";
         } else {
             document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mousemove", handleResizeMove);
             document.removeEventListener("mouseup", handleMouseUp);
             document.body.style.cursor = "";
             document.body.style.userSelect = "";
@@ -94,216 +157,72 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
 
         return () => {
             document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mousemove", handleResizeMove);
             document.removeEventListener("mouseup", handleMouseUp);
             document.body.style.cursor = "";
             document.body.style.userSelect = "";
         };
-    }, [isDragging, handleMouseMove, handleMouseUp]);
+    }, [
+        isDragging,
+        isResizing,
+        handleMouseMove,
+        handleResizeMove,
+        handleMouseUp,
+    ]);
 
     return (
         <div
             ref={modalRef}
-            className="draggable-modal"
+            className="draggable-modal-wrapper modal show d-flex"
             style={{
-                left: `${position.x}px`,
-                top: `${position.y}px`,
+                transform: `translate(${position.x}px, ${position.y}px)`,
+                position: "absolute",
+                zIndex,
+                width: `${size.width}px`,
+                height: size.height > 0 ? `${size.height}px` : "auto",
             }}
+            onClick={handleModalClick}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    handleModalClick();
+                }
+            }}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
             data-testid="draggable-modal"
         >
-            <div
-                className="draggable-modal-header"
-                onMouseDown={handleMouseDown}
-                data-testid="draggable-modal-header"
-            >
-                <h5 className="draggable-modal-title">{getTitle()}</h5>
-                <button
-                    type="button"
-                    className="draggable-modal-close"
-                    onClick={onClose}
-                    aria-label="Close"
-                    data-testid="draggable-modal-close"
+            <div className="modal-content">
+                {/* Resize handle */}
+                <div
+                    className="resize-handle"
+                    onMouseDown={handleResizeStart}
+                    data-testid="resize-handle"
+                />
+                <div
+                    className={`modal-header ${isDragging ? "dragging" : ""}`}
+                    onMouseDown={handleMouseDown}
+                    style={{ cursor: "move" }}
+                    data-testid="draggable-modal-header"
                 >
-                    <FontAwesomeIcon icon={faXmark} />
-                </button>
-            </div>
-            <div
-                className="draggable-modal-body"
-                data-testid="draggable-modal-body"
-            >
-                {assetType === "NPC" && (
-                    <>
-                        <div className="modal-section">
-                            <div className="modal-image-placeholder">
-                                <div className="placeholder-content">Image</div>
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Physical Description</h6>
-                            <div className="modal-content-placeholder">
-                                Physical description content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Motivation</h6>
-                            <div className="modal-content-placeholder">
-                                Motivation content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Mannerisms</h6>
-                            <div className="modal-content-placeholder">
-                                Mannerisms content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>DM Notes</h6>
-                            <div className="modal-content-placeholder">
-                                DM Notes content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Shared with Players</h6>
-                            <div className="modal-content-placeholder">
-                                Shared content
-                            </div>
-                        </div>
-                    </>
-                )}
-                {assetType === "Location" && (
-                    <>
-                        <div className="modal-section">
-                            <div className="modal-image-placeholder">
-                                <div className="placeholder-content">Image</div>
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Description (Player-facing)</h6>
-                            <div className="modal-content-placeholder">
-                                Description content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Current Condition</h6>
-                            <div className="modal-content-placeholder">
-                                Current condition content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Points Of Interest</h6>
-                            <div className="modal-content-placeholder">
-                                Points of interest content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Characters</h6>
-                            <div className="modal-content-placeholder">
-                                Characters content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>DM Notes</h6>
-                            <div className="modal-content-placeholder">
-                                DM Notes content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Shared with Players</h6>
-                            <div className="modal-content-placeholder">
-                                Shared content
-                            </div>
-                        </div>
-                    </>
-                )}
-                {assetType === "POI" && (
-                    <>
-                        <div className="modal-section">
-                            <div className="modal-image-placeholder">
-                                <div className="placeholder-content">Image</div>
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Description</h6>
-                            <div className="modal-content-placeholder">
-                                Description content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Current Condition</h6>
-                            <div className="modal-content-placeholder">
-                                Current condition content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Points Of Interest</h6>
-                            <div className="modal-content-placeholder">
-                                Points of interest content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Characters</h6>
-                            <div className="modal-content-placeholder">
-                                Characters content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>DM Notes</h6>
-                            <div className="modal-content-placeholder">
-                                DM Notes content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Shared with Players</h6>
-                            <div className="modal-content-placeholder">
-                                Shared content
-                            </div>
-                        </div>
-                    </>
-                )}
-                {assetType === "PLOT" && (
-                    <>
-                        <div className="modal-section">
-                            <h6>Summary</h6>
-                            <div className="modal-content-placeholder">
-                                Summary content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Status</h6>
-                            <div className="modal-content-placeholder">
-                                Status dropdown placeholder
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Urgency</h6>
-                            <div className="modal-content-placeholder">
-                                Urgency dropdown placeholder
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Related</h6>
-                            <div className="modal-content-placeholder">
-                                Related items content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Progress</h6>
-                            <div className="modal-content-placeholder">
-                                Progress checklist content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Notes</h6>
-                            <div className="modal-content-placeholder">
-                                Notes content
-                            </div>
-                        </div>
-                        <div className="modal-section">
-                            <h6>Shared with Players</h6>
-                            <div className="modal-content-placeholder">
-                                Shared content
-                            </div>
-                        </div>
-                    </>
+                    <h5 className="modal-title">{title}</h5>
+                    <button
+                        type="button"
+                        className="btn-close"
+                        onClick={onClose}
+                        aria-label="Close"
+                    />
+                </div>
+                <div className="modal-body" data-testid="draggable-modal-body">
+                    {children}
+                </div>
+                {footer && (
+                    <div
+                        className="modal-footer"
+                        data-testid="draggable-modal-footer"
+                    >
+                        {footer}
+                    </div>
                 )}
             </div>
         </div>

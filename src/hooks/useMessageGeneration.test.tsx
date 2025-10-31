@@ -7,6 +7,20 @@ vi.mock("@graphql", () => ({
     useGenerateMessageSubscription: vi.fn(),
 }));
 
+// Type declaration for test global
+declare global {
+    var __subscriptionCallbacks:
+        | {
+              onData: (data: {
+                  data?: {
+                      generateMessage?: { content?: string; message?: unknown };
+                  };
+              }) => void;
+              onError: (error: Error) => void;
+          }
+        | undefined;
+}
+
 describe("useMessageGeneration", () => {
     let mockOnMessageComplete: ReturnType<typeof vi.fn>;
     let mockOnError: ReturnType<typeof vi.fn>;
@@ -22,7 +36,7 @@ describe("useMessageGeneration", () => {
         vi.mocked(useGenerateMessageSubscription).mockImplementation(
             ({ onData, onError }) => {
                 // Store callbacks for later use in tests
-                (global as any).__subscriptionCallbacks = { onData, onError };
+                global.__subscriptionCallbacks = { onData, onError };
                 return {};
             }
         );
@@ -30,7 +44,7 @@ describe("useMessageGeneration", () => {
 
     afterEach(() => {
         vi.clearAllMocks();
-        delete (global as any).__subscriptionCallbacks;
+        delete global.__subscriptionCallbacks;
     });
 
     test("should initialize with default state", () => {
@@ -106,8 +120,8 @@ describe("useMessageGeneration", () => {
         result.current.startGeneration("thread-1");
 
         // Simulate some content
-        if ((global as any).__subscriptionCallbacks) {
-            (global as any).__subscriptionCallbacks.onData({
+        if (global.__subscriptionCallbacks) {
+            global.__subscriptionCallbacks.onData({
                 data: {
                     generateMessage: { content: "old content" },
                 },
@@ -157,8 +171,8 @@ describe("useMessageGeneration", () => {
         result.current.startGeneration("thread-123");
 
         // Simulate content
-        if ((global as any).__subscriptionCallbacks) {
-            (global as any).__subscriptionCallbacks.onData({
+        if (global.__subscriptionCallbacks) {
+            global.__subscriptionCallbacks.onData({
                 data: {
                     generateMessage: { content: "test content" },
                 },
@@ -238,8 +252,8 @@ describe("useMessageGeneration", () => {
 
         result.current.startGeneration("thread-123");
 
-        if ((global as any).__subscriptionCallbacks) {
-            (global as any).__subscriptionCallbacks.onData({
+        if (global.__subscriptionCallbacks) {
+            global.__subscriptionCallbacks.onData({
                 data: { generateMessage: { message: mockMessage } },
             });
         }
@@ -264,8 +278,8 @@ describe("useMessageGeneration", () => {
         result.current.startGeneration("thread-123");
 
         // Simulate error
-        if ((global as any).__subscriptionCallbacks) {
-            (global as any).__subscriptionCallbacks.onError(mockError);
+        if (global.__subscriptionCallbacks) {
+            global.__subscriptionCallbacks.onError(mockError);
         }
 
         await waitFor(() => {
@@ -285,8 +299,8 @@ describe("useMessageGeneration", () => {
 
         result.current.startGeneration("thread-123");
 
-        if ((global as any).__subscriptionCallbacks) {
-            (global as any).__subscriptionCallbacks.onError(mockError);
+        if (global.__subscriptionCallbacks) {
+            global.__subscriptionCallbacks.onError(mockError);
         }
 
         await waitFor(() => {
@@ -308,9 +322,9 @@ describe("useMessageGeneration", () => {
         result.current.startGeneration("thread-123");
 
         // Should not throw
-        if ((global as any).__subscriptionCallbacks) {
+        if (global.__subscriptionCallbacks) {
             expect(() => {
-                (global as any).__subscriptionCallbacks.onError(mockError);
+                global.__subscriptionCallbacks?.onError(mockError);
             }).not.toThrow();
         }
     });
