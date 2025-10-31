@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./ResizablePanel.scss";
+import { useLocalStorage } from "../../hooks";
 
 type ResizablePanelProps = {
+    id: string;
     children: React.ReactNode;
     leftPanel: React.ReactNode;
     defaultWidth?: number;
@@ -10,13 +12,17 @@ type ResizablePanelProps = {
 };
 
 export const ResizablePanel: React.FC<ResizablePanelProps> = ({
+    id,
     children,
     leftPanel,
     defaultWidth = 400,
     minWidth = 300,
     maxWidth = 800,
 }) => {
-    const [leftWidth, setLeftWidth] = useState(defaultWidth);
+    const [leftWidth, setLeftWidth] = useLocalStorage<number>(
+        `resizable-panel-${id}-width`,
+        defaultWidth
+    );
     const [isResizing, setIsResizing] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +46,7 @@ export const ResizablePanel: React.FC<ResizablePanelProps> = ({
             }
             setLeftWidth(newWidth);
         },
-        [isResizing, minWidth, maxWidth]
+        [isResizing, minWidth, maxWidth, setLeftWidth]
     );
 
     const handleMouseUp = useCallback(() => {

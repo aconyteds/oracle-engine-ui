@@ -3,5 +3,9 @@ query CurrentUser {
     currentUser {
         id
         name
+        lastSelectedCampaign {
+            id
+        }
+        isActive
     }
 }

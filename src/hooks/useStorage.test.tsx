@@ -94,7 +94,9 @@ describe("useLocalStorage", () => {
     });
 
     test("should return initial value on JSON parse error", () => {
-        const consoleSpy = vi.spyOn(console, "error").mockImplementation();
+        const consoleSpy = vi
+            .spyOn(console, "error")
+            .mockImplementation(vi.fn());
         localStorage.setItem("testKey", "invalid-json{");
 
         const { result } = renderHook(() =>
@@ -116,9 +118,7 @@ describe("useLocalStorage", () => {
         const { result: result1 } = renderHook(() =>
             useLocalStorage("sharedKey", "value1")
         );
-        const { result: result2 } = renderHook(() =>
-            useLocalStorage("sharedKey", "value2")
-        );
+        renderHook(() => useLocalStorage("sharedKey", "value2"));
 
         // Both should read the same stored value
         act(() => {
@@ -240,7 +240,9 @@ describe("useSessionStorage", () => {
     });
 
     test("should return initial value on JSON parse error", () => {
-        const consoleSpy = vi.spyOn(console, "error").mockImplementation();
+        const consoleSpy = vi
+            .spyOn(console, "error")
+            .mockImplementation(vi.fn());
         sessionStorage.setItem("testKey", "invalid-json{");
 
         const { result } = renderHook(() =>

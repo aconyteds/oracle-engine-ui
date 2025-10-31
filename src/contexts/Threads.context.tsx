@@ -20,6 +20,7 @@ import {
     useMemo,
     useState,
 } from "react";
+import { useCampaignContext } from "./Campaign.context";
 import { useToaster } from "./Toaster.context";
 
 type ThreadsContextPayload = {
@@ -32,6 +33,7 @@ type ThreadsContextPayload = {
     sendMessage: (content: string) => Promise<void>;
     isGenerating: boolean;
     generatingContent: string;
+    refreshThreads: () => Promise<void>;
 };
 
 const ThreadsContext = createContext<ThreadsContextPayload | undefined>(
@@ -56,6 +58,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     children,
 }) => {
     const { toast } = useToaster();
+    const { selectedCampaign } = useCampaignContext();
     const [storedThreadId, setStoredThreadId] = useSessionStorage<
         string | null
     >("selectedThreadId", null);
@@ -136,20 +139,40 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
         [getMyThreads, clearThreads, setStoredThreadId, setThreadList]
     );
 
-    // Initial load
+    // Initial load - only run once on mount
+    // biome-ignore lint/correctness/useExhaustiveDependencies: This effect should only run once on mount to initialize thread state
     useEffect(() => {
-        processThreadData().then((threadMap) => {
-            if (!storedThreadId) {
+        let mounted = true;
+
+        getMyThreads().then(({ data }) => {
+            if (!mounted) return;
+
+            if (!data?.threads) {
+                clearThreads();
                 return;
             }
-            const thread = threadMap.get(storedThreadId);
-            if (!thread) {
-                setStoredThreadId(null);
-                return;
+
+            const threadMap = new Map<string, ThreadDetailsFragment>(
+                data.threads.map((t) => [t.id, t])
+            );
+
+            setThreadList(threadMap);
+
+            // Restore previously selected thread if available
+            if (storedThreadId) {
+                const thread = threadMap.get(storedThreadId);
+                if (thread) {
+                    setSelectedThread(thread);
+                } else {
+                    setStoredThreadId(null);
+                }
             }
-            setSelectedThread(thread);
         });
-    }, [processThreadData, setStoredThreadId, storedThreadId]);
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     // Fetches the messages for the currently selected thread
     useEffect(() => {
@@ -183,6 +206,42 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
         },
         [threadList, setStoredThreadId, isGenerating, stopGeneration]
     );
+
+    const refreshThreads = useCallback(async () => {
+        try {
+            const { data } = await getMyThreads();
+
+            if (!data?.threads) {
+                clearThreads();
+                return;
+            }
+
+            const threadMap = new Map<string, ThreadDetailsFragment>(
+                data.threads.map((t) => [t.id, t])
+            );
+
+            setThreadList(threadMap);
+        } catch (_error) {
+            toast.danger({
+                title: "Error Refreshing Threads",
+                message: "Failed to refresh thread list.",
+                duration: 5000,
+            });
+        }
+    }, [getMyThreads, clearThreads, setThreadList, toast]);
+
+    // Refresh threads when campaign changes
+    // biome-ignore lint/correctness/useExhaustiveDependencies: This effect should only run when selectedCampaign.id changes
+    useEffect(() => {
+        const campaignId = selectedCampaign?.id;
+        if (!campaignId) {
+            return;
+        }
+        clearThreads();
+        setSelectedThread(null);
+        setStoredThreadId(null);
+        refreshThreads();
+    }, [selectedCampaign?.id, setStoredThreadId, clearThreads]);
 
     const sendMessage = useCallback(
         async (content: string) => {
@@ -233,12 +292,12 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
         },
         [
             selectedThread,
-            createMessage,
             toast,
             addMessage,
             processThreadData,
             setStoredThreadId,
             startGeneration,
+            createMessage,
         ]
     );
 
@@ -254,6 +313,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             sendMessage,
             isGenerating,
             generatingContent,
+            refreshThreads,
         }),
         [
             threadList,
@@ -264,6 +324,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             messageList.length,
             isGenerating,
             generatingContent,
+            refreshThreads,
         ]
     );
 

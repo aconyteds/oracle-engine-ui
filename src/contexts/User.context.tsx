@@ -1,4 +1,4 @@
-import { useCurrentUserQuery } from "@graphql";
+import { type CurrentUserQuery, useCurrentUserQuery } from "@graphql";
 import React, {
     createContext,
     ReactNode,
@@ -9,15 +9,23 @@ import React, {
     useState,
 } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { setAuthToken } from "../apolloClient";
+import { restartWsClient, setAuthToken } from "../apolloClient";
 import { auth } from "../components/firebase";
 import { Loader } from "../components/Loader";
+import {
+    cleanupTokenRefresh,
+    initializeTokenRefresh,
+    setOnTokenRefresh,
+} from "../services/tokenRefresh";
 import { useToaster } from "./Toaster.context";
 
 type UserContextPayload = {
     isLoggedIn: boolean;
     setIsLoggedIn: () => void;
     handleLogin: () => void;
+    currentUser: CurrentUserQuery["currentUser"] | null;
+    isActive: boolean;
+    loading: boolean;
 };
 
 const UserContext = createContext<UserContextPayload | undefined>(undefined);
@@ -37,7 +45,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const { toast } = useToaster();
     // TODO:: Handle the login properly
-    const { loading, error } = useCurrentUserQuery({
+    const { loading, error, data } = useCurrentUserQuery({
         skip: !isLoggedIn,
     });
 
@@ -52,6 +60,24 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         if (checkingUser) return;
         checkUser();
     }, [checkingUser, checkUser]);
+
+    // Initialize token refresh service when user is logged in
+    useEffect(() => {
+        if (!isLoggedIn) return;
+
+        // Set up callback to restart WebSocket when token refreshes
+        setOnTokenRefresh(() => {
+            restartWsClient();
+        });
+
+        // Initialize the token refresh service
+        initializeTokenRefresh();
+
+        // Cleanup on unmount
+        return () => {
+            cleanupTokenRefresh();
+        };
+    }, [isLoggedIn]);
 
     useEffect(() => {
         if (loading || !error) return;
@@ -71,8 +97,11 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
             isLoggedIn,
             handleLogin,
             setIsLoggedIn: handleLogin,
+            currentUser: data?.currentUser || null,
+            isActive: data?.currentUser?.isActive || false,
+            loading,
         }),
-        [isLoggedIn, handleLogin]
+        [isLoggedIn, handleLogin, data?.currentUser, loading]
     );
 
     return (

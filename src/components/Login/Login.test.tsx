@@ -27,6 +27,9 @@ describe("Login Component", () => {
         isLoggedIn: false,
         setIsLoggedIn: vi.fn(),
         handleLogin: vi.fn(),
+        currentUser: null,
+        isActive: false,
+        loading: false,
     };
 
     beforeEach(() => {

@@ -1,0 +1,49 @@
+query AllMyCampaigns {
+    campaigns {
+        ...RelevantCampaignDetails
+    }
+}
+
+fragment RelevantCampaignDetails on Campaign {
+    id
+    name
+    ruleset
+    setting
+    tone
+}
+
+query GetCampaignById($input: GetCampaignInput!) {
+    getCampaign(input: $input) {
+        campaign {
+            ...RelevantCampaignDetails
+        }
+    }
+}
+
+query ValidateCampaignName($input: CheckCampaignNameExistsInput!) {
+    checkCampaignNameExists(input: $input) {
+        exists
+    }
+}
+
+mutation CreateCampaign($input: CreateCampaignInput!) {
+    createCampaign(input: $input) {
+        campaign {
+            ...RelevantCampaignDetails
+        }
+    }
+}
+
+mutation UpdateCampaign($input: UpdateCampaignInput!) {
+    updateCampaign(input: $input) {
+        campaign {
+            ...RelevantCampaignDetails
+        }
+    }
+}
+
+mutation DeleteCampaign($input: DeleteCampaignInput!) {
+    deleteCampaign(input: $input) {
+        success
+    }
+}

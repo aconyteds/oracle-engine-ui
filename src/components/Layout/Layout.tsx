@@ -1,4 +1,5 @@
 import React from "react";
+import { CampaignModal } from "../Campaign";
 import { ResizablePanel } from "../Common";
 import { HealthCheck } from "../HealthCheck";
 import { ChatPanel } from "./ChatPanel";
@@ -14,6 +15,7 @@ export const Layout: React.FC = () => {
             </div>
             <div className="content-container">
                 <ResizablePanel
+                    id="layout-chat-panel"
                     leftPanel={
                         <div className="chat-panel-container">
                             <ChatPanel />
@@ -26,6 +28,7 @@ export const Layout: React.FC = () => {
                     <Main />
                 </ResizablePanel>
             </div>
+            <CampaignModal />
         </div>
     );
 };
