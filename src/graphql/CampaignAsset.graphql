@@ -1,0 +1,99 @@
+fragment LocationDataFields on LocationData {
+    characters
+    condition
+    description
+    dmNotes
+    imageUrl
+    pointsOfInterest
+    sharedWithPlayers
+}
+
+fragment NPCDataFields on NPCData {
+    dmNotes
+    imageUrl
+    mannerisms
+    motivation
+    physicalDescription
+    sharedWithPlayers
+}
+
+fragment PlotDataFields on PlotData {
+    dmNotes
+    sharedWithPlayers
+    status
+    urgency
+    relatedAssets {
+        relatedAssetId
+        relationshipSummary
+    }
+}
+
+fragment FullCampaignAssetDetails on CampaignAsset {
+    campaignId
+    id
+    name
+    playerSummary
+    recordType
+    summary
+    updatedAt
+    data {
+        ... on LocationData {
+            ...LocationDataFields
+        }
+        ... on NPCData {
+            ...NPCDataFields
+        }
+        ... on PlotData {
+            ...PlotDataFields
+        }
+    }
+}
+
+query ListCampaignAssets($input: ListCampaignAssetsInput!) {
+    listCampaignAssets(input: $input) {
+        assets {
+            ...FullCampaignAssetDetails
+        }
+    }
+}
+
+query GetCampaignAsset($input: GetCampaignAssetInput!) {
+    getCampaignAsset(input: $input) {
+        asset {
+            ...FullCampaignAssetDetails
+        }
+    }
+}
+
+query GetAssetSummary($input: GetCampaignAssetInput!) {
+    getCampaignAsset(input: $input) {
+        asset {
+            id
+            name
+            summary
+            recordType
+        }
+    }
+}
+
+mutation CreateCampaignAsset($input: CreateCampaignAssetInput!) {
+    createCampaignAsset(input: $input) {
+        asset {
+            id
+        }
+    }
+}
+
+mutation UpdateCampaignAsset($input: UpdateCampaignAssetInput!) {
+    updateCampaignAsset(input: $input) {
+        asset {
+            id
+        }
+    }
+}
+
+mutation DeleteCampaignAsset($input: DeleteCampaignAssetInput!) {
+    deleteCampaignAsset(input: $input) {
+        assetId
+    }
+}

@@ -1,9 +1,20 @@
+import { faWindowMinimize } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useModalZIndex } from "@signals";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./DraggableModal.scss";
 
+// Minimum visible pixels of modal header to keep accessible
+const MIN_VISIBLE_HEADER_PX = 50;
+
+// Minimum dimensions for modal
+const MIN_WIDTH_PX = 400;
+const MIN_HEIGHT_PX = 200;
+
 export type DraggableModalProps = {
     onClose: () => void;
+    onMinimize?: () => void;
+    onPositionChange?: (position: { x: number; y: number }) => void;
     title: string;
     children: React.ReactNode;
     footer?: React.ReactNode;
@@ -14,6 +25,8 @@ export type DraggableModalProps = {
 
 export const DraggableModal: React.FC<DraggableModalProps> = ({
     onClose,
+    onMinimize,
+    onPositionChange,
     title,
     children,
     footer,
@@ -33,6 +46,12 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         height: 0,
     });
     const modalRef = useRef<HTMLDivElement>(null);
+    const positionRef = useRef(position);
+
+    // Keep position ref in sync with position state
+    useEffect(() => {
+        positionRef.current = position;
+    }, [position]);
 
     // Generate a unique modal ID if not provided
     const uniqueModalId = modalId || `modal-${title}-${new Date().getTime()}`;
@@ -81,15 +100,18 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
             let newX = e.clientX - containerRect.left - dragOffset.x;
             let newY = e.clientY - containerRect.top - dragOffset.y;
 
-            // Constrain to container bounds
-            newX = Math.max(
-                0,
-                Math.min(newX, containerRect.width - modalRect.width)
-            );
-            newY = Math.max(
-                0,
-                Math.min(newY, containerRect.height - modalRect.height)
-            );
+            // Allow partial off-screen positioning, but keep MIN_VISIBLE_HEADER_PX visible
+            // Left boundary: keep right edge of MIN_VISIBLE_HEADER_PX visible
+            const minX = -(modalRect.width - MIN_VISIBLE_HEADER_PX);
+            // Right boundary: keep left edge of MIN_VISIBLE_HEADER_PX visible
+            const maxX = containerRect.width - MIN_VISIBLE_HEADER_PX;
+            // Top boundary: always keep header visible
+            const minY = 0;
+            // Bottom boundary: keep MIN_VISIBLE_HEADER_PX of header visible
+            const maxY = containerRect.height - MIN_VISIBLE_HEADER_PX;
+
+            newX = Math.max(minX, Math.min(newX, maxX));
+            newY = Math.max(minY, Math.min(newY, maxY));
 
             setPosition({ x: newX, y: newY });
         },
@@ -97,9 +119,15 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     );
 
     const handleMouseUp = useCallback(() => {
+        // Notify parent of final position when either drag or resize ends
+        // Resize can change position if modal grows beyond container bounds
+        if ((isDragging || isResizing) && onPositionChange) {
+            // Use ref to get the latest position without stale closure
+            onPositionChange(positionRef.current);
+        }
         setIsDragging(false);
         setIsResizing(false);
-    }, []);
+    }, [isDragging, isResizing, onPositionChange]);
 
     // Resize handlers
     const handleResizeStart = useCallback(
@@ -128,8 +156,12 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
             const deltaX = e.clientX - resizeStart.x;
             const deltaY = e.clientY - resizeStart.y;
 
-            const newWidth = Math.max(400, resizeStart.width + deltaX);
-            const newHeight = Math.max(200, resizeStart.height + deltaY);
+            // Apply minimum size constraints
+            const newWidth = Math.max(MIN_WIDTH_PX, resizeStart.width + deltaX);
+            const newHeight = Math.max(
+                MIN_HEIGHT_PX,
+                resizeStart.height + deltaY
+            );
 
             setSize({ width: newWidth, height: newHeight });
         },
@@ -206,12 +238,25 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                     data-testid="draggable-modal-header"
                 >
                     <h5 className="modal-title">{title}</h5>
-                    <button
-                        type="button"
-                        className="btn-close"
-                        onClick={onClose}
-                        aria-label="Close"
-                    />
+                    <div className="d-flex gap-2 align-items-center">
+                        {onMinimize && (
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-link text-secondary p-0"
+                                onClick={onMinimize}
+                                aria-label="Minimize"
+                                title="Minimize"
+                            >
+                                <FontAwesomeIcon icon={faWindowMinimize} />
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            className="btn-close"
+                            onClick={onClose}
+                            aria-label="Close"
+                        />
+                    </div>
                 </div>
                 <div className="modal-body" data-testid="draggable-modal-body">
                     {children}
