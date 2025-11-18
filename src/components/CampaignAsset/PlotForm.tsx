@@ -7,7 +7,12 @@ import {
     useGetCampaignAssetQuery,
 } from "@graphql";
 import { type AssetModalState } from "@signals";
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import React, {
+    forwardRef,
+    useEffect,
+    useImperativeHandle,
+    useState,
+} from "react";
 import { Form } from "react-bootstrap";
 import "./PlotForm.scss";
 
@@ -49,7 +54,7 @@ const URGENCY_OPTIONS: { value: Urgency; label: string }[] = [
     { value: Urgency.Resolved, label: "Resolved" },
 ];
 
-export const PlotForm = forwardRef<PlotFormRef, PlotFormProps>(
+const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
     ({ modalState }, ref) => {
         const [formData, setFormData] = useState<PlotFormData>({
             name: modalState.name === "New Asset" ? "" : modalState.name,
@@ -61,6 +66,7 @@ export const PlotForm = forwardRef<PlotFormRef, PlotFormProps>(
             dmNotes: "",
             sharedWithPlayers: "",
         });
+        const [initialized, setInitialized] = useState(false);
 
         const { data: assetData } = useGetCampaignAssetQuery({
             variables: {
@@ -73,23 +79,23 @@ export const PlotForm = forwardRef<PlotFormRef, PlotFormProps>(
 
         // Populate form when asset data loads
         useEffect(() => {
-            if (assetData?.getCampaignAsset?.asset) {
-                const asset = assetData.getCampaignAsset.asset;
-                const plotData = asset.data as PlotDataFieldsFragment;
+            if (initialized || !assetData?.getCampaignAsset?.asset) return;
+            const asset = assetData.getCampaignAsset.asset;
+            const plotData = asset.data as PlotDataFieldsFragment;
 
-                const loadedData = {
-                    name: asset.name || "",
-                    summary: asset.summary || "",
-                    playerSummary: asset.playerSummary || "",
-                    status: plotData?.status || PlotStatus.InProgress,
-                    urgency: plotData?.urgency || Urgency.Ongoing,
-                    relatedAssets: plotData?.relatedAssets || [],
-                    dmNotes: plotData?.dmNotes || "",
-                    sharedWithPlayers: plotData?.sharedWithPlayers || "",
-                };
-                setFormData(loadedData);
-            }
-        }, [assetData]);
+            const loadedData = {
+                name: asset.name || "",
+                summary: asset.summary || "",
+                playerSummary: asset.playerSummary || "",
+                status: plotData?.status || PlotStatus.InProgress,
+                urgency: plotData?.urgency || Urgency.Ongoing,
+                relatedAssets: plotData?.relatedAssets || [],
+                dmNotes: plotData?.dmNotes || "",
+                sharedWithPlayers: plotData?.sharedWithPlayers || "",
+            };
+            setFormData(loadedData);
+            setInitialized(true);
+        }, [assetData, initialized]);
 
         // Expose getFormData method to parent via ref
         useImperativeHandle(ref, () => ({
@@ -116,7 +122,7 @@ export const PlotForm = forwardRef<PlotFormRef, PlotFormProps>(
         };
 
         return (
-            <Form className="plot-modal">
+            <Form className="plot-form">
                 {/* Name */}
                 <Form.Group className="mb-3">
                     <Form.Label>
@@ -260,6 +266,18 @@ export const PlotForm = forwardRef<PlotFormRef, PlotFormProps>(
                     />
                 </Form.Group>
             </Form>
+        );
+    }
+);
+
+// Memoize the component to prevent re-renders when only position/size changes
+// Only re-render when assetId or name changes
+export const PlotForm = React.memo(
+    PlotFormComponent,
+    (prevProps, nextProps) => {
+        return (
+            prevProps.modalState.assetId === nextProps.modalState.assetId &&
+            prevProps.modalState.name === nextProps.modalState.name
         );
     }
 );

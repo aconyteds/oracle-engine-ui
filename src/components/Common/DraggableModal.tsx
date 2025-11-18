@@ -15,7 +15,7 @@ export type DraggableModalProps = {
     onClose: () => void;
     onMinimize?: () => void;
     onPositionChange?: (position: { x: number; y: number }) => void;
-    title: string;
+    title: string | React.ReactNode;
     children: React.ReactNode;
     footer?: React.ReactNode;
     initialX?: number;

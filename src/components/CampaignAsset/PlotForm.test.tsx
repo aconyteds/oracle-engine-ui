@@ -314,7 +314,7 @@ describe("PlotForm Component", () => {
         );
 
         const form = container.querySelector("form");
-        expect(form).toHaveClass("plot-modal");
+        expect(form).toHaveClass("plot-form");
     });
 
     test("should have proper placeholder texts", () => {

@@ -162,7 +162,10 @@ export const assetModalManager = {
         const currentModals = new Map(assetModalsSignal.value);
         const modal = currentModals.get(modalId);
         if (modal) {
-            currentModals.set(modalId, { ...modal, position, size });
+            const updates: Partial<AssetModalState> = {};
+            if (position !== undefined) updates.position = position;
+            if (size !== undefined) updates.size = size;
+            currentModals.set(modalId, { ...modal, ...updates });
             assetModalsSignal.value = currentModals;
         }
     },

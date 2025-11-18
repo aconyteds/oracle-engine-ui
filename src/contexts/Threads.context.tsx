@@ -188,13 +188,17 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
 
     const selectThread = useCallback(
         (threadId: string | null) => {
+            // Stop any ongoing generation when switching threads
+            if (isGenerating) {
+                stopGeneration();
+            }
+
+            // Clear messages immediately to prevent showing old messages
+            setMessageList([]);
+
             if (!threadId) {
                 setSelectedThread(null);
                 setStoredThreadId(null);
-                // Stop generation if switching away
-                if (isGenerating) {
-                    stopGeneration();
-                }
                 return;
             }
             const thread = threadList.find((t) => t.id === threadId);
@@ -204,7 +208,13 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             setSelectedThread(thread);
             setStoredThreadId(threadId);
         },
-        [threadList, setStoredThreadId, isGenerating, stopGeneration]
+        [
+            threadList,
+            setStoredThreadId,
+            isGenerating,
+            stopGeneration,
+            setMessageList,
+        ]
     );
 
     const refreshThreads = useCallback(async () => {

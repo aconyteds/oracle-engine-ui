@@ -1,3 +1,4 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     CreateCampaignAssetInput,
     RecordType,
@@ -12,6 +13,7 @@ import { Button } from "react-bootstrap";
 import { useCampaignContext, useToaster } from "../../contexts";
 import { DraggableModal, HoldConfirmButton } from "../Common";
 import { LogEvent } from "../firebase";
+import { ASSET_TYPE_ICONS } from "./models";
 import { PlotForm, type PlotFormRef } from "./PlotForm";
 
 export interface AssetModalProps {
@@ -73,10 +75,10 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 // Future asset types can be handled here
                 default:
                     console.warn(
-                        `Save not implemented for asset type: ${assetType}`
+                        `Save not implemented for asset type: ${assetType.toLowerCase()}`
                     );
                     toast.warning({
-                        message: `Save not implemented for asset type: ${assetType}`,
+                        message: `Save not implemented for asset type: ${assetType.toLowerCase()}`,
                     });
                     return;
             }
@@ -90,6 +92,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                             ...sharedInput,
                         },
                     },
+                    awaitRefetchQueries: true,
                     refetchQueries: ["ListCampaignAssets"],
                 });
 
@@ -99,7 +102,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 });
 
                 toast.success({
-                    message: `${assetType} "${formData.name}" updated successfully`,
+                    message: `${assetType.toLowerCase()} "${formData.name}" updated successfully`,
                 });
 
                 // Update modal name if changed
@@ -121,6 +124,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                             name: sharedInput.name,
                         } as CreateCampaignAssetInput,
                     },
+                    awaitRefetchQueries: true,
                     refetchQueries: ["ListCampaignAssets"],
                 });
                 LogEvent("create_asset", {
@@ -129,7 +133,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 });
 
                 toast.success({
-                    message: `${assetType} "${formData.name}" created successfully`,
+                    message: `${assetType.toLowerCase()} "${formData.name}" created successfully`,
                 });
 
                 // Close the "New Asset" modal and open with the real asset ID at same position
@@ -174,11 +178,12 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                         assetId: assetId,
                     },
                 },
+                awaitRefetchQueries: true,
                 refetchQueries: ["ListCampaignAssets"],
             });
 
             toast.success({
-                message: `${assetType} "${name}" deleted successfully`,
+                message: `${assetType.toLowerCase()} "${name}" deleted successfully`,
             });
 
             // Close modal after deletion
@@ -200,15 +205,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             setIsSaving(false);
         }
     };
-
-    const AssetForm = useCallback(() => {
-        switch (assetType) {
-            case RecordType.Plot:
-                return <PlotForm ref={formRef} modalState={modalState} />;
-            default:
-                return <div>Unsupported asset type.</div>;
-        }
-    }, [assetType, modalState]);
 
     if (isMinimized) {
         return null;
@@ -238,7 +234,15 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     return (
         <DraggableModal
             modalId={modalId}
-            title={`${assetType}: ${name}`}
+            title={
+                <div>
+                    <FontAwesomeIcon
+                        icon={ASSET_TYPE_ICONS[assetType]}
+                        className="me-2"
+                    />
+                    {assetType}: {name}
+                </div>
+            }
             onClose={handleClose}
             onMinimize={handleMinimize}
             onPositionChange={handlePositionChange}
@@ -246,7 +250,11 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             initialY={position?.y}
             footer={footer}
         >
-            <AssetForm />
+            {assetType === RecordType.Plot ? (
+                <PlotForm ref={formRef} modalState={modalState} />
+            ) : (
+                <div>Unsupported asset type.</div>
+            )}
         </DraggableModal>
     );
 };
