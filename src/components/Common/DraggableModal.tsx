@@ -53,6 +53,112 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         positionRef.current = position;
     }, [position]);
 
+    // Utility function to constrain position within container bounds
+    const constrainPosition = useCallback(
+        (
+            currentPosition: { x: number; y: number },
+            containerRect: DOMRect,
+            modalRect: DOMRect
+        ) => {
+            let newX = currentPosition.x;
+            let newY = currentPosition.y;
+            let needsUpdate = false;
+
+            // Calculate boundaries - same logic as drag constraints
+            const minX = -(modalRect.width - MIN_VISIBLE_HEADER_PX);
+            const maxX = containerRect.width - MIN_VISIBLE_HEADER_PX;
+            const minY = 0;
+            const maxY = containerRect.height - MIN_VISIBLE_HEADER_PX;
+
+            // If modal is beyond the right boundary, push it left
+            if (currentPosition.x > maxX) {
+                newX = maxX;
+                needsUpdate = true;
+            }
+
+            // If modal is beyond the left boundary (too far off-screen), push it right
+            if (currentPosition.x < minX) {
+                newX = minX;
+                needsUpdate = true;
+            }
+
+            // If modal is beyond the bottom boundary, push it up
+            if (currentPosition.y > maxY) {
+                newY = maxY;
+                needsUpdate = true;
+            }
+
+            // If modal is above the top boundary, push it down
+            if (currentPosition.y < minY) {
+                newY = minY;
+                needsUpdate = true;
+            }
+
+            return { position: { x: newX, y: newY }, needsUpdate };
+        },
+        []
+    );
+
+    // Handle container resize and initial position check to keep modal accessible
+    useEffect(() => {
+        if (!modalRef.current) return;
+
+        const container = modalRef.current.parentElement;
+        if (!container) return;
+
+        // Check initial position on mount (after a brief delay to ensure layout is complete)
+        const checkAndConstrainPosition = () => {
+            if (!modalRef.current) return;
+
+            const containerRect = container.getBoundingClientRect();
+            const modalRect = modalRef.current.getBoundingClientRect();
+
+            const { position: constrainedPosition, needsUpdate } =
+                constrainPosition(
+                    positionRef.current,
+                    containerRect,
+                    modalRect
+                );
+
+            if (needsUpdate) {
+                setPosition(constrainedPosition);
+            }
+        };
+
+        // Use requestAnimationFrame to ensure the modal has been laid out before checking
+        const rafId = requestAnimationFrame(() => {
+            checkAndConstrainPosition();
+        });
+
+        // Watch for container resize
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const containerRect = entry.contentRect;
+                const modalRect = modalRef.current?.getBoundingClientRect();
+
+                if (!modalRect) continue;
+
+                const { position: constrainedPosition, needsUpdate } =
+                    constrainPosition(
+                        positionRef.current,
+                        containerRect,
+                        modalRect
+                    );
+
+                if (needsUpdate) {
+                    setPosition(constrainedPosition);
+                }
+            }
+        });
+
+        resizeObserver.observe(container);
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            resizeObserver.disconnect();
+        };
+    }, [constrainPosition]);
+
     // Generate a unique modal ID if not provided
     const uniqueModalId = modalId || `modal-${title}-${new Date().getTime()}`;
     const { zIndex, bringToFront } = useModalZIndex(uniqueModalId);
