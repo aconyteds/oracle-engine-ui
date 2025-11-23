@@ -10,11 +10,11 @@ import { type AssetModalState } from "@signals";
 import React, {
     forwardRef,
     useEffect,
+    useId,
     useImperativeHandle,
     useState,
 } from "react";
 import { Form } from "react-bootstrap";
-import "./PlotForm.scss";
 
 export interface PlotFormData {
     name: string;
@@ -68,6 +68,7 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
             sharedWithPlayers: "",
         });
         const [initialized, setInitialized] = useState(false);
+        const formId = useId();
 
         const { data: assetData } = useGetCampaignAssetQuery({
             variables: {
@@ -76,6 +77,7 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                 },
             },
             skip: !modalState.assetId,
+            fetchPolicy: "network-only",
         });
 
         // Populate form when asset data loads
@@ -131,7 +133,7 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
             <Form className="plot-form">
                 {/* Name */}
                 <Form.Group className="mb-3">
-                    <Form.Label>
+                    <Form.Label htmlFor={`${formId}-name`}>
                         Name <span className="text-danger">*</span>
                     </Form.Label>
                     <Form.Control
@@ -143,6 +145,7 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                         placeholder="Enter plot name"
                         required
                         isInvalid={!formData.name}
+                        id={`${formId}-name`}
                     />
                     <Form.Control.Feedback type="invalid">
                         Name is required
@@ -151,7 +154,9 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
 
                 {/* Summary */}
                 <Form.Group className="mb-3">
-                    <Form.Label>Summary</Form.Label>
+                    <Form.Label htmlFor={`${formId}-summary`}>
+                        Summary
+                    </Form.Label>
                     <Form.Control
                         as="textarea"
                         rows={3}
@@ -160,6 +165,7 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                             handleInputChange("summary", e.target.value)
                         }
                         placeholder="Brief description of the plot"
+                        id={`${formId}-summary`}
                     />
                 </Form.Group>
 
@@ -167,8 +173,11 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                 <div className="row mb-3">
                     <div className="col-md-6">
                         <Form.Group>
-                            <Form.Label>Status</Form.Label>
+                            <Form.Label htmlFor={`${formId}-status`}>
+                                Status
+                            </Form.Label>
                             <Form.Select
+                                id={`${formId}-status`}
                                 value={formData.status}
                                 onChange={(e) =>
                                     handleInputChange(
@@ -190,8 +199,11 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                     </div>
                     <div className="col-md-6">
                         <Form.Group>
-                            <Form.Label>Urgency</Form.Label>
+                            <Form.Label htmlFor={`${formId}-urgency`}>
+                                Urgency
+                            </Form.Label>
                             <Form.Select
+                                id={`${formId}-urgency`}
                                 value={formData.urgency}
                                 onChange={(e) =>
                                     handleInputChange(
@@ -243,7 +255,9 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
 
                 {/* Notes */}
                 <Form.Group className="mb-3">
-                    <Form.Label>Notes</Form.Label>
+                    <Form.Label htmlFor={`${formId}-dm-notes`}>
+                        Notes
+                    </Form.Label>
                     <Form.Control
                         as="textarea"
                         rows={4}
@@ -252,12 +266,15 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                             handleInputChange("dmNotes", e.target.value)
                         }
                         placeholder="DM notes (not visible to players)"
+                        id={`${formId}-dm-notes`}
                     />
                 </Form.Group>
 
                 {/* Shared with Players */}
                 <Form.Group className="mb-3">
-                    <Form.Label>Shared with Players</Form.Label>
+                    <Form.Label htmlFor={`${formId}-shared-with-players`}>
+                        Shared with Players
+                    </Form.Label>
                     <Form.Control
                         as="textarea"
                         rows={3}
@@ -269,6 +286,7 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                             )
                         }
                         placeholder="Information visible to players"
+                        id={`${formId}-shared-with-players`}
                     />
                 </Form.Group>
             </Form>

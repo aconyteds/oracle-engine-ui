@@ -13,6 +13,11 @@ import { Button } from "react-bootstrap";
 import { useCampaignContext, useToaster } from "../../contexts";
 import { DraggableModal, HoldConfirmButton } from "../Common";
 import { LogEvent } from "../firebase";
+import {
+    LocationForm,
+    LocationFormData,
+    type LocationFormRef,
+} from "./LocationForm";
 import { ASSET_TYPE_ICONS } from "./models";
 import { NPCForm, NPCFormData, type NPCFormRef } from "./NPCForm";
 import { PlotForm, PlotFormData, type PlotFormRef } from "./PlotForm";
@@ -21,7 +26,7 @@ export interface AssetModalProps {
     modalState: AssetModalState;
 }
 
-type AssetFormRef = PlotFormRef | NPCFormRef;
+type AssetFormRef = PlotFormRef | NPCFormRef | LocationFormRef;
 
 export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     const { modalId, assetType, assetId, isMinimized, position, name } =
@@ -93,13 +98,25 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                     };
                     break;
                 }
+                case RecordType.Location: {
+                    const locationData = formData as LocationFormData;
+                    sharedInput.locationData = {
+                        description: locationData.description,
+                        condition: locationData.condition,
+                        characters: locationData.characters,
+                        pointsOfInterest: locationData.pointsOfInterest,
+                        dmNotes: locationData.dmNotes,
+                        sharedWithPlayers: locationData.sharedWithPlayers,
+                    };
+                    break;
+                }
                 // Future asset types can be handled here
                 default:
                     console.warn(
-                        `Save not implemented for asset type: ${assetType.toLowerCase()}`
+                        `Save not implemented for asset type: ${(assetType as unknown as string).toLowerCase()}`
                     );
                     toast.warning({
-                        message: `Save not implemented for asset type: ${assetType.toLowerCase()}`,
+                        message: `Save not implemented for asset type: ${(assetType as unknown as string).toLowerCase()}`,
                     });
                     return;
             }
@@ -231,10 +248,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         return null;
     }
 
-    console.log("isSaving", isSaving);
-    console.log("assetId", assetId);
-    console.log("formRef", formRef.current?.getFormData()?.name);
-
     const footer = (
         <div className="d-flex justify-content-end w-100 gap-2">
             {assetId && (
@@ -284,6 +297,12 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             ) : assetType === RecordType.Npc ? (
                 <NPCForm
                     ref={formRef as React.RefObject<NPCFormRef>}
+                    modalState={modalState}
+                    onChange={handleFormChange}
+                />
+            ) : assetType === RecordType.Location ? (
+                <LocationForm
+                    ref={formRef as React.RefObject<LocationFormRef>}
                     modalState={modalState}
                     onChange={handleFormChange}
                 />
