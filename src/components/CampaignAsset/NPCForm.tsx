@@ -1,5 +1,3 @@
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { NPCDataFieldsFragment, useGetCampaignAssetQuery } from "@graphql";
 import { type AssetModalState } from "@signals";
 import React, {

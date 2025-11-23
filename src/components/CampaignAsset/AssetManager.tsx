@@ -22,7 +22,7 @@ export const AssetManager: React.FC = () => {
     // Group modals by type - don't use useMemo to allow signal reactivity
     const modalsByType = {
         Plot: getModalsByType(RecordType.Plot),
-        Npc: getModalsByType(RecordType.Npc),
+        Npc: getModalsByType(RecordType.NPC),
         Location: getModalsByType(RecordType.Location),
     };
 
@@ -55,7 +55,7 @@ export const AssetManager: React.FC = () => {
                 <Dropdown.Menu className="asset-manager-menu">
                     {/* Asset type sections with submenus */}
                     <AssetTypeMenu
-                        assetType={RecordType.Npc}
+                        assetType={RecordType.NPC}
                         label="NPC"
                         icon={ASSET_TYPE_ICONS.NPC}
                     />
