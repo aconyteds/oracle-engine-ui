@@ -1,4 +1,4 @@
-import { NPCDataFieldsFragment, useGetCampaignAssetQuery } from "@graphql";
+import { type NpcDataFieldsFragment, useGetCampaignAssetQuery } from "@graphql";
 import { type AssetModalState } from "@signals";
 import React, {
     forwardRef,
@@ -26,10 +26,11 @@ export interface NPCFormRef {
 
 export interface NPCFormProps {
     modalState: AssetModalState;
+    onChange?: (isValid: boolean) => void;
 }
 
 const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
-    ({ modalState }, ref) => {
+    ({ modalState, onChange }, ref) => {
         const [formData, setFormData] = useState<NPCFormData>({
             name: modalState.name === "New Asset" ? "" : modalState.name,
             summary: "",
@@ -55,7 +56,7 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
         useEffect(() => {
             if (initialized || !assetData?.getCampaignAsset?.asset) return;
             const asset = assetData.getCampaignAsset.asset;
-            const npcData = asset.data as NPCDataFieldsFragment;
+            const npcData = asset.data as NpcDataFieldsFragment;
 
             const loadedData = {
                 name: asset.name || "",
@@ -70,6 +71,11 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
             setFormData(loadedData);
             setInitialized(true);
         }, [assetData, initialized]);
+
+        // Notify parent of changes
+        useEffect(() => {
+            onChange?.(!!formData.name);
+        }, [formData, onChange]);
 
         // Expose getFormData method to parent via ref
         useImperativeHandle(ref, () => ({
