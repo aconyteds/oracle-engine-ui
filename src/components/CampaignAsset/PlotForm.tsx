@@ -33,6 +33,7 @@ export interface PlotFormRef {
 
 export interface PlotFormProps {
     modalState: AssetModalState;
+    onChange?: (isValid: boolean) => void;
 }
 
 interface RelatedAsset {
@@ -55,7 +56,7 @@ const URGENCY_OPTIONS: { value: Urgency; label: string }[] = [
 ];
 
 const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
-    ({ modalState }, ref) => {
+    ({ modalState, onChange }, ref) => {
         const [formData, setFormData] = useState<PlotFormData>({
             name: modalState.name === "New Asset" ? "" : modalState.name,
             summary: "",
@@ -96,6 +97,11 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
             setFormData(loadedData);
             setInitialized(true);
         }, [assetData, initialized]);
+
+        // Notify parent of changes
+        useEffect(() => {
+            onChange?.(!!formData.name);
+        }, [formData, onChange]);
 
         // Expose getFormData method to parent via ref
         useImperativeHandle(ref, () => ({

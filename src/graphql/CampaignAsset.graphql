@@ -49,10 +49,18 @@ fragment FullCampaignAssetDetails on CampaignAsset {
     }
 }
 
+fragment CampaignAssetSummary on CampaignAsset {
+    id
+    name
+    summary
+    recordType
+    updatedAt
+}
+
 query ListCampaignAssets($input: ListCampaignAssetsInput!) {
     listCampaignAssets(input: $input) {
         assets {
-            ...FullCampaignAssetDetails
+            ...CampaignAssetSummary
         }
     }
 }

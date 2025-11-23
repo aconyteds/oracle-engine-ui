@@ -57,17 +57,17 @@ export const AssetManager: React.FC = () => {
                     <AssetTypeMenu
                         assetType={RecordType.Npc}
                         label="NPC"
-                        icon={ASSET_TYPE_ICONS.NPC}
+                        icon={ASSET_TYPE_ICONS[RecordType.Npc]}
                     />
                     <AssetTypeMenu
                         assetType={RecordType.Location}
                         label="POI"
-                        icon={ASSET_TYPE_ICONS.Location}
+                        icon={ASSET_TYPE_ICONS[RecordType.Location]}
                     />
                     <AssetTypeMenu
                         assetType={RecordType.Plot}
                         label="Plot"
-                        icon={ASSET_TYPE_ICONS.Plot}
+                        icon={ASSET_TYPE_ICONS[RecordType.Plot]}
                     />
                 </Dropdown.Menu>
             </Dropdown>

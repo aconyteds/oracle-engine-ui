@@ -7,7 +7,7 @@ import {
 import { RecordType } from "@graphql";
 
 export const ASSET_TYPE_ICONS: Record<RecordType, IconDefinition> = {
-    Plot: faScroll,
-    NPC: faPerson,
-    Location: faMapPin,
+    [RecordType.Plot]: faScroll,
+    [RecordType.Npc]: faPerson,
+    [RecordType.Location]: faMapPin,
 };

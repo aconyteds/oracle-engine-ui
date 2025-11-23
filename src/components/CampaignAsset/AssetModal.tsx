@@ -14,11 +14,14 @@ import { useCampaignContext, useToaster } from "../../contexts";
 import { DraggableModal, HoldConfirmButton } from "../Common";
 import { LogEvent } from "../firebase";
 import { ASSET_TYPE_ICONS } from "./models";
-import { PlotForm, type PlotFormRef } from "./PlotForm";
+import { NPCForm, NPCFormData, type NPCFormRef } from "./NPCForm";
+import { PlotForm, PlotFormData, type PlotFormRef } from "./PlotForm";
 
 export interface AssetModalProps {
     modalState: AssetModalState;
 }
+
+type AssetFormRef = PlotFormRef | NPCFormRef;
 
 export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     const { modalId, assetType, assetId, isMinimized, position, name } =
@@ -26,7 +29,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     const { selectedCampaign } = useCampaignContext();
     const { toast } = useToaster();
     const [isSaving, setIsSaving] = useState(false);
-    const formRef = useRef<PlotFormRef>(null);
+    const [isFormValid, setIsFormValid] = useState(false);
+    const formRef = useRef<AssetFormRef>(null);
 
     const [createAsset] = useCreateCampaignAssetMutation();
     const [updateAsset] = useUpdateCampaignAssetMutation();
@@ -47,6 +51,10 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         [modalId]
     );
 
+    const handleFormChange = useCallback((isValid: boolean) => {
+        setIsFormValid(isValid);
+    }, []);
+
     const handleSave = async () => {
         if (!selectedCampaign || !formRef.current) return;
 
@@ -63,15 +71,28 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 playerSummary: formData.playerSummary,
             };
             switch (assetType) {
-                case RecordType.Plot:
+                case RecordType.Plot: {
+                    const plotData = formData as PlotFormData;
                     sharedInput.plotData = {
-                        status: formData.status,
-                        urgency: formData.urgency,
-                        relatedAssets: formData.relatedAssets,
-                        dmNotes: formData.dmNotes,
+                        status: plotData.status,
+                        urgency: plotData.urgency,
+                        relatedAssets: plotData.relatedAssets,
+                        dmNotes: plotData.dmNotes,
                         sharedWithPlayers: formData.sharedWithPlayers,
                     };
                     break;
+                }
+                case RecordType.Npc: {
+                    const npcData = formData as NPCFormData;
+                    sharedInput.npcData = {
+                        physicalDescription: npcData.physicalDescription,
+                        motivation: npcData.motivation,
+                        mannerisms: npcData.mannerisms,
+                        dmNotes: npcData.dmNotes,
+                        sharedWithPlayers: npcData.sharedWithPlayers,
+                    };
+                    break;
+                }
                 // Future asset types can be handled here
                 default:
                     console.warn(
@@ -210,6 +231,10 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         return null;
     }
 
+    console.log("isSaving", isSaving);
+    console.log("assetId", assetId);
+    console.log("formRef", formRef.current?.getFormData()?.name);
+
     const footer = (
         <div className="d-flex justify-content-end w-100 gap-2">
             {assetId && (
@@ -224,7 +249,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             <Button
                 variant="primary"
                 onClick={handleSave}
-                disabled={isSaving || !formRef.current?.getFormData()?.name}
+                disabled={isSaving || !isFormValid}
             >
                 {isSaving ? "Saving..." : "Save"}
             </Button>
@@ -251,7 +276,17 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             footer={footer}
         >
             {assetType === RecordType.Plot ? (
-                <PlotForm ref={formRef} modalState={modalState} />
+                <PlotForm
+                    ref={formRef as React.RefObject<PlotFormRef>}
+                    modalState={modalState}
+                    onChange={handleFormChange}
+                />
+            ) : assetType === RecordType.Npc ? (
+                <NPCForm
+                    ref={formRef as React.RefObject<NPCFormRef>}
+                    modalState={modalState}
+                    onChange={handleFormChange}
+                />
             ) : (
                 <div>Unsupported asset type.</div>
             )}
