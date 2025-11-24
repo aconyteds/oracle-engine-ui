@@ -189,7 +189,13 @@ describe("DraggableModal Component", () => {
                                     bottom: height,
                                     x: 0,
                                     y: 0,
+                                    toJSON: () => {
+                                        // Mock implementation
+                                    },
                                 },
+                                borderBoxSize: [],
+                                contentBoxSize: [],
+                                devicePixelContentBoxSize: [],
                             },
                         ],
                         {} as ResizeObserver

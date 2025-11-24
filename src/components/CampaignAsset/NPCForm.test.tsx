@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom";
 import { MockedProvider } from "@apollo/client/testing";
 import { RecordType } from "@graphql";
 import { afterEach, describe, expect, test } from "vitest";
@@ -7,7 +8,7 @@ import { NPCForm, type NPCFormRef } from "./NPCForm";
 const mockModalState = {
     modalId: "test-modal-id",
     assetId: null,
-    assetType: RecordType.NPC,
+    assetType: RecordType.Npc,
     name: "New Asset",
     isMinimized: false,
 };

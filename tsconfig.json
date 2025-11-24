@@ -31,5 +31,5 @@
         }
     },
     "include": ["src", "vite.config.ts"],
-    "exclude": ["dist", "**/*.test.ts", "**/*.test.tsx", "**/__mocks__/**"]
+    "exclude": ["dist", "**/__mocks__/**"]
 }

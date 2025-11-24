@@ -38,6 +38,9 @@ const mockModalState = {
 const mockCampaign = {
     id: "campaign-123",
     name: "Test Campaign",
+    ruleset: "D&D 5e",
+    setting: "Fantasy",
+    tone: "Heroic",
 };
 
 describe("AssetModal Component", () => {
