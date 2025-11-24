@@ -20,6 +20,10 @@ vi.mock("../../signals/campaignAssetModals", () => ({
         updateModalName: vi.fn(),
         openModal: vi.fn(),
     },
+    useAssetModalZIndex: vi.fn().mockReturnValue({
+        zIndex: 1050,
+        bringToFront: vi.fn(),
+    }),
 }));
 
 vi.mock("../firebase", () => ({
@@ -244,7 +248,7 @@ describe("AssetModal Component", () => {
         expect(form).toBeInTheDocument();
     });
 
-    test("should pass modalId to DraggableModal for z-index management", () => {
+    test("should pass z-index and onInteract to DraggableModal", () => {
         render(
             <MockedProvider mocks={[]} addTypename={false}>
                 <AssetModal modalState={mockModalState} />
@@ -253,5 +257,7 @@ describe("AssetModal Component", () => {
 
         const modal = screen.getByTestId("draggable-modal");
         expect(modal).toBeInTheDocument();
+        // Check if z-index is applied (mocked value is 1050)
+        expect(modal).toHaveStyle({ zIndex: "1050" });
     });
 });

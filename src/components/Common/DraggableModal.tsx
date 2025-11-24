@@ -1,6 +1,5 @@
 import { faWindowMinimize } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useModalZIndex } from "@signals";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./DraggableModal.scss";
 
@@ -21,6 +20,8 @@ export type DraggableModalProps = {
     initialX?: number;
     initialY?: number;
     modalId?: string; // Unique identifier for z-index management
+    zIndex?: number;
+    onInteract?: () => void;
 };
 
 export const DraggableModal: React.FC<DraggableModalProps> = ({
@@ -32,7 +33,8 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     footer,
     initialX = 100,
     initialY = 100,
-    modalId,
+    zIndex = 1050, // Default bootstrap modal z-index
+    onInteract,
 }) => {
     const [position, setPosition] = useState({ x: initialX, y: initialY });
     const [size, setSize] = useState({ width: 500, height: 0 }); // height 0 = auto
@@ -159,19 +161,15 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         };
     }, [constrainPosition]);
 
-    // Generate a unique modal ID if not provided
-    const uniqueModalId = modalId || `modal-${title}-${new Date().getTime()}`;
-    const { zIndex, bringToFront } = useModalZIndex(uniqueModalId);
-
     const handleModalClick = useCallback(() => {
         // Bring this modal to front when clicked
-        bringToFront();
-    }, [bringToFront]);
+        onInteract?.();
+    }, [onInteract]);
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             // Bring to front when starting to drag
-            bringToFront();
+            onInteract?.();
 
             // Prevent dragging when clicking close button or other interactive elements
             if (
@@ -190,7 +188,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
             });
             setIsDragging(true);
         },
-        [bringToFront]
+        [onInteract]
     );
 
     const handleMouseMove = useCallback(
@@ -239,7 +237,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     const handleResizeStart = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             e.stopPropagation(); // Prevent drag from starting
-            bringToFront();
+            onInteract?.();
 
             if (!modalRef.current) return;
 
@@ -252,7 +250,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
             });
             setIsResizing(true);
         },
-        [bringToFront]
+        [onInteract]
     );
 
     const handleResizeMove = useCallback(

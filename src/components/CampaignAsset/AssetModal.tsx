@@ -7,7 +7,11 @@ import {
     useDeleteCampaignAssetMutation,
     useUpdateCampaignAssetMutation,
 } from "@graphql";
-import { type AssetModalState, assetModalManager } from "@signals";
+import {
+    type AssetModalState,
+    assetModalManager,
+    useAssetModalZIndex,
+} from "@signals";
 import React, { useCallback, useRef, useState } from "react";
 import { Button } from "react-bootstrap";
 import { useCampaignContext, useToaster } from "../../contexts";
@@ -36,6 +40,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     const [isSaving, setIsSaving] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false);
     const formRef = useRef<AssetFormRef>(null);
+
+    const { zIndex, bringToFront } = useAssetModalZIndex(modalId);
 
     const [createAsset] = useCreateCampaignAssetMutation();
     const [updateAsset] = useUpdateCampaignAssetMutation();
@@ -271,7 +277,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
 
     return (
         <DraggableModal
-            modalId={modalId}
             title={
                 <div>
                     <FontAwesomeIcon
@@ -287,6 +292,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             initialX={position?.x}
             initialY={position?.y}
             footer={footer}
+            zIndex={zIndex}
+            onInteract={bringToFront}
         >
             {assetType === RecordType.Plot ? (
                 <PlotForm
