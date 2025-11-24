@@ -1,4 +1,3 @@
-import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import "@testing-library/jest-dom";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "../../test-utils";

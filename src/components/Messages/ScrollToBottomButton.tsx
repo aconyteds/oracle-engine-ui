@@ -16,7 +16,7 @@ export const ScrollToBottomButton: React.FC<ScrollToBottomButtonProps> = ({
     const checkScrollPosition = useCallback(() => {
         if (!containerRef.current) return;
 
-        const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+        const { scrollTop } = containerRef.current;
         // The container uses flex-direction: column-reverse, so scrollTop is 0 when at bottom
         // When scrolled up, scrollTop becomes negative
         const isAtBottom = Math.abs(scrollTop) < 50;
