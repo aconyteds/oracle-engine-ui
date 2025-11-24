@@ -1,8 +1,8 @@
 import { useCampaignContext } from "@context";
 import {
     faChevronRight,
-    faMaximize,
     faPlus,
+    faWindowMaximize,
     faWindowMinimize,
     faXmark,
 } from "@fortawesome/free-solid-svg-icons";
@@ -157,7 +157,7 @@ export const AssetTypeMenu: React.FC<AssetTypeMenuProps> = ({
                                     tabIndex={0}
                                 />
                                 <FontAwesomeIcon
-                                    icon={faMaximize}
+                                    icon={faWindowMaximize}
                                     size="sm"
                                     title="Maximize All"
                                     onClick={handleMaximizeAll}
@@ -190,7 +190,7 @@ export const AssetTypeMenu: React.FC<AssetTypeMenuProps> = ({
                                 <div className="d-flex gap-2">
                                     {modal.isMinimized ? (
                                         <FontAwesomeIcon
-                                            icon={faMaximize}
+                                            icon={faWindowMaximize}
                                             size="sm"
                                             title="Maximize"
                                         />

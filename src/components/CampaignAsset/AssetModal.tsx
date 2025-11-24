@@ -250,9 +250,13 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         }
     };
 
-    if (isMinimized) {
-        return null;
-    }
+    const handleMaximize = () => {
+        assetModalManager.maximizeModal(modalId);
+    };
+
+    // if (isMinimized) {
+    //     return null;
+    // }
 
     const footer = (
         <div className="d-flex justify-content-end w-100 gap-2">
@@ -288,6 +292,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             }
             onClose={handleClose}
             onMinimize={handleMinimize}
+            onMaximize={handleMaximize}
+            isMinimized={isMinimized}
             onPositionChange={handlePositionChange}
             initialX={position?.x}
             initialY={position?.y}
