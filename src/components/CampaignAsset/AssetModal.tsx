@@ -113,10 +113,10 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 // Future asset types can be handled here
                 default:
                     console.warn(
-                        `Save not implemented for asset type: ${(assetType as unknown as string).toLowerCase()}`
+                        `Save not implemented for asset type: ${String(assetType).toLowerCase()}`
                     );
                     toast.warning({
-                        message: `Save not implemented for asset type: ${(assetType as unknown as string).toLowerCase()}`,
+                        message: `Save not implemented for asset type: ${String(assetType).toLowerCase()}`,
                     });
                     return;
             }

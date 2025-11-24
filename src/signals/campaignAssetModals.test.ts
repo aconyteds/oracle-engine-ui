@@ -2,7 +2,6 @@ import { RecordType } from "@graphql";
 import { renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
-    type AssetModalState,
     assetModalManager,
     assetModalsSignal,
     useAssetModals,

@@ -36,8 +36,15 @@ describe("useMessageGeneration", () => {
         vi.mocked(useGenerateMessageSubscription).mockImplementation(
             ({ onData, onError }) => {
                 // Store callbacks for later use in tests
+                // @ts-ignore - Testing global
                 global.__subscriptionCallbacks = { onData, onError };
-                return {};
+                return {
+                    restart: vi.fn(),
+                    loading: false,
+                    data: undefined,
+                    error: undefined,
+                    variables: undefined,
+                };
             }
         );
     });

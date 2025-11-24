@@ -1,13 +1,14 @@
 {
+    "extends": "./tsconfig.json",
     "compilerOptions": {
-        "types": ["vitest/globals"],
-        "paths": {
-            "@graphql": ["./src/graphql/generated.ts"],
-            "@hooks": ["./src/hooks/index.tsx"],
-            "@context": ["./src/contexts/index.tsx"],
-            "@signals": ["./src/signals/index.ts"]
-        }
-        // other options like "jsx", "moduleResolution", etc.
+        "types": ["vitest/globals", "@testing-library/jest-dom"],
+        "noEmit": true
     },
-    "include": ["src", "**/*.test.ts", "**/*.test.tsx"]
+    "include": [
+        "src",
+        "vite.config.ts",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/__mocks__/**/*"
+    ]
 }

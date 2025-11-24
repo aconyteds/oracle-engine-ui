@@ -85,7 +85,9 @@ describe("tokenRefresh", () => {
 
         it("should force refresh token after 50 minutes", async () => {
             // Set up current user
-            vi.mocked(auth).currentUser = mockUser as User;
+            (
+                vi.mocked(auth) as unknown as { currentUser: User | null }
+            ).currentUser = mockUser as User;
 
             initializeTokenRefresh();
 
@@ -113,7 +115,9 @@ describe("tokenRefresh", () => {
             const mockCallback = vi.fn();
             setOnTokenRefresh(mockCallback);
 
-            vi.mocked(auth).currentUser = mockUser as User;
+            (
+                vi.mocked(auth) as unknown as { currentUser: User | null }
+            ).currentUser = mockUser as User;
 
             initializeTokenRefresh();
 
