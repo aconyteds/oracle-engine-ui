@@ -22,7 +22,6 @@ export type DraggableModalProps = {
     footer?: React.ReactNode;
     initialX?: number;
     initialY?: number;
-    modalId?: string; // Unique identifier for z-index management
     zIndex?: number;
     onInteract?: () => void;
     isMinimized?: boolean;
@@ -65,18 +64,18 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     }, [position]);
 
     // Handle minimize/maximize size restoration
-    // biome-ignore lint/correctness/useExhaustiveDependencies: This is only for the rezise handler check when minimized state changes
+    // biome-ignore lint/correctness/useExhaustiveDependencies: This is only for when the modal's minimized state changes
     useEffect(() => {
         if (isMinimized) {
+            setIsResizing(false);
+            setIsDragging(false);
             // Save current size before minimizing
             setPrevSize(size);
-            // Width will be handled by CSS/auto when minimized, but we update state to reflect "auto" or minimal
-            // For minimized state, we let the container determine width based on content
-        } else {
-            // Restore previous size when maximizing
-            if (prevSize.width > 0) {
-                setSize(prevSize);
-            }
+            return;
+        }
+        // Restore previous size when maximizing
+        if (prevSize.width > 0) {
+            setSize(prevSize);
         }
     }, [isMinimized]);
 
@@ -191,8 +190,6 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
 
     const handleMinimize = () => {
         if (!onMinimize) return;
-        setIsResizing(false);
-        setIsDragging(false);
         onMinimize();
     };
 

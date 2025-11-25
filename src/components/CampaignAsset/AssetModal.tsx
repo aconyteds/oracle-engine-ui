@@ -254,10 +254,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         assetModalManager.maximizeModal(modalId);
     };
 
-    // if (isMinimized) {
-    //     return null;
-    // }
-
     const footer = (
         <div className="d-flex justify-content-end w-100 gap-2">
             {assetId && (
