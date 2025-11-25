@@ -30,24 +30,24 @@ export const ChatPanel: React.FC = () => {
                         </p>
                     </Container>
                 ) : (
-                    <>
-                        <Container className="messages-container">
-                            {messageList.map((message) => (
-                                <Message key={message.id} {...message} />
-                            ))}
-                            {isGenerating && (
-                                <Message
-                                    content={generatingContent}
-                                    role="AI Generating"
-                                    id="generating"
-                                />
-                            )}
-                        </Container>
-                        <ScrollToBottomButton containerRef={chatMessagesRef} />
-                    </>
+                    <Container className="messages-container">
+                        {messageList.map((message) => (
+                            <Message key={message.id} {...message} />
+                        ))}
+                        {isGenerating && (
+                            <Message
+                                content={generatingContent}
+                                role="AI Generating"
+                                id="generating"
+                            />
+                        )}
+                    </Container>
                 )}
             </div>
             <div className="chat-input">
+                {selectedThread !== null && (
+                    <ScrollToBottomButton containerRef={chatMessagesRef} />
+                )}
                 <MessageInput />
             </div>
         </div>
