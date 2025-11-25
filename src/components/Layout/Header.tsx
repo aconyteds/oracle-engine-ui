@@ -3,6 +3,7 @@ import { Col, Row } from "react-bootstrap";
 import { CampaignSelector } from "../Campaign";
 import { AssetManager } from "../CampaignAsset";
 import { ThemeToggle } from "../Common/ThemeToggle";
+import { AssetSearch } from "../Search";
 
 export const Header: React.FC = () => {
     return (
@@ -14,6 +15,9 @@ export const Header: React.FC = () => {
                     </div>
                     <CampaignSelector />
                     <AssetManager />
+                </Col>
+                <Col className="d-flex justify-content-center">
+                    <AssetSearch />
                 </Col>
                 <Col xs="auto" className="d-flex align-items-center gap-2">
                     <ThemeToggle />

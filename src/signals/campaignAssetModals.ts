@@ -1,6 +1,7 @@
 import { RecordType } from "@graphql";
 import { signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
+import { useCallback, useEffect } from "react";
 
 export interface AssetModalState {
     modalId: string;
@@ -16,6 +17,10 @@ export interface AssetModalState {
 export const assetModalsSignal = signal<Map<string, AssetModalState>>(
     new Map()
 );
+
+// Single source of truth: array of modal IDs in activation order (oldest first)
+export const modalOrderSignal = signal<string[]>([]);
+const BASE_Z_INDEX = 20;
 
 // Helper to generate unique modal ID
 const generateModalId = (assetType: RecordType, assetId: string | null) => {
@@ -38,6 +43,28 @@ const getModalByAssetId = (assetId: string): AssetModalState | undefined => {
 
 // Helper functions to manage asset modals
 export const assetModalManager = {
+    // Bring modal to front (or register if new)
+    bringToFront: (modalId: string) => {
+        const currentOrder = modalOrderSignal.value;
+        // Remove modal if it exists, then add to end (highest z-index)
+        const filtered = currentOrder.filter((id) => id !== modalId);
+        modalOrderSignal.value = [...filtered, modalId];
+    },
+
+    // Remove modal from tracking
+    removeFromOrder: (modalId: string) => {
+        modalOrderSignal.value = modalOrderSignal.value.filter(
+            (id) => id !== modalId
+        );
+    },
+
+    // Get z-index for a modal
+    getZIndex: (modalId: string): number => {
+        const index = modalOrderSignal.value.indexOf(modalId);
+        if (index === -1) return BASE_Z_INDEX;
+        return BASE_Z_INDEX + index;
+    },
+
     /**
      * Opens a modal for an asset. For existing assets (assetId provided),
      * returns the existing modal if already open and maximizes it if minimized.
@@ -62,6 +89,8 @@ export const assetModalManager = {
                 if (existingModal.isMinimized) {
                     assetModalManager.maximizeModal(existingModal.modalId);
                 }
+                // Bring to front
+                assetModalManager.bringToFront(existingModal.modalId);
                 return existingModal.modalId;
             }
         }
@@ -79,6 +108,8 @@ export const assetModalManager = {
         });
 
         assetModalsSignal.value = currentModals;
+        // Register in z-index order
+        assetModalManager.bringToFront(modalId);
         return modalId;
     },
 
@@ -90,6 +121,8 @@ export const assetModalManager = {
         const currentModals = new Map(assetModalsSignal.value);
         currentModals.delete(modalId);
         assetModalsSignal.value = currentModals;
+        // Remove from z-index tracking
+        assetModalManager.removeFromOrder(modalId);
     },
 
     /**
@@ -115,6 +148,8 @@ export const assetModalManager = {
         if (modal) {
             currentModals.set(modalId, { ...modal, isMinimized: false });
             assetModalsSignal.value = currentModals;
+            // Bring to front when maximizing
+            assetModalManager.bringToFront(modalId);
         }
     },
 
@@ -126,11 +161,15 @@ export const assetModalManager = {
         const currentModals = new Map(assetModalsSignal.value);
         const modal = currentModals.get(modalId);
         if (modal) {
+            const newMinimized = !modal.isMinimized;
             currentModals.set(modalId, {
                 ...modal,
-                isMinimized: !modal.isMinimized,
+                isMinimized: newMinimized,
             });
             assetModalsSignal.value = currentModals;
+            if (!newMinimized) {
+                assetModalManager.bringToFront(modalId);
+            }
         }
     },
 
@@ -186,6 +225,7 @@ export const assetModalManager = {
      */
     closeAll: () => {
         assetModalsSignal.value = new Map();
+        modalOrderSignal.value = [];
     },
 
     /**
@@ -208,12 +248,19 @@ export const assetModalManager = {
      */
     closeAllByType: (assetType: RecordType) => {
         const currentModals = new Map(assetModalsSignal.value);
+        const currentOrder = modalOrderSignal.value;
+        const idsToRemove = new Set<string>();
+
         for (const [id, modal] of currentModals.entries()) {
             if (modal.assetType === assetType) {
                 currentModals.delete(id);
+                idsToRemove.add(id);
             }
         }
         assetModalsSignal.value = currentModals;
+        modalOrderSignal.value = currentOrder.filter(
+            (id) => !idsToRemove.has(id)
+        );
     },
 
     /**
@@ -225,6 +272,8 @@ export const assetModalManager = {
         for (const [id, modal] of currentModals.entries()) {
             if (modal.assetType === assetType) {
                 currentModals.set(id, { ...modal, isMinimized: false });
+                // We don't necessarily bring all to front, or maybe the last one?
+                // For now, just maximize.
             }
         }
         assetModalsSignal.value = currentModals;
@@ -320,5 +369,38 @@ export const useAssetModals = () => {
         closeAllByType: assetModalManager.closeAllByType,
         maximizeAllByType: assetModalManager.maximizeAllByType,
         hasModalForAsset,
+    };
+};
+
+/**
+ * Hook to manage modal z-index using signals.
+ * Call this in your modal component to:
+ * 1. Register the modal when it mounts
+ * 2. Get the current z-index (reactive)
+ * 3. Get a function to bring the modal to front
+ */
+export const useAssetModalZIndex = (modalId: string) => {
+    // CRITICAL: Enable signal tracking in this component
+    // This makes the component re-render when signals change
+    useSignals();
+
+    // Register modal on mount and bring to front
+    // Unregister on unmount
+    useEffect(() => {
+        assetModalManager.bringToFront(modalId);
+        return () => assetModalManager.removeFromOrder(modalId);
+    }, [modalId]);
+
+    // Calculate z-index reactively
+    const zIndex = assetModalManager.getZIndex(modalId);
+
+    const bringToFront = useCallback(
+        () => assetModalManager.bringToFront(modalId),
+        [modalId]
+    );
+
+    return {
+        zIndex,
+        bringToFront,
     };
 };

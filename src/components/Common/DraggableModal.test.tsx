@@ -31,11 +31,14 @@ global.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
 describe("DraggableModal Component", () => {
     const mockOnClose = vi.fn();
     const mockOnPositionChange = vi.fn();
+    const mockOnInteract = vi.fn();
 
     const defaultProps: DraggableModalProps = {
         title: "Test Modal",
         onClose: mockOnClose,
         children: <div>Test Content</div>,
+        onInteract: mockOnInteract,
+        zIndex: 1050,
     };
 
     beforeEach(() => {
@@ -92,15 +95,30 @@ describe("DraggableModal Component", () => {
         });
     });
 
-    test("should start drag on mousedown on header", () => {
+    test("should apply z-index from props", () => {
+        render(<DraggableModal {...defaultProps} zIndex={2000} />);
+        const wrapper = document.querySelector(".draggable-modal-wrapper");
+        expect(wrapper).toHaveStyle({
+            zIndex: "2000",
+        });
+    });
+
+    test("should call onInteract on mousedown on header", () => {
         render(<DraggableModal {...defaultProps} />);
         const header = screen.getByTestId("draggable-modal-header");
 
         fireEvent.mouseDown(header, { clientX: 150, clientY: 150 });
 
-        // The component should be in dragging state, but we can't directly check internal state
-        // We'll verify by checking if mousemove would affect position
-        expect(header).toBeInTheDocument();
+        expect(mockOnInteract).toHaveBeenCalled();
+    });
+
+    test("should call onInteract on click", () => {
+        render(<DraggableModal {...defaultProps} />);
+        const modal = screen.getByTestId("draggable-modal");
+
+        fireEvent.click(modal);
+
+        expect(mockOnInteract).toHaveBeenCalled();
     });
 
     test("should update position during drag", () => {
@@ -164,6 +182,7 @@ describe("DraggableModal Component", () => {
         fireEvent.mouseDown(resizeHandle, { clientX: 500, clientY: 400 });
 
         expect(resizeHandle).toBeInTheDocument();
+        expect(mockOnInteract).toHaveBeenCalled();
     });
 
     describe("Container Resize Behavior", () => {

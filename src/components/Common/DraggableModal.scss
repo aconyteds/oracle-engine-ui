@@ -5,6 +5,28 @@
     left: 0;
     min-width: 400px;
 
+    &.minimized {
+        min-width: auto;
+        width: max-content !important;
+        height: auto !important;
+        
+        .modal-content {
+            height: auto;
+            width: auto;
+        }
+
+        .modal-header {
+            padding: 0.5rem 1rem;
+            border-bottom: none;
+            
+            .modal-title {
+                font-size: 1rem;
+                margin-right: 1rem;
+                white-space: nowrap;
+            }
+        }
+    }
+
     .modal-content {
         display: flex;
         flex-direction: column;

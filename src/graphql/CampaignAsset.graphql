@@ -105,3 +105,14 @@ mutation DeleteCampaignAsset($input: DeleteCampaignAssetInput!) {
         assetId
     }
 }
+
+query SearchCampaignAssets($input: SearchCampaignAssetsInput!) {
+    searchCampaignAssets(input: $input) {
+        assets {
+            asset {
+                ...CampaignAssetSummary
+            }
+            score
+        }
+    }
+}
