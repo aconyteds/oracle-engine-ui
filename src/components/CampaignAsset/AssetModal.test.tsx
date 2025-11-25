@@ -26,9 +26,13 @@ vi.mock("../../signals/campaignAssetModals", () => ({
     }),
 }));
 
-vi.mock("../firebase", () => ({
-    LogEvent: vi.fn(),
-}));
+vi.mock("../firebase", async () => {
+    const actual = await vi.importActual("../firebase");
+    return {
+        ...actual,
+        LogEvent: vi.fn(),
+    };
+});
 
 const mockModalState = {
     modalId: "test-modal-id",
@@ -90,16 +94,17 @@ describe("AssetModal Component", () => {
         expect(screen.getByText(/Plot: New Asset/i)).toBeInTheDocument();
     });
 
-    test("should not render when minimized", () => {
+    test("should have minimized class when minimized", () => {
         const minimizedState = { ...mockModalState, isMinimized: true };
 
-        const { container } = render(
+        render(
             <MockedProvider mocks={[]} addTypename={false}>
                 <AssetModal modalState={minimizedState} />
             </MockedProvider>
         );
 
-        expect(container.firstChild).toBeNull();
+        const modal = screen.getByTestId("draggable-modal");
+        expect(modal).toHaveClass("minimized");
     });
 
     test("should render PlotForm for Plot asset type", () => {

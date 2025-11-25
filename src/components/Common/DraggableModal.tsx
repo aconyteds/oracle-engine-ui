@@ -65,6 +65,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     }, [position]);
 
     // Handle minimize/maximize size restoration
+    // biome-ignore lint/correctness/useExhaustiveDependencies: This is only for the rezise handler check when minimized state changes
     useEffect(() => {
         if (isMinimized) {
             // Save current size before minimizing
@@ -77,8 +78,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                 setSize(prevSize);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isMinimized, size, prevSize.width, prevSize]);
+    }, [isMinimized]);
 
     // Utility function to constrain position within container bounds
     const constrainPosition = useCallback(
@@ -189,6 +189,13 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         };
     }, [constrainPosition]);
 
+    const handleMinimize = () => {
+        if (!onMinimize) return;
+        setIsResizing(false);
+        setIsDragging(false);
+        onMinimize();
+    };
+
     const handleModalClick = useCallback(() => {
         // Bring this modal to front when clicked
         onInteract?.();
@@ -286,7 +293,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
 
     const handleResizeMove = useCallback(
         (e: MouseEvent) => {
-            if (!isResizing || !modalRef.current) return;
+            if (!isResizing || !modalRef.current || isMinimized) return;
 
             const deltaX = e.clientX - resizeStart.x;
             const deltaY = e.clientY - resizeStart.y;
@@ -300,7 +307,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
 
             setSize({ width: newWidth, height: newHeight });
         },
-        [isResizing, resizeStart]
+        [isResizing, resizeStart, isMinimized]
     );
 
     useEffect(() => {
@@ -366,14 +373,6 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
             data-testid="draggable-modal"
         >
             <div className="modal-content">
-                {/* Resize handle - only show when not minimized */}
-                {!isMinimized && (
-                    <div
-                        className="resize-handle"
-                        onMouseDown={handleResizeStart}
-                        data-testid="resize-handle"
-                    />
-                )}
                 <div
                     className={`modal-header ${isDragging ? "dragging" : ""}`}
                     onMouseDown={handleMouseDown}
@@ -386,7 +385,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                             <button
                                 type="button"
                                 className="btn btn-sm btn-link text-secondary p-0"
-                                onClick={onMinimize}
+                                onClick={handleMinimize}
                                 aria-label="Minimize"
                                 title="Minimize"
                             >
@@ -427,6 +426,14 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                     >
                         {footer}
                     </div>
+                )}
+                {/* Resize handle - only show when not minimized */}
+                {!isMinimized && (
+                    <div
+                        className="resize-handle"
+                        onMouseDown={handleResizeStart}
+                        data-testid="resize-handle"
+                    />
                 )}
             </div>
         </div>
