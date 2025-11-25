@@ -1,14 +1,15 @@
 import { useThreadsContext } from "@context";
-import React from "react";
+import React, { useRef } from "react";
 import { Container } from "react-bootstrap";
 import "./ChatPanel.scss";
 import { MessageInput } from "../CreateMessage";
-import { Message } from "../Messages";
+import { Message, ScrollToBottomButton } from "../Messages";
 import { ChatHistoryMenu } from "./ChatHistoryMenu";
 
 export const ChatPanel: React.FC = () => {
     const { selectedThread, messageList, isGenerating, generatingContent } =
         useThreadsContext();
+    const chatMessagesRef = useRef<HTMLDivElement>(null);
 
     return (
         <div className="chat-panel">
@@ -18,7 +19,7 @@ export const ChatPanel: React.FC = () => {
                 </div>
                 <ChatHistoryMenu />
             </div>
-            <div className="chat-messages">
+            <div className="chat-messages" ref={chatMessagesRef}>
                 {selectedThread === null ? (
                     <Container className="empty-state d-flex flex-column justify-content-center align-items-center h-100">
                         <h2 className="text-body mb-4">
@@ -44,6 +45,9 @@ export const ChatPanel: React.FC = () => {
                 )}
             </div>
             <div className="chat-input">
+                {selectedThread !== null && (
+                    <ScrollToBottomButton containerRef={chatMessagesRef} />
+                )}
                 <MessageInput />
             </div>
         </div>
