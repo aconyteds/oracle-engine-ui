@@ -24,21 +24,18 @@ export const useAutoGrowTextarea = <T extends HTMLTextAreaElement>(
         const scrollHeight = textarea.scrollHeight;
 
         // Calculate minimum height based on minRows
-        const lineHeight = parseInt(
-            window.getComputedStyle(textarea).lineHeight
-        );
-        const paddingTop = parseInt(
-            window.getComputedStyle(textarea).paddingTop
-        );
-        const paddingBottom = parseInt(
-            window.getComputedStyle(textarea).paddingBottom
-        );
-        const borderTop = parseInt(
-            window.getComputedStyle(textarea).borderTopWidth
-        );
-        const borderBottom = parseInt(
-            window.getComputedStyle(textarea).borderBottomWidth
-        );
+        const computedStyle = window.getComputedStyle(textarea);
+        const lineHeightStr = computedStyle.lineHeight;
+        // lineHeight can be 'normal' or a numeric value
+        // If 'normal', use fontSize * 1.2 as a reasonable default
+        const lineHeight =
+            lineHeightStr === "normal"
+                ? parseFloat(computedStyle.fontSize) * 1.2
+                : parseFloat(lineHeightStr) || 0;
+        const paddingTop = parseInt(computedStyle.paddingTop) || 0;
+        const paddingBottom = parseInt(computedStyle.paddingBottom) || 0;
+        const borderTop = parseInt(computedStyle.borderTopWidth) || 0;
+        const borderBottom = parseInt(computedStyle.borderBottomWidth) || 0;
 
         const minHeight =
             lineHeight * minRows +
