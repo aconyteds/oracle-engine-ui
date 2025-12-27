@@ -1,4 +1,5 @@
 import { type NpcDataFieldsFragment, useGetCampaignAssetQuery } from "@graphql";
+import { useAutoGrowTextarea } from "@hooks";
 import { type AssetModalState } from "@signals";
 import React, {
     forwardRef,
@@ -43,6 +44,19 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
         });
         const [initialized, setInitialized] = useState(false);
         const formId = useId();
+
+        // Auto-grow textarea refs
+        const physicalDescriptionRef = useAutoGrowTextarea(
+            formData.physicalDescription,
+            2
+        );
+        const motivationRef = useAutoGrowTextarea(formData.motivation, 2);
+        const mannerismsRef = useAutoGrowTextarea(formData.mannerisms, 3);
+        const dmNotesRef = useAutoGrowTextarea(formData.dmNotes, 4);
+        const sharedWithPlayersRef = useAutoGrowTextarea(
+            formData.sharedWithPlayers,
+            3
+        );
 
         const { data: assetData } = useGetCampaignAssetQuery({
             variables: {
@@ -121,7 +135,7 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        rows={2}
+                        ref={physicalDescriptionRef}
                         value={formData.physicalDescription}
                         onChange={(e) =>
                             handleInputChange(
@@ -131,6 +145,7 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
                         }
                         placeholder="Describe the NPC's appearance"
                         id={`${formId}-physical-description`}
+                        style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
 
@@ -141,13 +156,14 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        rows={2}
+                        ref={motivationRef}
                         value={formData.motivation}
                         onChange={(e) =>
                             handleInputChange("motivation", e.target.value)
                         }
                         placeholder="What drives this NPC?"
                         id={`${formId}-motivation`}
+                        style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
 
@@ -158,13 +174,14 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        rows={3}
+                        ref={mannerismsRef}
                         value={formData.mannerisms}
                         onChange={(e) =>
                             handleInputChange("mannerisms", e.target.value)
                         }
                         placeholder="Distinctive behaviors, speech patterns, or quirks"
                         id={`${formId}-mannerisms`}
+                        style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
 
@@ -175,13 +192,14 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        rows={4}
+                        ref={dmNotesRef}
                         value={formData.dmNotes}
                         onChange={(e) =>
                             handleInputChange("dmNotes", e.target.value)
                         }
                         placeholder="DM notes (not visible to players)"
                         id={`${formId}-dm-notes`}
+                        style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
 
@@ -192,7 +210,7 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        rows={3}
+                        ref={sharedWithPlayersRef}
                         value={formData.sharedWithPlayers}
                         onChange={(e) =>
                             handleInputChange(
@@ -202,6 +220,7 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
                         }
                         placeholder="Information visible to players"
                         id={`${formId}-shared-with-players`}
+                        style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
             </Form>

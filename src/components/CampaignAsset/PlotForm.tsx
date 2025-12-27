@@ -6,6 +6,7 @@ import {
     Urgency,
     useGetCampaignAssetQuery,
 } from "@graphql";
+import { useAutoGrowTextarea } from "@hooks";
 import { type AssetModalState } from "@signals";
 import React, {
     forwardRef,
@@ -69,6 +70,14 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
         });
         const [initialized, setInitialized] = useState(false);
         const formId = useId();
+
+        // Auto-grow textarea refs
+        const summaryRef = useAutoGrowTextarea(formData.summary, 3);
+        const dmNotesRef = useAutoGrowTextarea(formData.dmNotes, 4);
+        const sharedWithPlayersRef = useAutoGrowTextarea(
+            formData.sharedWithPlayers,
+            3
+        );
 
         const { data: assetData } = useGetCampaignAssetQuery({
             variables: {
@@ -159,13 +168,14 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        rows={3}
+                        ref={summaryRef}
                         value={formData.summary}
                         onChange={(e) =>
                             handleInputChange("summary", e.target.value)
                         }
                         placeholder="Brief description of the plot"
                         id={`${formId}-summary`}
+                        style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
 
@@ -260,13 +270,14 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        rows={4}
+                        ref={dmNotesRef}
                         value={formData.dmNotes}
                         onChange={(e) =>
                             handleInputChange("dmNotes", e.target.value)
                         }
                         placeholder="DM notes (not visible to players)"
                         id={`${formId}-dm-notes`}
+                        style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
 
@@ -277,7 +288,7 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        rows={3}
+                        ref={sharedWithPlayersRef}
                         value={formData.sharedWithPlayers}
                         onChange={(e) =>
                             handleInputChange(
@@ -287,6 +298,7 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                         }
                         placeholder="Information visible to players"
                         id={`${formId}-shared-with-players`}
+                        style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
             </Form>
