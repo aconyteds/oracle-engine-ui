@@ -3,7 +3,13 @@ import {
     faWindowMinimize,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import "./DraggableModal.scss";
 
 // Minimum visible pixels of modal header to keep accessible
@@ -57,6 +63,8 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     });
     const modalRef = useRef<HTMLDivElement>(null);
     const positionRef = useRef(position);
+
+    const [containerHeight, setContainerHeight] = useState(0);
 
     // Keep position ref in sync with position state
     useEffect(() => {
@@ -140,6 +148,8 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
             if (!modalRef.current) return;
 
             const containerRect = container.getBoundingClientRect();
+            setContainerHeight(containerRect.height);
+
             const modalRect = modalRef.current.getBoundingClientRect();
 
             const { position: constrainedPosition, needsUpdate } =
@@ -163,6 +173,8 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         const resizeObserver = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const containerRect = entry.contentRect;
+                setContainerHeight(containerRect.height);
+
                 const modalRect = modalRef.current?.getBoundingClientRect();
 
                 if (!modalRect) continue;
@@ -341,6 +353,10 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         handleMouseUp,
     ]);
 
+    const maxHeight = useMemo<string>(() => {
+        return `${Math.max(400, containerHeight - 80)}px`;
+    }, [containerHeight]);
+
     return (
         <div
             ref={modalRef}
@@ -357,6 +373,8 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                     : size.height > 0
                       ? `${size.height}px`
                       : "auto",
+                minHeight: "400px",
+                maxHeight,
             }}
             onClick={handleModalClick}
             onKeyDown={(e) => {
@@ -410,7 +428,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                 </div>
                 {!isMinimized && (
                     <div
-                        className="modal-body"
+                        className="modal-body overflow-auto"
                         data-testid="draggable-modal-body"
                     >
                         {children}

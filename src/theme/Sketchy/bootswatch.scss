@@ -163,6 +163,11 @@ select.form-control {
     border-radius: $border-radius-lg-sketchy !important;
 }
 
+textarea.form-control {
+    // Adding padding to account for the odd border-radius to ensure the text is visible
+    padding: 15px 20px;
+}
+
 [type="checkbox"] {
     position: relative;
     width: 0;
