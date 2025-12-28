@@ -18,6 +18,7 @@ import {
 import { assetModalManager, useAssetModals } from "@signals";
 import React, { useEffect, useMemo, useState } from "react";
 import { Dropdown } from "react-bootstrap";
+import "./AssetTypeMenu.scss";
 
 interface AssetTypeMenuProps {
     assetType: RecordType;
@@ -132,132 +133,142 @@ export const AssetTypeMenu: React.FC<AssetTypeMenuProps> = ({
                 </div>
                 <FontAwesomeIcon icon={faChevronRight} size="xs" />
             </Dropdown.Toggle>
-            <Dropdown.Menu renderOnMount>
-                {/* Generate New */}
-                <Dropdown.Item onClick={handleGenerateNew}>
-                    <FontAwesomeIcon icon={faPlus} className="me-2" />
-                    Generate New
-                </Dropdown.Item>
+            <Dropdown.Menu renderOnMount className="asset-type-menu">
+                <div className="asset-type-menu-body">
+                    {/* Generate New */}
+                    <Dropdown.Item onClick={handleGenerateNew}>
+                        <FontAwesomeIcon icon={faPlus} className="me-2" />
+                        Generate New
+                    </Dropdown.Item>
 
-                <Dropdown.Divider />
+                    <Dropdown.Divider />
 
-                {/* Open modals section */}
-                {count > 0 && (
-                    <>
-                        <Dropdown.Header className="d-flex justify-content-between align-items-center">
-                            <span>Active {label}s</span>
-                            <div className="d-flex gap-2">
-                                <FontAwesomeIcon
-                                    icon={faWindowMinimize}
-                                    size="sm"
-                                    title="Minimize All"
-                                    onClick={handleMinimizeAll}
-                                    className="minimize-all-icon cursor-pointer"
-                                    role="button"
-                                    tabIndex={0}
-                                />
-                                <FontAwesomeIcon
-                                    icon={faWindowMaximize}
-                                    size="sm"
-                                    title="Maximize All"
-                                    onClick={handleMaximizeAll}
-                                    className="maximize-all-icon cursor-pointer"
-                                    role="button"
-                                    tabIndex={0}
-                                />
-                                <FontAwesomeIcon
-                                    icon={faXmark}
-                                    size="sm"
-                                    title="Close All"
-                                    onClick={handleCloseAll}
-                                    className="close-icon cursor-pointer"
-                                    role="button"
-                                    tabIndex={0}
-                                />
-                            </div>
-                        </Dropdown.Header>
-                        {openModals.map((modal) => (
-                            <Dropdown.Item
-                                key={modal.modalId}
-                                onClick={() =>
-                                    handleToggleMinimize(modal.modalId)
-                                }
-                                className="d-flex gap-2 justify-content-between align-items-center asset-item"
-                            >
-                                <span className="text-truncate">
-                                    {modal.name}
-                                </span>
+                    {/* Open modals section */}
+                    {count > 0 && (
+                        <>
+                            <Dropdown.Header className="d-flex justify-content-between align-items-center">
+                                <span>Active {label}s</span>
                                 <div className="d-flex gap-2">
-                                    {modal.isMinimized ? (
-                                        <FontAwesomeIcon
-                                            icon={faWindowMaximize}
-                                            size="sm"
-                                            title="Maximize"
-                                        />
-                                    ) : (
-                                        <FontAwesomeIcon
-                                            icon={faWindowMinimize}
-                                            size="sm"
-                                            title="Minimize"
-                                        />
-                                    )}
+                                    <FontAwesomeIcon
+                                        icon={faWindowMinimize}
+                                        size="sm"
+                                        title="Minimize All"
+                                        onClick={handleMinimizeAll}
+                                        className="minimize-all-icon cursor-pointer"
+                                        role="button"
+                                        tabIndex={0}
+                                    />
+                                    <FontAwesomeIcon
+                                        icon={faWindowMaximize}
+                                        size="sm"
+                                        title="Maximize All"
+                                        onClick={handleMaximizeAll}
+                                        className="maximize-all-icon cursor-pointer"
+                                        role="button"
+                                        tabIndex={0}
+                                    />
                                     <FontAwesomeIcon
                                         icon={faXmark}
                                         size="sm"
-                                        title="Close"
-                                        onClick={(e) =>
-                                            handleCloseModal(modal.modalId, e)
-                                        }
-                                        className="close-icon"
+                                        title="Close All"
+                                        onClick={handleCloseAll}
+                                        className="close-icon cursor-pointer"
                                         role="button"
                                         tabIndex={0}
                                     />
                                 </div>
-                            </Dropdown.Item>
-                        ))}
-                    </>
-                )}
-
-                {count > 0 && recentAssets.length > 0 && <Dropdown.Divider />}
-
-                {/* Recent section */}
-                {recentAssets.length > 0 && (
-                    <>
-                        <Dropdown.Header>Recent {label}s</Dropdown.Header>
-                        {recentAssets.map((asset) => {
-                            const isOpen = hasModalForAsset(asset.id);
-
-                            return (
+                            </Dropdown.Header>
+                            {openModals.map((modal) => (
                                 <Dropdown.Item
-                                    key={asset.id}
+                                    key={modal.modalId}
                                     onClick={() =>
-                                        handleOpenAsset(asset.id, asset.name)
+                                        handleToggleMinimize(modal.modalId)
                                     }
-                                    className="d-flex justify-content-between align-items-center gap-2"
+                                    className="d-flex gap-2 justify-content-between align-items-center asset-item"
                                 >
                                     <span className="text-truncate">
-                                        {asset.name}
+                                        {modal.name}
                                     </span>
-                                    {isOpen && (
+                                    <div className="d-flex gap-2">
+                                        {modal.isMinimized ? (
+                                            <FontAwesomeIcon
+                                                icon={faWindowMaximize}
+                                                size="sm"
+                                                title="Maximize"
+                                            />
+                                        ) : (
+                                            <FontAwesomeIcon
+                                                icon={faWindowMinimize}
+                                                size="sm"
+                                                title="Minimize"
+                                            />
+                                        )}
                                         <FontAwesomeIcon
-                                            icon={icon}
-                                            size="xs"
-                                            className="text-muted"
-                                            title="Currently open"
+                                            icon={faXmark}
+                                            size="sm"
+                                            title="Close"
+                                            onClick={(e) =>
+                                                handleCloseModal(
+                                                    modal.modalId,
+                                                    e
+                                                )
+                                            }
+                                            className="close-icon"
+                                            role="button"
+                                            tabIndex={0}
                                         />
-                                    )}
+                                    </div>
                                 </Dropdown.Item>
-                            );
-                        })}
-                    </>
-                )}
+                            ))}
+                        </>
+                    )}
 
-                {/* Empty state */}
-                {count === 0 && recentAssets.length === 0 && (
-                    <Dropdown.ItemText className="text-muted">
-                        No {label.toLowerCase()}s
-                    </Dropdown.ItemText>
-                )}
+                    {count > 0 && recentAssets.length > 0 && (
+                        <Dropdown.Divider />
+                    )}
+
+                    {/* Recent section */}
+                    {recentAssets.length > 0 && (
+                        <>
+                            <Dropdown.Header>Recent {label}s</Dropdown.Header>
+                            {recentAssets.map((asset) => {
+                                const isOpen = hasModalForAsset(asset.id);
+
+                                return (
+                                    <Dropdown.Item
+                                        key={asset.id}
+                                        onClick={() =>
+                                            handleOpenAsset(
+                                                asset.id,
+                                                asset.name
+                                            )
+                                        }
+                                        className="d-flex justify-content-between align-items-center gap-2"
+                                    >
+                                        <span className="text-truncate">
+                                            {asset.name}
+                                        </span>
+                                        {isOpen && (
+                                            <FontAwesomeIcon
+                                                icon={icon}
+                                                size="xs"
+                                                className="text-muted"
+                                                title="Currently open"
+                                            />
+                                        )}
+                                    </Dropdown.Item>
+                                );
+                            })}
+                        </>
+                    )}
+
+                    {/* Empty state */}
+                    {count === 0 && recentAssets.length === 0 && (
+                        <Dropdown.ItemText className="text-muted">
+                            No {label.toLowerCase()}s
+                        </Dropdown.ItemText>
+                    )}
+                </div>
             </Dropdown.Menu>
         </Dropdown>
     );

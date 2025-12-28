@@ -11,41 +11,65 @@ export const useAutoGrowTextarea = <T extends HTMLTextAreaElement>(
     minRows: number = 2
 ) => {
     const textareaRef = useRef<T>(null);
+    const previousWidthRef = useRef<number>(0);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: We need value in dependencies to trigger resize on content changes
     useEffect(() => {
         const textarea = textareaRef.current;
         if (!textarea) return;
 
-        // Reset height to auto to get the correct scrollHeight
-        textarea.style.height = "auto";
+        const adjustHeight = () => {
+            // Reset height to auto to get the correct scrollHeight
+            textarea.style.height = "auto";
 
-        // Calculate the height based on content
-        const scrollHeight = textarea.scrollHeight;
+            // Calculate the height based on content
+            const scrollHeight = textarea.scrollHeight;
 
-        // Calculate minimum height based on minRows
-        const computedStyle = window.getComputedStyle(textarea);
-        const lineHeightStr = computedStyle.lineHeight;
-        // lineHeight can be 'normal' or a numeric value
-        // If 'normal', use fontSize * 1.2 as a reasonable default
-        const lineHeight =
-            lineHeightStr === "normal"
-                ? parseFloat(computedStyle.fontSize) * 1.2
-                : parseFloat(lineHeightStr) || 0;
-        const paddingTop = parseInt(computedStyle.paddingTop) || 0;
-        const paddingBottom = parseInt(computedStyle.paddingBottom) || 0;
-        const borderTop = parseInt(computedStyle.borderTopWidth) || 0;
-        const borderBottom = parseInt(computedStyle.borderBottomWidth) || 0;
+            // Calculate minimum height based on minRows
+            const computedStyle = window.getComputedStyle(textarea);
+            const lineHeightStr = computedStyle.lineHeight;
+            // lineHeight can be 'normal' or a numeric value
+            // If 'normal', use fontSize * 1.2 as a reasonable default
+            const lineHeight =
+                lineHeightStr === "normal"
+                    ? parseFloat(computedStyle.fontSize) * 1.2
+                    : parseFloat(lineHeightStr) || 0;
+            const paddingTop = parseInt(computedStyle.paddingTop) || 0;
+            const paddingBottom = parseInt(computedStyle.paddingBottom) || 0;
+            const borderTop = parseInt(computedStyle.borderTopWidth) || 0;
+            const borderBottom = parseInt(computedStyle.borderBottomWidth) || 0;
 
-        const minHeight =
-            lineHeight * minRows +
-            paddingTop +
-            paddingBottom +
-            borderTop +
-            borderBottom;
+            const minHeight =
+                lineHeight * minRows +
+                paddingTop +
+                paddingBottom +
+                borderTop +
+                borderBottom;
 
-        // Set the height to the larger of scrollHeight or minHeight
-        textarea.style.height = `${Math.max(scrollHeight, minHeight)}px`;
+            // Set the height to the larger of scrollHeight or minHeight
+            textarea.style.height = `${Math.max(scrollHeight, minHeight)}px`;
+        };
+
+        // Initial adjustment
+        adjustHeight();
+
+        // Setup ResizeObserver to handle width changes (e.g. window resize, modal resize)
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                // Only readjust if width has changed to avoid infinite loops
+                // (adjusting height triggers resize observer)
+                if (entry.contentRect.width !== previousWidthRef.current) {
+                    previousWidthRef.current = entry.contentRect.width;
+                    adjustHeight();
+                }
+            }
+        });
+
+        resizeObserver.observe(textarea);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
     }, [value, minRows]);
 
     return textareaRef;
