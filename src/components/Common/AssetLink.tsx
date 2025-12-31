@@ -31,13 +31,11 @@ export const AssetLink: React.FC<AssetLinkProps> = ({
                 let assetType: RecordType | undefined;
 
                 // Check against RecordType values
-                const normalizedType = typeString;
+                const typeName = typeString;
                 if (
-                    Object.values(RecordType).includes(
-                        normalizedType as RecordType
-                    )
+                    Object.values(RecordType).includes(typeName as RecordType)
                 ) {
-                    assetType = normalizedType as RecordType;
+                    assetType = typeName as RecordType;
                 } else {
                     // Fallback: try to match case-insensitive match against values
                     const matchingValue = Object.values(RecordType).find(
