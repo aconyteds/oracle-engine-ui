@@ -1,5 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import { ASSET_LINK_REGEX } from "@/constants";
+import { AssetLink } from "./AssetLink";
 import { CodeBlock } from "./CodeBlock";
 
 interface MarkdownRendererProps {
@@ -34,6 +36,22 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 ul: ({ children }) => <ul className="mb-3">{children}</ul>,
                 ol: ({ children }) => <ol className="mb-3">{children}</ol>,
                 p: ({ children }) => <p className="mb-3">{children}</p>,
+                a: AssetLink,
+            }}
+            urlTransform={(url) => {
+                if (url.match(ASSET_LINK_REGEX)) {
+                    return url;
+                }
+                // Default behavior for other URLs
+                // If it starts with http/https/mailto/tel, keep it.
+                // Otherwise it might be relative or unsafe.
+                // ReactMarkdown's default is strict, but we can be slightly permissive or just use default by returning it
+                const safeProtocol = /^(https?|mailto|tel|\/|#)/;
+                if (safeProtocol.test(url)) {
+                    return url;
+                }
+                // For URLs that don't match asset links or safe protocols, return an empty string to avoid unsafe URLs.
+                return "";
             }}
         >
             {content}

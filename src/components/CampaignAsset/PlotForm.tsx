@@ -1,5 +1,3 @@
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     PlotDataFieldsFragment,
     PlotStatus,
@@ -23,7 +21,6 @@ export interface PlotFormData {
     playerSummary: string;
     status: PlotStatus;
     urgency: Urgency;
-    relatedAssets: RelatedAsset[];
     dmNotes: string;
     sharedWithPlayers: string;
 }
@@ -35,11 +32,6 @@ export interface PlotFormRef {
 export interface PlotFormProps {
     modalState: AssetModalState;
     onChange?: (isValid: boolean) => void;
-}
-
-interface RelatedAsset {
-    relatedAssetId: string;
-    relationshipSummary: string;
 }
 
 const STATUS_OPTIONS: { value: PlotStatus; label: string }[] = [
@@ -64,7 +56,6 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
             playerSummary: "",
             status: PlotStatus.Rumored,
             urgency: Urgency.Ongoing,
-            relatedAssets: [],
             dmNotes: "",
             sharedWithPlayers: "",
         });
@@ -101,7 +92,6 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                 playerSummary: asset.playerSummary || "",
                 status: plotData?.status || PlotStatus.InProgress,
                 urgency: plotData?.urgency || Urgency.Ongoing,
-                relatedAssets: plotData?.relatedAssets || [],
                 dmNotes: plotData?.dmNotes || "",
                 sharedWithPlayers: plotData?.sharedWithPlayers || "",
             };
@@ -121,20 +111,11 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
 
         const handleInputChange = (
             field: keyof PlotFormData,
-            value: string | PlotStatus | Urgency | RelatedAsset[]
+            value: string | PlotStatus | Urgency
         ) => {
             setFormData((prev) => ({
                 ...prev,
                 [field]: value,
-            }));
-        };
-
-        const handleRemoveRelatedAsset = (assetId: string) => {
-            setFormData((prev) => ({
-                ...prev,
-                relatedAssets: prev.relatedAssets.filter(
-                    (a) => a.relatedAssetId !== assetId
-                ),
             }));
         };
 
@@ -234,34 +215,6 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
                         </Form.Group>
                     </div>
                 </div>
-
-                {/* Related Assets */}
-                <Form.Group className="mb-3">
-                    <Form.Label>Related</Form.Label>
-                    <div className="d-flex flex-wrap gap-2">
-                        {formData.relatedAssets.map((asset) => (
-                            <div
-                                key={asset.relatedAssetId}
-                                className="badge bg-secondary d-flex align-items-center gap-2"
-                                style={{
-                                    fontSize: "0.9rem",
-                                    padding: "0.5rem",
-                                }}
-                            >
-                                {asset.relationshipSummary}
-                                <FontAwesomeIcon
-                                    icon={faXmark}
-                                    className="cursor-pointer"
-                                    onClick={() =>
-                                        handleRemoveRelatedAsset(
-                                            asset.relatedAssetId
-                                        )
-                                    }
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </Form.Group>
 
                 {/* Notes */}
                 <Form.Group className="mb-3">

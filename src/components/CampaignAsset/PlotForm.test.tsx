@@ -32,7 +32,6 @@ describe("PlotForm Component", () => {
         ).toBeInTheDocument();
         expect(screen.getByText(/Status/i)).toBeInTheDocument();
         expect(screen.getByText(/Urgency/i)).toBeInTheDocument();
-        expect(screen.getByText(/Related/i)).toBeInTheDocument();
         expect(
             screen.getByPlaceholderText("DM notes (not visible to players)")
         ).toBeInTheDocument();
@@ -276,7 +275,6 @@ describe("PlotForm Component", () => {
         expect(formData?.name).toBe("");
         expect(formData?.status).toBe(PlotStatus.Rumored);
         expect(formData?.urgency).toBe(Urgency.Ongoing);
-        expect(formData?.relatedAssets).toEqual([]);
     });
 
     test("should return updated form data after changes", () => {
