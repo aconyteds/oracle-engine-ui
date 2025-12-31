@@ -87,7 +87,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                     sharedInput.plotData = {
                         status: plotData.status,
                         urgency: plotData.urgency,
-                        relatedAssets: plotData.relatedAssets,
                         dmNotes: plotData.dmNotes,
                         sharedWithPlayers: formData.sharedWithPlayers,
                     };

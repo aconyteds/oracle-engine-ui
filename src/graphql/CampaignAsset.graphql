@@ -22,10 +22,6 @@ fragment PlotDataFields on PlotData {
     sharedWithPlayers
     status
     urgency
-    relatedAssets {
-        relatedAssetId
-        relationshipSummary
-    }
 }
 
 fragment FullCampaignAssetDetails on CampaignAsset {
