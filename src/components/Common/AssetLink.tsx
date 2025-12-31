@@ -37,7 +37,7 @@ export const AssetLink: React.FC<AssetLinkProps> = ({
                 ) {
                     assetType = typeName as RecordType;
                 } else {
-                    // Fallback: try to match case-insensitive match against values
+                    // Fallback: try to match case-insensitively against values
                     const matchingValue = Object.values(RecordType).find(
                         (val) => val.toLowerCase() === typeString.toLowerCase()
                     );
