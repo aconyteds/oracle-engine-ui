@@ -50,7 +50,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 if (safeProtocol.test(url)) {
                     return url;
                 }
-                return url;
+                // For URLs that don't match asset links or safe protocols, return an empty string to avoid unsafe URLs.
+                return "";
             }}
         >
             {content}
