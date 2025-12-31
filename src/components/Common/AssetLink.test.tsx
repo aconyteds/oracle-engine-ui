@@ -545,6 +545,7 @@ describe("AssetLink Component", () => {
         });
 
         test("should reject uppercase hex characters in ID", () => {
+            // MongoDB ObjectIDs are typically lowercase hex, so uppercase is rejected
             const invalidId = "ABCDEF1234567890ABCDEF12";
             render(
                 <AssetLink href={`Plot:${invalidId}`}>Uppercase Hex</AssetLink>
@@ -556,6 +557,7 @@ describe("AssetLink Component", () => {
         });
 
         test("should reject mixed case hex characters in ID", () => {
+            // MongoDB ObjectIDs are typically lowercase hex, so mixed case is rejected
             const invalidId = "AbCdEf1234567890aBcDeF12";
             render(
                 <AssetLink href={`Plot:${invalidId}`}>Mixed Hex Case</AssetLink>
