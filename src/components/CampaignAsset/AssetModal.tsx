@@ -78,8 +78,10 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 UpdateCampaignAssetInput | CreateCampaignAssetInput
             > = {
                 name: formData.name,
-                summary: formData.summary,
+                gmSummary: formData.gmSummary,
                 playerSummary: formData.playerSummary,
+                gmNotes: formData.gmNotes,
+                playerNotes: formData.playerNotes,
             };
             switch (assetType) {
                 case RecordType.Plot: {
@@ -87,8 +89,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                     sharedInput.plotData = {
                         status: plotData.status,
                         urgency: plotData.urgency,
-                        dmNotes: plotData.dmNotes,
-                        sharedWithPlayers: formData.sharedWithPlayers,
                     };
                     break;
                 }
@@ -98,8 +98,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                         physicalDescription: npcData.physicalDescription,
                         motivation: npcData.motivation,
                         mannerisms: npcData.mannerisms,
-                        dmNotes: npcData.dmNotes,
-                        sharedWithPlayers: npcData.sharedWithPlayers,
                     };
                     break;
                 }
@@ -110,8 +108,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                         condition: locationData.condition,
                         characters: locationData.characters,
                         pointsOfInterest: locationData.pointsOfInterest,
-                        dmNotes: locationData.dmNotes,
-                        sharedWithPlayers: locationData.sharedWithPlayers,
                     };
                     break;
                 }

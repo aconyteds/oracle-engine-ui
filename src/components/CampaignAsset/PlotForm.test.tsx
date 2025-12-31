@@ -33,7 +33,7 @@ describe("PlotForm Component", () => {
         expect(screen.getByText(/Status/i)).toBeInTheDocument();
         expect(screen.getByText(/Urgency/i)).toBeInTheDocument();
         expect(
-            screen.getByPlaceholderText("DM notes (not visible to players)")
+            screen.getByPlaceholderText("GM notes (not visible to players)")
         ).toBeInTheDocument();
         expect(
             screen.getByPlaceholderText("Information visible to players")
@@ -146,7 +146,7 @@ describe("PlotForm Component", () => {
         expect(urgencySelect.value).toBe(Urgency.Critical);
     });
 
-    test("should update DM notes field on input", () => {
+    test("should update GM notes field on input", () => {
         render(
             <MockedProvider mocks={[]} addTypename={false}>
                 <PlotForm modalState={mockModalState} />
@@ -154,14 +154,14 @@ describe("PlotForm Component", () => {
         );
 
         const notesInput = screen.getByPlaceholderText(
-            "DM notes (not visible to players)"
+            "GM notes (not visible to players)"
         ) as HTMLTextAreaElement;
 
         fireEvent.change(notesInput, {
-            target: { value: "Secret DM notes" },
+            target: { value: "Secret GM notes" },
         });
 
-        expect(notesInput.value).toBe("Secret DM notes");
+        expect(notesInput.value).toBe("Secret GM notes");
     });
 
     test("should update shared with players field on input", () => {
@@ -301,7 +301,7 @@ describe("PlotForm Component", () => {
         const formData = ref.current?.getFormData();
 
         expect(formData?.name).toBe("Test Plot");
-        expect(formData?.summary).toBe("Test Summary");
+        expect(formData?.gmSummary).toBe("Test Summary");
     });
 
     test("should have proper SCSS class on form", () => {
@@ -329,7 +329,7 @@ describe("PlotForm Component", () => {
             screen.getByPlaceholderText("Brief description of the plot")
         ).toBeInTheDocument();
         expect(
-            screen.getByPlaceholderText("DM notes (not visible to players)")
+            screen.getByPlaceholderText("GM notes (not visible to players)")
         ).toBeInTheDocument();
         expect(
             screen.getByPlaceholderText("Information visible to players")

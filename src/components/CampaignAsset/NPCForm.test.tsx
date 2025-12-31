@@ -40,7 +40,7 @@ describe("NPCForm Component", () => {
             )
         ).toBeInTheDocument();
         expect(
-            screen.getByPlaceholderText("DM notes (not visible to players)")
+            screen.getByPlaceholderText("GM notes (not visible to players)")
         ).toBeInTheDocument();
         expect(
             screen.getByPlaceholderText("Information visible to players")
@@ -148,7 +148,7 @@ describe("NPCForm Component", () => {
         expect(mannerismsInput.value).toBe("Cracks knuckles often");
     });
 
-    test("should update DM notes field on input", () => {
+    test("should update GM notes field on input", () => {
         render(
             <MockedProvider mocks={[]} addTypename={false}>
                 <NPCForm modalState={mockModalState} />
@@ -156,14 +156,14 @@ describe("NPCForm Component", () => {
         );
 
         const notesInput = screen.getByPlaceholderText(
-            "DM notes (not visible to players)"
+            "GM notes (not visible to players)"
         ) as HTMLTextAreaElement;
 
         fireEvent.change(notesInput, {
-            target: { value: "Secret DM notes" },
+            target: { value: "Secret GM notes" },
         });
 
-        expect(notesInput.value).toBe("Secret DM notes");
+        expect(notesInput.value).toBe("Secret GM notes");
     });
 
     test("should update shared with players field on input", () => {
@@ -302,7 +302,7 @@ describe("NPCForm Component", () => {
             )
         ).toBeInTheDocument();
         expect(
-            screen.getByPlaceholderText("DM notes (not visible to players)")
+            screen.getByPlaceholderText("GM notes (not visible to players)")
         ).toBeInTheDocument();
         expect(
             screen.getByPlaceholderText("Information visible to players")

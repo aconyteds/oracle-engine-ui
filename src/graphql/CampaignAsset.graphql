@@ -2,24 +2,18 @@ fragment LocationDataFields on LocationData {
     characters
     condition
     description
-    dmNotes
     imageUrl
     pointsOfInterest
-    sharedWithPlayers
 }
 
 fragment NPCDataFields on NPCData {
-    dmNotes
     imageUrl
     mannerisms
     motivation
     physicalDescription
-    sharedWithPlayers
 }
 
 fragment PlotDataFields on PlotData {
-    dmNotes
-    sharedWithPlayers
     status
     urgency
 }
@@ -28,9 +22,11 @@ fragment FullCampaignAssetDetails on CampaignAsset {
     campaignId
     id
     name
+    gmSummary
+    gmNotes
     playerSummary
+    playerNotes
     recordType
-    summary
     updatedAt
     data {
         ... on LocationData {
@@ -48,7 +44,7 @@ fragment FullCampaignAssetDetails on CampaignAsset {
 fragment CampaignAssetSummary on CampaignAsset {
     id
     name
-    summary
+    gmSummary
     recordType
     updatedAt
 }
@@ -74,7 +70,7 @@ query GetAssetSummary($input: GetCampaignAssetInput!) {
         asset {
             id
             name
-            summary
+            gmSummary
             recordType
         }
     }

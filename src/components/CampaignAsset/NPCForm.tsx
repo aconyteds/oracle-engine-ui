@@ -12,13 +12,13 @@ import { Form } from "react-bootstrap";
 
 export interface NPCFormData {
     name: string;
-    summary: string;
+    gmSummary: string;
     playerSummary: string;
     physicalDescription: string;
     motivation: string;
     mannerisms: string;
-    dmNotes: string;
-    sharedWithPlayers: string;
+    gmNotes: string;
+    playerNotes: string;
 }
 
 export interface NPCFormRef {
@@ -34,13 +34,13 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
     ({ modalState, onChange }, ref) => {
         const [formData, setFormData] = useState<NPCFormData>({
             name: modalState.name === "New Asset" ? "" : modalState.name,
-            summary: "",
+            gmSummary: "",
             playerSummary: "",
             physicalDescription: "",
             motivation: "",
             mannerisms: "",
-            dmNotes: "",
-            sharedWithPlayers: "",
+            gmNotes: "",
+            playerNotes: "",
         });
         const [initialized, setInitialized] = useState(false);
         const formId = useId();
@@ -52,11 +52,8 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
         );
         const motivationRef = useAutoGrowTextarea(formData.motivation, 2);
         const mannerismsRef = useAutoGrowTextarea(formData.mannerisms, 3);
-        const dmNotesRef = useAutoGrowTextarea(formData.dmNotes, 4);
-        const sharedWithPlayersRef = useAutoGrowTextarea(
-            formData.sharedWithPlayers,
-            3
-        );
+        const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
+        const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
 
         const { data: assetData } = useGetCampaignAssetQuery({
             variables: {
@@ -76,13 +73,13 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
 
             const loadedData = {
                 name: asset.name || "",
-                summary: asset.summary || "",
+                gmSummary: asset.gmSummary || "",
                 playerSummary: asset.playerSummary || "",
                 physicalDescription: npcData?.physicalDescription || "",
                 motivation: npcData?.motivation || "",
                 mannerisms: npcData?.mannerisms || "",
-                dmNotes: npcData?.dmNotes || "",
-                sharedWithPlayers: npcData?.sharedWithPlayers || "",
+                gmNotes: asset.gmNotes || "",
+                playerNotes: asset.playerNotes || "",
             };
             setFormData(loadedData);
             setInitialized(true);
@@ -185,41 +182,38 @@ const NPCFormComponent = forwardRef<NPCFormRef, NPCFormProps>(
                     />
                 </Form.Group>
 
-                {/* DM Notes */}
+                {/* GM Notes */}
                 <Form.Group className="mb-3">
-                    <Form.Label htmlFor={`${formId}-dm-notes`}>
-                        DM Notes
+                    <Form.Label htmlFor={`${formId}-gm-notes`}>
+                        GM Notes
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        ref={dmNotesRef}
-                        value={formData.dmNotes}
+                        ref={gmNotesRef}
+                        value={formData.gmNotes}
                         onChange={(e) =>
-                            handleInputChange("dmNotes", e.target.value)
+                            handleInputChange("gmNotes", e.target.value)
                         }
-                        placeholder="DM notes (not visible to players)"
-                        id={`${formId}-dm-notes`}
+                        placeholder="GM notes (not visible to players)"
+                        id={`${formId}-gm-notes`}
                         style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
 
                 {/* Shared with Players */}
                 <Form.Group className="mb-3">
-                    <Form.Label htmlFor={`${formId}-shared-with-players`}>
-                        Shared with Players
+                    <Form.Label htmlFor={`${formId}-player-notes`}>
+                        Player Notes (Shared)
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        ref={sharedWithPlayersRef}
-                        value={formData.sharedWithPlayers}
+                        ref={playerNotesRef}
+                        value={formData.playerNotes}
                         onChange={(e) =>
-                            handleInputChange(
-                                "sharedWithPlayers",
-                                e.target.value
-                            )
+                            handleInputChange("playerNotes", e.target.value)
                         }
                         placeholder="Information visible to players"
-                        id={`${formId}-shared-with-players`}
+                        id={`${formId}-player-notes`}
                         style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>

@@ -12,14 +12,14 @@ import { Form } from "react-bootstrap";
 
 export interface LocationFormData {
     name: string;
-    summary: string;
+    gmSummary: string;
     playerSummary: string;
     description: string;
     condition: string;
     characters: string;
     pointsOfInterest: string;
-    dmNotes: string;
-    sharedWithPlayers: string;
+    gmNotes: string;
+    playerNotes: string;
 }
 
 export interface LocationFormRef {
@@ -35,31 +35,28 @@ const LocationFormComponent = forwardRef<LocationFormRef, LocationFormProps>(
     ({ modalState, onChange }, ref) => {
         const [formData, setFormData] = useState<LocationFormData>({
             name: modalState.name === "New Asset" ? "" : modalState.name,
-            summary: "",
+            gmSummary: "",
             playerSummary: "",
             description: "",
             condition: "",
             characters: "",
             pointsOfInterest: "",
-            dmNotes: "",
-            sharedWithPlayers: "",
+            gmNotes: "",
+            playerNotes: "",
         });
         const [initialized, setInitialized] = useState(false);
         const formId = useId();
 
         // Auto-grow textarea refs
-        const summaryRef = useAutoGrowTextarea(formData.summary, 2);
+        const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 2);
         const descriptionRef = useAutoGrowTextarea(formData.description, 3);
         const charactersRef = useAutoGrowTextarea(formData.characters, 2);
         const pointsOfInterestRef = useAutoGrowTextarea(
             formData.pointsOfInterest,
             2
         );
-        const dmNotesRef = useAutoGrowTextarea(formData.dmNotes, 4);
-        const sharedWithPlayersRef = useAutoGrowTextarea(
-            formData.sharedWithPlayers,
-            3
-        );
+        const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
+        const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
 
         const { data: assetData } = useGetCampaignAssetQuery({
             variables: {
@@ -79,14 +76,14 @@ const LocationFormComponent = forwardRef<LocationFormRef, LocationFormProps>(
 
             const loadedData = {
                 name: asset.name || "",
-                summary: asset.summary || "",
+                gmSummary: asset.gmSummary || "",
                 playerSummary: asset.playerSummary || "",
                 description: locationData?.description || "",
                 condition: locationData?.condition || "",
                 characters: locationData?.characters || "",
                 pointsOfInterest: locationData?.pointsOfInterest || "",
-                dmNotes: locationData?.dmNotes || "",
-                sharedWithPlayers: locationData?.sharedWithPlayers || "",
+                gmNotes: asset.gmNotes || "",
+                playerNotes: asset.playerNotes || "",
             };
             setFormData(loadedData);
             setInitialized(true);
@@ -135,20 +132,20 @@ const LocationFormComponent = forwardRef<LocationFormRef, LocationFormProps>(
                     </Form.Control.Feedback>
                 </Form.Group>
 
-                {/* Summary */}
+                {/* GM Summary */}
                 <Form.Group className="mb-3">
-                    <Form.Label htmlFor={`${formId}-summary`}>
-                        Summary
+                    <Form.Label htmlFor={`${formId}-gm-summary`}>
+                        GM Summary
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        ref={summaryRef}
-                        value={formData.summary}
+                        ref={gmSummaryRef}
+                        value={formData.gmSummary}
                         onChange={(e) =>
-                            handleInputChange("summary", e.target.value)
+                            handleInputChange("gmSummary", e.target.value)
                         }
                         placeholder="Brief summary of the location"
-                        id={`${formId}-summary`}
+                        id={`${formId}-gm-summary`}
                         style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
@@ -226,41 +223,38 @@ const LocationFormComponent = forwardRef<LocationFormRef, LocationFormProps>(
                     />
                 </Form.Group>
 
-                {/* Notes */}
+                {/* GM Notes */}
                 <Form.Group className="mb-3">
-                    <Form.Label htmlFor={`${formId}-dm-notes`}>
-                        Notes
+                    <Form.Label htmlFor={`${formId}-gm-notes`}>
+                        GM Notes
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        ref={dmNotesRef}
-                        value={formData.dmNotes}
+                        ref={gmNotesRef}
+                        value={formData.gmNotes}
                         onChange={(e) =>
-                            handleInputChange("dmNotes", e.target.value)
+                            handleInputChange("gmNotes", e.target.value)
                         }
-                        placeholder="DM notes (not visible to players)"
-                        id={`${formId}-dm-notes`}
+                        placeholder="GM notes (not visible to players)"
+                        id={`${formId}-gm-notes`}
                         style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
 
                 {/* Shared with Players */}
                 <Form.Group className="mb-3">
-                    <Form.Label htmlFor={`${formId}-shared-with-players`}>
-                        Shared with Players
+                    <Form.Label htmlFor={`${formId}-player-notes`}>
+                        Player Notes (Shared)
                     </Form.Label>
                     <Form.Control
                         as="textarea"
-                        ref={sharedWithPlayersRef}
-                        value={formData.sharedWithPlayers}
+                        ref={playerNotesRef}
+                        value={formData.playerNotes}
                         onChange={(e) =>
-                            handleInputChange(
-                                "sharedWithPlayers",
-                                e.target.value
-                            )
+                            handleInputChange("playerNotes", e.target.value)
                         }
                         placeholder="Information visible to players"
-                        id={`${formId}-shared-with-players`}
+                        id={`${formId}-player-notes`}
                         style={{ overflow: "hidden", resize: "none" }}
                     />
                 </Form.Group>
