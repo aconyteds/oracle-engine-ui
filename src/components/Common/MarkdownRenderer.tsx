@@ -1,5 +1,6 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import { ASSET_LINK_REGEX } from "@/constants";
 import { AssetLink } from "./AssetLink";
 import { CodeBlock } from "./CodeBlock";
 
@@ -38,7 +39,6 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 a: AssetLink,
             }}
             urlTransform={(url) => {
-                const ASSET_LINK_REGEX = /^([a-zA-Z]+):([a-f\d]{24})$/;
                 if (url.match(ASSET_LINK_REGEX)) {
                     return url;
                 }

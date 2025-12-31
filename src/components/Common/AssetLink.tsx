@@ -1,5 +1,6 @@
 import { RecordType } from "@graphql";
 import React from "react";
+import { ASSET_LINK_REGEX } from "@/constants";
 import { assetModalManager } from "../../signals/campaignAssetModals";
 
 interface AssetLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -12,11 +13,6 @@ export const AssetLink: React.FC<AssetLinkProps> = ({
     children,
     ...props
 }) => {
-    // Regex to capture "Type:ID" format.
-    // Allows for "Location", "NPC", "Plot" etc.
-    // The ID is a 24-character hex string for MongoDB ObjectIDs.
-    const ASSET_LINK_REGEX = /^([a-zA-Z]+):([a-f\d]{24})$/;
-
     if (href) {
         try {
             // Decode URI component to handle encoded colons (e.g., Location%3A...)
@@ -62,6 +58,7 @@ export const AssetLink: React.FC<AssetLinkProps> = ({
                             }}
                             role="button"
                             tabIndex={0}
+                            aria-label={`Open asset details for ${children?.toString() || "asset"}`}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
