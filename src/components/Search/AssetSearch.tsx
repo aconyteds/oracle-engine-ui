@@ -31,6 +31,7 @@ export const AssetSearch: React.FC = () => {
             input: {
                 campaignId: selectedCampaign?.id || "",
                 query: debouncedSearchTerm,
+                keywords: debouncedSearchTerm,
                 limit: limit,
                 minScore: 0.6,
                 recordType: assetType === "ANY" ? undefined : assetType,
