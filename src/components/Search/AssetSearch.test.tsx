@@ -37,7 +37,7 @@ const mockAssets = [
             id: "asset-1",
             name: "Test Location",
             recordType: RecordType.Location,
-            summary: "A test location",
+            gmSummary: "A test location",
             updatedAt: "2023-01-01",
         },
         score: 1,
@@ -49,7 +49,7 @@ const mockAssets = [
             id: "asset-2",
             name: "Test NPC",
             recordType: RecordType.Npc,
-            summary: "A test NPC",
+            gmSummary: "A test NPC",
             updatedAt: "2023-01-01",
         },
         score: 0.8,
@@ -64,6 +64,7 @@ const mocks = [
                 input: {
                     campaignId: "campaign-1",
                     query: "Test",
+                    keywords: "Test",
                     limit: 5,
                     minScore: 0.6,
                     recordType: undefined,
@@ -86,6 +87,7 @@ const mocks = [
                 input: {
                     campaignId: "campaign-1",
                     query: "NoResult",
+                    keywords: "NoResult",
                     limit: 5,
                     minScore: 0.6,
                     recordType: undefined,

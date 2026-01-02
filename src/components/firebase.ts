@@ -17,7 +17,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 // Initialize Firebase Analytics
-const analytics = getAnalytics(app);
+const analytics = typeof window !== "undefined" ? getAnalytics(app) : undefined;
 // Initialize Firebase Authentication
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
@@ -34,5 +34,7 @@ export function LogEvent(
     eventName: AvailableEvents,
     params?: { [key: string]: string }
 ) {
-    logEvent(analytics, eventName, params);
+    if (analytics) {
+        logEvent(analytics, eventName, params);
+    }
 }
