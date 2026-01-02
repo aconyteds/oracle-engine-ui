@@ -63,7 +63,6 @@ const PlotFormComponent = forwardRef<PlotFormRef, PlotFormProps>(
         const formId = useId();
 
         // Auto-grow textarea refs
-        // Auto-grow textarea refs
         const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 3);
         const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
         const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
