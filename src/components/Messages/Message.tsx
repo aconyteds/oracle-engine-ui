@@ -1,26 +1,78 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { MarkdownRenderer } from "../Common";
 import "./Message.scss";
+import {
+    faChevronDown,
+    faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { useUserContext } from "@/contexts";
+import { useToggle } from "@/hooks";
+import {
+    MessageWorkspaceFragment,
+    ResponseType,
+} from "../../graphql/generated";
 
-interface MessageProps {
-    content: string;
-    role: string;
+type MessageProps = {
     id: string;
-}
+    role: string;
+    content: string;
+    workspace?: Array<MessageWorkspaceFragment>;
+};
 
-export const Message: React.FC<MessageProps> = ({ content, role, id }) => {
+export const Message: React.FC<MessageProps> = ({
+    content,
+    role,
+    id,
+    workspace,
+}) => {
+    const [showWorkspace, setShowWorkspace] = useToggle();
+    const { showDebug } = useUserContext();
     const isUser = role.toLowerCase() === "user";
     const isAssistant = role.toLowerCase() === "assistant";
+
+    const workspaceContent = useMemo(() => {
+        return (
+            workspace
+                ?.filter(
+                    ({ messageType }) =>
+                        showDebug || messageType === ResponseType.Intermediate
+                )
+                .map((workspaceItem) => {
+                    return (
+                        <ListGroupItem
+                            key={
+                                workspaceItem.messageType +
+                                workspaceItem.timestamp
+                            }
+                            className="message-workspace pt-1 pb-0 rounded-0 border-top-0 text-muted small bg-dark"
+                        >
+                            <h6 className="message-workspace-role fw-bold d-block mb-2 small text-uppercase">
+                                {workspaceItem.messageType}
+                            </h6>
+                            <div className="message-workspace-content font-handwriting">
+                                <MarkdownRenderer
+                                    content={workspaceItem.content}
+                                />
+                            </div>
+                        </ListGroupItem>
+                    );
+                }) || []
+        );
+    }, [workspace, showDebug]);
+
+    const showWorkspaceButton = isAssistant && workspaceContent.length > 0;
 
     return (
         <div key={id} className="mb-3">
             <div
                 className={`message p-3 rounded shadow-sm border ${
                     isUser
-                        ? "bg-primary text-white border-primary-subtle"
+                        ? "bg-primary-subtle text-white border-primary-subtle"
                         : isAssistant
-                          ? "bg-light border-light-subtle"
-                          : "bg-secondary border-secondary-subtle"
+                          ? "bg-light-subtle border-light-subtle"
+                          : "bg-secondary-subtle border-secondary-subtle"
                 }`}
                 style={{
                     maxWidth: "85%",
@@ -35,6 +87,33 @@ export const Message: React.FC<MessageProps> = ({ content, role, id }) => {
                 >
                     {role}
                 </span>
+                {showWorkspaceButton && (
+                    <div
+                        className={`workspace-header d-flex justify-content-between align-items-center p-2 rounded border border-light-subtle ${
+                            showWorkspace
+                                ? "rounded-bottom-0 bg-body border-2"
+                                : "mb-3 border-1"
+                        }`}
+                        onClick={setShowWorkspace}
+                        role="button"
+                        aria-expanded={showWorkspace}
+                    >
+                        <h6 className="fw-bold small text-uppercase mb-0">
+                            Show Work
+                        </h6>
+                        <FontAwesomeIcon
+                            icon={
+                                showWorkspace ? faChevronDown : faChevronRight
+                            }
+                            size="sm"
+                        />
+                    </div>
+                )}
+                {showWorkspace && (
+                    <ListGroup className="mb-3 rounded-top-0 border-top-0 border-light-subtle">
+                        {workspaceContent}
+                    </ListGroup>
+                )}
                 <div
                     className={`message-content ${
                         isUser ? "text-white" : "text-body"

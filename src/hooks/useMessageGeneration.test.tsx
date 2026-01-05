@@ -1,11 +1,16 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { ResponseType } from "@graphql";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { useMessageGeneration } from "./useMessageGeneration";
 
-// Mock the GraphQL subscription hook
-vi.mock("@graphql", () => ({
-    useGenerateMessageSubscription: vi.fn(),
-}));
+// Mock the GraphQL subscription hook, but keep other exports (like ResponseType) intact
+vi.mock("@graphql", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@graphql")>();
+    return {
+        ...actual,
+        useGenerateMessageSubscription: vi.fn(),
+    };
+});
 
 // Type declaration for test global
 declare global {
@@ -13,7 +18,13 @@ declare global {
         | {
               onData: (data: {
                   data?: {
-                      generateMessage?: { content?: string; message?: unknown };
+                      data?: {
+                          generateMessage?: {
+                              content?: string;
+                              message?: unknown;
+                              responseType?: ResponseType;
+                          };
+                      };
                   };
               }) => void;
               onError: (error: Error) => void;
@@ -95,7 +106,9 @@ describe("useMessageGeneration", () => {
             })
         );
 
-        result.current.startGeneration("thread-123");
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
 
         await waitFor(() => {
             expect(result.current.isGenerating).toBe(true);
@@ -109,14 +122,16 @@ describe("useMessageGeneration", () => {
             })
         );
 
-        result.current.startGeneration("thread-123");
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
 
         await waitFor(() => {
             expect(result.current.activeThreadId).toBe("thread-123");
         });
     });
 
-    test("startGeneration should clear previous content", () => {
+    test("startGeneration should clear previous content", async () => {
         const { result } = renderHook(() =>
             useMessageGeneration({
                 onMessageComplete: mockOnMessageComplete,
@@ -124,69 +139,117 @@ describe("useMessageGeneration", () => {
         );
 
         // Start first generation
-        result.current.startGeneration("thread-1");
+        act(() => {
+            result.current.startGeneration("thread-1");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
 
         // Simulate some content
         if (global.__subscriptionCallbacks) {
-            global.__subscriptionCallbacks.onData({
-                data: {
-                    generateMessage: { content: "old content" },
-                },
+            act(() => {
+                global.__subscriptionCallbacks?.onData({
+                    data: {
+                        data: {
+                            generateMessage: {
+                                content: "old content",
+                                responseType: ResponseType.Intermediate,
+                            },
+                        },
+                    },
+                });
             });
         }
 
         // Start new generation - should clear old content
-        result.current.startGeneration("thread-2");
+        act(() => {
+            result.current.startGeneration("thread-2");
+        });
 
         expect(result.current.generatingContent).toBe("");
         expect(result.current.generatingContentRef.current).toBe("");
     });
 
-    test("stopGeneration should set isGenerating to false", () => {
+    test("stopGeneration should set isGenerating to false", async () => {
         const { result } = renderHook(() =>
             useMessageGeneration({
                 onMessageComplete: mockOnMessageComplete,
             })
         );
 
-        result.current.startGeneration("thread-123");
-        result.current.stopGeneration();
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        act(() => {
+            result.current.stopGeneration();
+        });
 
         expect(result.current.isGenerating).toBe(false);
     });
 
-    test("stopGeneration should clear activeThreadId", () => {
+    test("stopGeneration should clear activeThreadId", async () => {
         const { result } = renderHook(() =>
             useMessageGeneration({
                 onMessageComplete: mockOnMessageComplete,
             })
         );
 
-        result.current.startGeneration("thread-123");
-        result.current.stopGeneration();
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        act(() => {
+            result.current.stopGeneration();
+        });
 
         expect(result.current.activeThreadId).toBe(null);
     });
 
-    test("stopGeneration should clear content", () => {
+    test("stopGeneration should clear content", async () => {
         const { result } = renderHook(() =>
             useMessageGeneration({
                 onMessageComplete: mockOnMessageComplete,
             })
         );
 
-        result.current.startGeneration("thread-123");
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
 
         // Simulate content
         if (global.__subscriptionCallbacks) {
-            global.__subscriptionCallbacks.onData({
-                data: {
-                    generateMessage: { content: "test content" },
-                },
+            act(() => {
+                global.__subscriptionCallbacks?.onData({
+                    data: {
+                        data: {
+                            generateMessage: {
+                                content: "test content",
+                                responseType: ResponseType.Intermediate,
+                            },
+                        },
+                    },
+                });
             });
         }
 
-        result.current.stopGeneration();
+        act(() => {
+            result.current.stopGeneration();
+        });
 
         expect(result.current.generatingContent).toBe("");
     });
@@ -200,10 +263,11 @@ describe("useMessageGeneration", () => {
             })
         );
 
-        result.current.startGeneration("thread-456");
+        act(() => {
+            result.current.startGeneration("thread-456");
+        });
 
         await waitFor(() => {
-            // Verify the subscription was called
             expect(useGenerateMessageSubscription).toHaveBeenCalled();
         });
     });
@@ -231,17 +295,15 @@ describe("useMessageGeneration", () => {
             })
         );
 
-        result.current.startGeneration("thread-123");
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
 
         await waitFor(() => {
             expect(result.current.isGenerating).toBe(true);
             expect(result.current.activeThreadId).toBe("thread-123");
         });
     });
-
-    // Note: Testing subscription callbacks requires complex mocking of the GraphQL
-    // subscription system. The hook correctly sets up onData and onError handlers,
-    // which are verified by the subscription being called with the correct parameters.
 
     test("should stop generating when message is complete", async () => {
         const mockMessage = {
@@ -257,11 +319,23 @@ describe("useMessageGeneration", () => {
             })
         );
 
-        result.current.startGeneration("thread-123");
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
 
         if (global.__subscriptionCallbacks) {
-            global.__subscriptionCallbacks.onData({
-                data: { generateMessage: { message: mockMessage } },
+            act(() => {
+                global.__subscriptionCallbacks?.onData({
+                    data: {
+                        data: {
+                            generateMessage: { message: mockMessage },
+                        },
+                    },
+                });
             });
         }
 
@@ -270,6 +344,7 @@ describe("useMessageGeneration", () => {
             expect(result.current.activeThreadId).toBe(null);
             expect(result.current.generatingContent).toBe("");
         });
+        expect(mockOnMessageComplete).toHaveBeenCalledWith(mockMessage);
     });
 
     test("should call onError callback on subscription error", async () => {
@@ -282,11 +357,19 @@ describe("useMessageGeneration", () => {
             })
         );
 
-        result.current.startGeneration("thread-123");
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
 
         // Simulate error
         if (global.__subscriptionCallbacks) {
-            global.__subscriptionCallbacks.onError(mockError);
+            act(() => {
+                global.__subscriptionCallbacks?.onError(mockError);
+            });
         }
 
         await waitFor(() => {
@@ -304,10 +387,18 @@ describe("useMessageGeneration", () => {
             })
         );
 
-        result.current.startGeneration("thread-123");
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
 
         if (global.__subscriptionCallbacks) {
-            global.__subscriptionCallbacks.onError(mockError);
+            act(() => {
+                global.__subscriptionCallbacks?.onError(mockError);
+            });
         }
 
         await waitFor(() => {
@@ -326,12 +417,20 @@ describe("useMessageGeneration", () => {
             })
         );
 
-        result.current.startGeneration("thread-123");
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
 
         // Should not throw
         if (global.__subscriptionCallbacks) {
             expect(() => {
-                global.__subscriptionCallbacks?.onError(mockError);
+                act(() => {
+                    global.__subscriptionCallbacks?.onError(mockError);
+                });
             }).not.toThrow();
         }
     });
@@ -345,5 +444,150 @@ describe("useMessageGeneration", () => {
 
         expect(result.current.generatingContentRef).toBeDefined();
         expect(result.current.generatingContentRef.current).toBe("");
+    });
+
+    test("should accumulate intermediate content", async () => {
+        const { result } = renderHook(() =>
+            useMessageGeneration({
+                onMessageComplete: mockOnMessageComplete,
+            })
+        );
+
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        // First chunk
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: "Hello",
+                            responseType: ResponseType.Intermediate,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(result.current.generatingContent).toBe("\n\nHello");
+        });
+        expect(result.current.generatingContentRef.current).toBe("\n\nHello");
+
+        // Second chunk
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: " world",
+                            responseType: ResponseType.Intermediate,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(result.current.generatingContent).toBe(
+                "\n\nHello\n\n world"
+            );
+        });
+        expect(result.current.generatingContentRef.current).toBe(
+            "\n\nHello\n\n world"
+        );
+    });
+
+    test("should filter out unknown response types by default", async () => {
+        const { result } = renderHook(() =>
+            useMessageGeneration({
+                onMessageComplete: mockOnMessageComplete,
+            })
+        );
+
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: "Debug Info",
+                            responseType: ResponseType.Debug,
+                        },
+                    },
+                },
+            });
+        });
+
+        expect(result.current.generatingContent).toBe("");
+    });
+
+    test("should show debug and reasoning when showDebug is true", async () => {
+        const { result } = renderHook(() =>
+            useMessageGeneration({
+                onMessageComplete: mockOnMessageComplete,
+                showDebug: true,
+            })
+        );
+
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        // Debug content
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: "Debug Info",
+                            responseType: ResponseType.Debug,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(result.current.generatingContent).toContain("Debug Info");
+        });
+
+        // Reasoning content
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: "Reasoning Step",
+                            responseType: ResponseType.Reasoning,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(result.current.generatingContent).toContain("Debug Info");
+            expect(result.current.generatingContent).toContain(
+                "Reasoning Step"
+            );
+        });
     });
 });
