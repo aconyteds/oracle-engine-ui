@@ -30,6 +30,7 @@ describe("Login Component", () => {
         currentUser: null,
         isActive: false,
         loading: false,
+        showDebug: false,
     };
 
     beforeEach(() => {

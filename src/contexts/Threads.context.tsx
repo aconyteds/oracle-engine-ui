@@ -22,6 +22,7 @@ import {
 } from "react";
 import { useCampaignContext } from "./Campaign.context";
 import { useToaster } from "./Toaster.context";
+import { useUserContext } from "./User.context";
 
 type ThreadsContextPayload = {
     threadList: ThreadDetailsFragment[];
@@ -59,6 +60,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
 }) => {
     const { toast } = useToaster();
     const { selectedCampaign } = useCampaignContext();
+    const { showDebug } = useUserContext();
     const [storedThreadId, setStoredThreadId] = useSessionStorage<
         string | null
     >("selectedThreadId", null);
@@ -78,6 +80,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     // Use the message generation hook
     const { isGenerating, generatingContent, startGeneration, stopGeneration } =
         useMessageGeneration({
+            showDebug,
             onMessageComplete: (message) => {
                 addMessage(message);
             },

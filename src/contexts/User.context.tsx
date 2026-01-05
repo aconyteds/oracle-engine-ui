@@ -19,6 +19,8 @@ import {
 } from "../services/tokenRefresh";
 import { useToaster } from "./Toaster.context";
 
+const showDebug = import.meta.env.VITE_ENV === "development";
+
 type UserContextPayload = {
     isLoggedIn: boolean;
     setIsLoggedIn: () => void;
@@ -26,6 +28,7 @@ type UserContextPayload = {
     currentUser: CurrentUserQuery["currentUser"] | null;
     isActive: boolean;
     loading: boolean;
+    showDebug: boolean;
 };
 
 const UserContext = createContext<UserContextPayload | undefined>(undefined);
@@ -100,6 +103,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
             currentUser: data?.currentUser || null,
             isActive: data?.currentUser?.isActive || false,
             loading,
+            showDebug,
         }),
         [isLoggedIn, handleLogin, data?.currentUser, loading]
     );

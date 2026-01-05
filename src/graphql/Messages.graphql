@@ -1,7 +1,16 @@
+fragment MessageWorkspace on MessageWorkspace {
+    content
+    messageType
+    timestamp
+}
+
 fragment MessageDetails on Message {
     id
     role
     content
+    workspace {
+        ...MessageWorkspace
+    }
 }
 
 mutation CreateMessage($createMessageInput: CreateMessageInput!) {

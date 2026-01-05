@@ -1,15 +1,18 @@
 import {
     MessageDetailsFragment,
+    ResponseType,
     useGenerateMessageSubscription,
 } from "@graphql";
 import { useCallback, useRef, useState } from "react";
 
 type UseMessageGenerationProps = {
+    showDebug?: boolean;
     onMessageComplete: (message: MessageDetailsFragment) => void;
     onError?: (error: Error) => void;
 };
 
 export function useMessageGeneration({
+    showDebug = false,
     onMessageComplete,
     onError,
 }: UseMessageGenerationProps) {
@@ -30,7 +33,11 @@ export function useMessageGeneration({
             const generateMessage = data?.data?.generateMessage;
             if (!generateMessage) return;
 
-            const { content, message: newMessage } = generateMessage;
+            const {
+                content,
+                message: newMessage,
+                responseType,
+            } = generateMessage;
 
             if (newMessage) {
                 // Generation complete
@@ -41,12 +48,25 @@ export function useMessageGeneration({
                 onMessageComplete(newMessage);
                 return;
             }
+            if (!content) return;
 
-            // Append incremental updates (thinking, reasoning, etc.)
-            if (content) {
-                generatingContentRef.current += content;
-                setGeneratingContent(generatingContentRef.current);
+            let showContent = responseType === ResponseType.Intermediate;
+
+            if (showDebug) {
+                showContent = [
+                    ResponseType.Intermediate,
+                    ResponseType.Debug,
+                    ResponseType.Reasoning,
+                ].some((type) => responseType === type);
+                console.debug(`${responseType}: ${content}`);
             }
+
+            if (!showContent) {
+                return;
+            }
+            generatingContentRef.current +=
+                content.length > 0 ? `\n\n${content}` : content;
+            setGeneratingContent(generatingContentRef.current);
         },
         onError: (err) => {
             setIsGenerating(false);

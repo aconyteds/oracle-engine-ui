@@ -2,7 +2,6 @@
 // Bootswatch
 
 // Variables
-
 $web-font-path: "https://fonts.googleapis.com/css?family=Neucha|Cabin+Sketch&display=swap" !default;
 @if $web-font-path {
     @import url("#{$web-font-path}");
@@ -80,7 +79,8 @@ h3,
 h4,
 h5,
 h6,
-label {
+label,
+.font-handwriting {
     font-family: $headings-font-family;
 }
 
