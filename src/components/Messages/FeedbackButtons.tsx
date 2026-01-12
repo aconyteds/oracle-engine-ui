@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faThumbsUp, faThumbsDown } from "@fortawesome/free-solid-svg-icons";
 import {
-    faThumbsUp as faThumbsUpRegular,
     faThumbsDown as faThumbsDownRegular,
+    faThumbsUp as faThumbsUpRegular,
 } from "@fortawesome/free-regular-svg-icons";
+import { faThumbsDown, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSendFeedbackMutation } from "@graphql";
+import React, { useCallback, useState } from "react";
 import { useToaster } from "@/contexts";
 import { LogEvent } from "../firebase";
 import { FeedbackModal } from "./FeedbackModal";
@@ -24,7 +24,9 @@ export const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({
     onFeedbackProvided,
 }) => {
     const [showModal, setShowModal] = useState(false);
-    const [pendingSentiment, setPendingSentiment] = useState<boolean | null>(null);
+    const [pendingSentiment, setPendingSentiment] = useState<boolean | null>(
+        null
+    );
     const [localSentiment, setLocalSentiment] = useState<boolean | null>(
         currentSentiment ?? null
     );
@@ -85,13 +87,7 @@ export const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({
                 setPendingSentiment(null);
             }
         },
-        [
-            pendingSentiment,
-            messageId,
-            sendFeedback,
-            onFeedbackProvided,
-            toast,
-        ]
+        [pendingSentiment, messageId, sendFeedback, onFeedbackProvided, toast]
     );
 
     const handleModalHide = useCallback(() => {
@@ -137,9 +133,7 @@ export const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({
             {showModal && pendingSentiment !== null && (
                 <FeedbackModal
                     show={showModal}
-                    onHide={handleModalHide}
                     onSubmit={handleModalSubmit}
-                    sentiment={pendingSentiment}
                     messageContent={messageContent}
                 />
             )}

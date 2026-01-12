@@ -1,26 +1,22 @@
-import React, { useCallback, useState } from "react";
-import { Button, Collapse, Form, Modal } from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faChevronDown,
     faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
-import { MarkdownRenderer } from "../Common";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useCallback, useState } from "react";
+import { Button, Collapse, Form, Modal } from "react-bootstrap";
 import { useToggle } from "@/hooks";
+import { MarkdownRenderer } from "../Common";
 
 type FeedbackModalProps = {
     show: boolean;
-    onHide: () => void;
     onSubmit: (comments: string) => void;
-    sentiment: boolean;
     messageContent: string;
 };
 
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({
     show,
-    onHide,
     onSubmit,
-    sentiment,
     messageContent,
 }) => {
     const [comments, setComments] = useState("");
@@ -36,7 +32,9 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
         setComments("");
     }, [onSubmit]);
 
-    const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleCommentsChange = (
+        e: React.ChangeEvent<HTMLTextAreaElement>
+    ) => {
         const value = e.target.value;
         // Limit to 1000 characters
         if (value.length <= 1000) {
@@ -45,12 +43,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
     };
 
     return (
-        <Modal
-            show={show}
-            onHide={handleClose}
-            backdrop="static"
-            centered
-        >
+        <Modal show={show} onHide={handleClose} backdrop="static" centered>
             <Modal.Header closeButton>
                 <Modal.Title>Send Feedback</Modal.Title>
             </Modal.Header>
