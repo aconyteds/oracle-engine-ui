@@ -21,9 +21,13 @@ vi.mock("../Common", () => ({
     ),
 }));
 
-// Mock UserContext
 vi.mock("@/contexts/User.context", () => ({
     useUserContext: vi.fn(),
+}));
+
+// Mock FeedbackButtons since it has complex dependencies we don't need to test here
+vi.mock("./FeedbackButtons", () => ({
+    FeedbackButtons: () => <div data-testid="feedback-buttons" />,
 }));
 
 // Mock FontAwesome
@@ -88,8 +92,11 @@ describe("Message Component", () => {
         );
 
         expect(screen.getByText("Show Work")).toBeInTheDocument();
-        // Workspace content should be hidden initially
-        expect(screen.queryByText("Thinking...")).not.toBeInTheDocument();
+        // Workspace content should be collapsed initially
+        const toggleButton = screen
+            .getByText("Show Work")
+            .closest("[aria-expanded]");
+        expect(toggleButton).toHaveAttribute("aria-expanded", "false");
     });
 
     it("toggles workspace content when 'Show Work' is clicked", () => {
@@ -110,18 +117,21 @@ describe("Message Component", () => {
             />
         );
 
-        const toggleButton = screen.getByText("Show Work").closest("div");
+        const toggleButton = screen
+            .getByText("Show Work")
+            .closest("[aria-expanded]");
 
-        // Initial state: hidden
-        expect(screen.queryByText("Thinking process")).not.toBeInTheDocument();
+        // Initial state: collapsed
+        expect(toggleButton).toHaveAttribute("aria-expanded", "false");
 
         // Click to expand
         fireEvent.click(toggleButton!);
+        expect(toggleButton).toHaveAttribute("aria-expanded", "true");
         expect(screen.getByText("Thinking process")).toBeInTheDocument();
 
         // Click to collapse
         fireEvent.click(toggleButton!);
-        expect(screen.queryByText("Thinking process")).not.toBeInTheDocument();
+        expect(toggleButton).toHaveAttribute("aria-expanded", "false");
     });
 
     it("does not render 'Show Work' button if no workspace content", () => {

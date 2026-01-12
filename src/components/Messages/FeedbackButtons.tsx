@@ -1,7 +1,3 @@
-import {
-    faThumbsDown as faThumbsDownRegular,
-    faThumbsUp as faThumbsUpRegular,
-} from "@fortawesome/free-regular-svg-icons";
 import { faThumbsDown, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSendFeedbackMutation } from "@graphql";
@@ -90,11 +86,6 @@ export const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({
         [pendingSentiment, messageId, sendFeedback, onFeedbackProvided, toast]
     );
 
-    const handleModalHide = useCallback(() => {
-        setShowModal(false);
-        setPendingSentiment(null);
-    }, []);
-
     // If sentiment already provided, show only that icon (not clickable)
     if (localSentiment !== null) {
         return (
@@ -103,33 +94,38 @@ export const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({
                     icon={localSentiment ? faThumbsUp : faThumbsDown}
                     className={localSentiment ? "text-success" : "text-danger"}
                     size="lg"
+                    data-testid={
+                        localSentiment
+                            ? "fa-icon-thumbs-up"
+                            : "fa-icon-thumbs-down"
+                    }
                 />
             </div>
         );
     }
 
     return (
-        <>
-            <div className="mt-2 d-flex gap-3">
-                <FontAwesomeIcon
-                    icon={faThumbsUpRegular}
-                    className="text-secondary"
-                    size="lg"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleFeedbackClick(true)}
-                    role="button"
-                    aria-label="Thumbs up"
-                />
-                <FontAwesomeIcon
-                    icon={faThumbsDownRegular}
-                    className="text-secondary"
-                    size="lg"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleFeedbackClick(false)}
-                    role="button"
-                    aria-label="Thumbs down"
-                />
-            </div>
+        <div className="mt-2 d-flex gap-3">
+            <FontAwesomeIcon
+                icon={faThumbsUp}
+                className="text-secondary"
+                size="lg"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleFeedbackClick(true)}
+                role="button"
+                aria-label="Thumbs up"
+                data-testid="fa-icon-thumbs-up"
+            />
+            <FontAwesomeIcon
+                icon={faThumbsDown}
+                className="text-secondary"
+                size="lg"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleFeedbackClick(false)}
+                role="button"
+                aria-label="Thumbs down"
+                data-testid="fa-icon-thumbs-down"
+            />
             {showModal && pendingSentiment !== null && (
                 <FeedbackModal
                     show={showModal}
@@ -137,6 +133,6 @@ export const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({
                     messageContent={messageContent}
                 />
             )}
-        </>
+        </div>
     );
 };

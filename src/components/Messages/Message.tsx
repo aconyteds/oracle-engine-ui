@@ -6,7 +6,7 @@ import {
     faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
 import { useUserContext } from "@/contexts";
 import { useToggle } from "@/hooks";
 import {
@@ -98,7 +98,7 @@ export const Message: React.FC<MessageProps> = ({
                         className={`workspace-header d-flex justify-content-between align-items-center p-2 rounded border border-light-subtle ${
                             showWorkspace
                                 ? "rounded-bottom-0 bg-body border-2"
-                                : "mb-3 border-1"
+                                : "border-1"
                         }`}
                         onClick={setShowWorkspace}
                         role="button"
@@ -115,25 +115,28 @@ export const Message: React.FC<MessageProps> = ({
                         />
                     </div>
                 )}
-                {showWorkspace && (
+                <Collapse in={showWorkspace}>
                     <ListGroup className="mb-3 rounded-top-0 border-top-0 border-light-subtle">
                         {workspaceContent}
                     </ListGroup>
-                )}
+                </Collapse>
                 <div
                     className={`message-content ${
                         isUser ? "text-white" : "text-body"
-                    }`}
+                    } mt-3`}
                 >
                     <MarkdownRenderer content={content} />
                 </div>
                 {isAssistant && (
-                    <FeedbackButtons
-                        messageId={id}
-                        messageContent={content}
-                        currentSentiment={localSentiment}
-                        onFeedbackProvided={setLocalSentiment}
-                    />
+                    <>
+                        <hr style={{ margin: "1rem -1rem" }} />
+                        <FeedbackButtons
+                            messageId={id}
+                            messageContent={content}
+                            currentSentiment={localSentiment}
+                            onFeedbackProvided={setLocalSentiment}
+                        />
+                    </>
                 )}
             </div>
         </div>

@@ -8,7 +8,7 @@ import { Button, Collapse, Form, Modal } from "react-bootstrap";
 import { useToggle } from "@/hooks";
 import { MarkdownRenderer } from "../Common";
 
-type FeedbackModalProps = {
+export type FeedbackModalProps = {
     show: boolean;
     onSubmit: (comments: string) => void;
     messageContent: string;
@@ -47,33 +47,35 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
             <Modal.Header closeButton>
                 <Modal.Title>Send Feedback</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{ maxHeight: "50vh", overflowY: "auto" }}>
                 <div
-                    className="d-flex justify-content-between align-items-center p-2 rounded border border-light-subtle mb-3"
+                    className="rounded border border-light-subtle mb-3"
                     onClick={setShowOriginal}
                     role="button"
                     aria-expanded={showOriginal}
                     style={{ cursor: "pointer" }}
                 >
-                    <h6 className="fw-bold small mb-0">
-                        Show Original Message
-                    </h6>
-                    <FontAwesomeIcon
-                        icon={showOriginal ? faChevronDown : faChevronRight}
-                        size="sm"
-                    />
-                </div>
-                <Collapse in={showOriginal}>
-                    <div className="mb-3 p-3 border rounded bg-light">
-                        <MarkdownRenderer content={messageContent} />
+                    <div className="d-flex justify-content-between align-items-center m-2">
+                        <h6 className="fw-bold small mb-0">
+                            Show Original Message
+                        </h6>
+                        <FontAwesomeIcon
+                            icon={showOriginal ? faChevronDown : faChevronRight}
+                            size="sm"
+                        />
                     </div>
-                </Collapse>
+                    <Collapse in={showOriginal}>
+                        <div className="mt-2 p-2 pb-1 border-top">
+                            <MarkdownRenderer content={messageContent} />
+                        </div>
+                    </Collapse>
+                </div>
                 <Form.Group controlId="feedbackComments">
                     <Form.Label>Additional Context</Form.Label>
                     <Form.Control
                         as="textarea"
                         rows={5}
-                        placeholder="Provide any additional context about the message..."
+                        placeholder="Provide any additional context about your feedback..."
                         value={comments}
                         onChange={handleCommentsChange}
                         style={{ resize: "none" }}
@@ -83,7 +85,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                     </Form.Text>
                 </Form.Group>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className="justify-content-end">
                 <Button variant="primary" onClick={handleSubmit}>
                     Submit
                 </Button>
