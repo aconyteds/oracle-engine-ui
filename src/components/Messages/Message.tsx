@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { MarkdownRenderer } from "../Common";
 import "./Message.scss";
 import {
@@ -13,12 +13,14 @@ import {
     MessageWorkspaceFragment,
     ResponseType,
 } from "../../graphql/generated";
+import { FeedbackButtons } from "./FeedbackButtons";
 
 type MessageProps = {
     id: string;
     role: string;
     content: string;
     workspace?: Array<MessageWorkspaceFragment>;
+    humanSentiment?: boolean | null;
 };
 
 export const Message: React.FC<MessageProps> = ({
@@ -26,11 +28,15 @@ export const Message: React.FC<MessageProps> = ({
     role,
     id,
     workspace,
+    humanSentiment,
 }) => {
     const [showWorkspace, setShowWorkspace] = useToggle();
     const { showDebug } = useUserContext();
     const isUser = role.toLowerCase() === "user";
     const isAssistant = role.toLowerCase() === "assistant";
+    const [localSentiment, setLocalSentiment] = useState<boolean | null>(
+        humanSentiment ?? null
+    );
 
     const workspaceContent = useMemo(() => {
         return (
@@ -121,6 +127,14 @@ export const Message: React.FC<MessageProps> = ({
                 >
                     <MarkdownRenderer content={content} />
                 </div>
+                {isAssistant && (
+                    <FeedbackButtons
+                        messageId={id}
+                        messageContent={content}
+                        currentSentiment={localSentiment}
+                        onFeedbackProvided={setLocalSentiment}
+                    />
+                )}
             </div>
         </div>
     );
