@@ -11,6 +11,7 @@ fragment MessageDetails on Message {
     workspace {
         ...MessageWorkspace
     }
+    humanSentiment
 }
 
 mutation CreateMessage($createMessageInput: CreateMessageInput!) {
@@ -29,5 +30,11 @@ subscription GenerateMessage($generateMessageInput: GenerateMessageInput!) {
         message {
             ...MessageDetails
         }
+    }
+}
+
+mutation SendFeedback($input: CaptureHumanFeedbackInput!) {
+    captureHumanFeedback(input: $input) {
+        message
     }
 }

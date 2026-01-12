@@ -28,7 +28,8 @@ type AvailableEvents =
     | "waitlist_interest"
     | "create_asset"
     | "edit_asset"
-    | "delete_asset";
+    | "delete_asset"
+    | "human-feedback";
 
 export function LogEvent(
     eventName: AvailableEvents,

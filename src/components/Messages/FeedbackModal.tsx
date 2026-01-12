@@ -1,0 +1,95 @@
+import {
+    faChevronDown,
+    faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useCallback, useState } from "react";
+import { Button, Collapse, Form, Modal } from "react-bootstrap";
+import { useToggle } from "@/hooks";
+import { MarkdownRenderer } from "../Common";
+
+export type FeedbackModalProps = {
+    show: boolean;
+    onSubmit: (comments: string) => void;
+    messageContent: string;
+};
+
+export const FeedbackModal: React.FC<FeedbackModalProps> = ({
+    show,
+    onSubmit,
+    messageContent,
+}) => {
+    const [comments, setComments] = useState("");
+    const [showOriginal, setShowOriginal] = useToggle();
+
+    const handleSubmit = useCallback(() => {
+        onSubmit(comments);
+        setComments("");
+    }, [comments, onSubmit]);
+
+    const handleClose = useCallback(() => {
+        onSubmit("");
+        setComments("");
+    }, [onSubmit]);
+
+    const handleCommentsChange = (
+        e: React.ChangeEvent<HTMLTextAreaElement>
+    ) => {
+        const value = e.target.value;
+        // Limit to 1000 characters
+        if (value.length <= 1000) {
+            setComments(value);
+        }
+    };
+
+    return (
+        <Modal show={show} onHide={handleClose} backdrop="static" centered>
+            <Modal.Header closeButton>
+                <Modal.Title>Send Feedback</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ maxHeight: "50vh", overflowY: "auto" }}>
+                <div
+                    className="rounded border border-light-subtle mb-3"
+                    onClick={setShowOriginal}
+                    role="button"
+                    aria-expanded={showOriginal}
+                    style={{ cursor: "pointer" }}
+                >
+                    <div className="d-flex justify-content-between align-items-center m-2">
+                        <h6 className="fw-bold small mb-0">
+                            Show Original Message
+                        </h6>
+                        <FontAwesomeIcon
+                            icon={showOriginal ? faChevronDown : faChevronRight}
+                            size="sm"
+                        />
+                    </div>
+                    <Collapse in={showOriginal}>
+                        <div className="mt-2 p-2 pb-1 border-top">
+                            <MarkdownRenderer content={messageContent} />
+                        </div>
+                    </Collapse>
+                </div>
+                <Form.Group controlId="feedbackComments">
+                    <Form.Label>Additional Context</Form.Label>
+                    <Form.Control
+                        as="textarea"
+                        rows={5}
+                        placeholder="Provide any additional context about your feedback..."
+                        value={comments}
+                        onChange={handleCommentsChange}
+                        style={{ resize: "none" }}
+                    />
+                    <Form.Text className="text-muted">
+                        {comments.length}/1000 characters
+                    </Form.Text>
+                </Form.Group>
+            </Modal.Body>
+            <Modal.Footer className="justify-content-end">
+                <Button variant="primary" onClick={handleSubmit}>
+                    Submit
+                </Button>
+            </Modal.Footer>
+        </Modal>
+    );
+};

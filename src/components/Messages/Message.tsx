@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { MarkdownRenderer } from "../Common";
 import "./Message.scss";
 import {
@@ -6,19 +6,21 @@ import {
     faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { Collapse, ListGroup, ListGroupItem } from "react-bootstrap";
 import { useUserContext } from "@/contexts";
 import { useToggle } from "@/hooks";
 import {
     MessageWorkspaceFragment,
     ResponseType,
 } from "../../graphql/generated";
+import { FeedbackButtons } from "./FeedbackButtons";
 
 type MessageProps = {
     id: string;
     role: string;
     content: string;
     workspace?: Array<MessageWorkspaceFragment>;
+    humanSentiment?: boolean | null;
 };
 
 export const Message: React.FC<MessageProps> = ({
@@ -26,11 +28,15 @@ export const Message: React.FC<MessageProps> = ({
     role,
     id,
     workspace,
+    humanSentiment,
 }) => {
     const [showWorkspace, setShowWorkspace] = useToggle();
     const { showDebug } = useUserContext();
     const isUser = role.toLowerCase() === "user";
     const isAssistant = role.toLowerCase() === "assistant";
+    const [localSentiment, setLocalSentiment] = useState<boolean | null>(
+        humanSentiment ?? null
+    );
 
     const workspaceContent = useMemo(() => {
         return (
@@ -92,7 +98,7 @@ export const Message: React.FC<MessageProps> = ({
                         className={`workspace-header d-flex justify-content-between align-items-center p-2 rounded border border-light-subtle ${
                             showWorkspace
                                 ? "rounded-bottom-0 bg-body border-2"
-                                : "mb-3 border-1"
+                                : "border-1"
                         }`}
                         onClick={setShowWorkspace}
                         role="button"
@@ -109,18 +115,29 @@ export const Message: React.FC<MessageProps> = ({
                         />
                     </div>
                 )}
-                {showWorkspace && (
+                <Collapse in={showWorkspace}>
                     <ListGroup className="mb-3 rounded-top-0 border-top-0 border-light-subtle">
                         {workspaceContent}
                     </ListGroup>
-                )}
+                </Collapse>
                 <div
                     className={`message-content ${
                         isUser ? "text-white" : "text-body"
-                    }`}
+                    } mt-3`}
                 >
                     <MarkdownRenderer content={content} />
                 </div>
+                {isAssistant && (
+                    <>
+                        <hr style={{ margin: "1rem -1rem" }} />
+                        <FeedbackButtons
+                            messageId={id}
+                            messageContent={content}
+                            currentSentiment={localSentiment}
+                            onFeedbackProvided={setLocalSentiment}
+                        />
+                    </>
+                )}
             </div>
         </div>
     );
