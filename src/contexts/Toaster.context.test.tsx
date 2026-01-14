@@ -1,6 +1,11 @@
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ToasterProvider, useToaster } from "./Toaster.context";
+import {
+    setGlobalToastService,
+    showToast,
+    ToasterProvider,
+    useToaster,
+} from "./Toaster.context";
 
 vi.mock("react-bootstrap", () => ({
     Toast: Object.assign(
@@ -214,5 +219,125 @@ describe("ToasterContext", () => {
         });
 
         expect(screen.queryByTestId("mock-toast")).not.toBeInTheDocument();
+    });
+
+    describe("Global Toast Service", () => {
+        it("should register global toast service on mount", () => {
+            const consoleWarnSpy = vi.spyOn(console, "warn");
+
+            // Before provider mounts, showToast should warn
+            showToast.success({ message: "Test" });
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                "Toast service not initialized:",
+                { message: "Test" }
+            );
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it("should allow global toast service to show success toast", () => {
+            render(<ToasterProvider>Test</ToasterProvider>);
+
+            act(() => {
+                showToast.success({ message: "Global Success" });
+            });
+
+            expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
+            expect(screen.getByTestId("mock-toast-body")).toHaveTextContent(
+                "Global Success"
+            );
+        });
+
+        it("should allow global toast service to show danger toast", () => {
+            render(<ToasterProvider>Test</ToasterProvider>);
+
+            act(() => {
+                showToast.danger({
+                    title: "Error",
+                    message: "Global Error",
+                });
+            });
+
+            expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
+            expect(screen.getByTestId("mock-toast-header")).toHaveTextContent(
+                "Error"
+            );
+            expect(screen.getByTestId("mock-toast-body")).toHaveTextContent(
+                "Global Error"
+            );
+        });
+
+        it("should allow global toast service to show warning toast", () => {
+            render(<ToasterProvider>Test</ToasterProvider>);
+
+            act(() => {
+                showToast.warning({ message: "Global Warning" });
+            });
+
+            expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
+            expect(screen.getByTestId("mock-toast-body")).toHaveTextContent(
+                "Global Warning"
+            );
+        });
+
+        it("should allow global toast service to show info toast", () => {
+            render(<ToasterProvider>Test</ToasterProvider>);
+
+            act(() => {
+                showToast.info({ message: "Global Info" });
+            });
+
+            expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
+            expect(screen.getByTestId("mock-toast-body")).toHaveTextContent(
+                "Global Info"
+            );
+        });
+
+        it("should unregister global toast service on unmount", () => {
+            const consoleWarnSpy = vi.spyOn(console, "warn");
+
+            const { unmount } = render(<ToasterProvider>Test</ToasterProvider>);
+
+            // Service should work while mounted
+            act(() => {
+                showToast.success({ message: "Test" });
+            });
+            expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
+
+            // Unmount provider
+            unmount();
+
+            // Service should warn after unmount
+            showToast.success({ message: "After unmount" });
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                "Toast service not initialized:",
+                { message: "After unmount" }
+            );
+
+            consoleWarnSpy.mockRestore();
+        });
+
+        it("should allow manual registration of toast service", () => {
+            const mockService = {
+                success: vi.fn(),
+                danger: vi.fn(),
+                warning: vi.fn(),
+                info: vi.fn(),
+            };
+
+            setGlobalToastService(mockService);
+
+            showToast.success({ message: "Test" });
+            expect(mockService.success).toHaveBeenCalledWith({
+                message: "Test",
+            });
+
+            showToast.danger({ message: "Error" });
+            expect(mockService.danger).toHaveBeenCalledWith({
+                message: "Error",
+            });
+
+            setGlobalToastService(null);
+        });
     });
 });

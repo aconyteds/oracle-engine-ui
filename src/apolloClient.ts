@@ -7,10 +7,14 @@ import {
     split,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+import { onError } from "@apollo/client/link/error";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition, Observable } from "@apollo/client/utilities";
+import type { GraphQLFormattedError } from "graphql";
 import { Client, createClient } from "graphql-ws";
 import { getCurrentCampaignId } from "./contexts/Campaign.context";
+import { showToast } from "./contexts/Toaster.context";
+import { forceTokenRefresh } from "./services/tokenRefresh";
 
 // Environment variables
 const apiUrl = import.meta.env.VITE_API_URL; // HTTP endpoint
@@ -21,6 +25,9 @@ let authToken: string | null = null;
 
 // Store WebSocket client for reconnection
 let wsClient: Client | null = null;
+
+// Flag to trigger token refresh on next WebSocket reconnection
+let shouldRefreshTokenOnReconnect = false;
 
 export const setAuthToken = (token: string | null) => {
     authToken = token;
@@ -66,11 +73,91 @@ const authLink = setContext((_, { headers }) => {
     };
 });
 
+// Helper to detect auth errors from GraphQL Shield's "Not Authorised!" response
+function isAuthError(
+    graphQLErrors?: readonly GraphQLFormattedError[]
+): boolean {
+    if (!graphQLErrors) return false;
+    return graphQLErrors.some(
+        (err) =>
+            err.message
+                .toLowerCase()
+                .includes("please provide a valid token") ||
+            err.extensions?.code === "UNAUTHENTICATED"
+    );
+}
+
+// Error link for handling auth errors and retrying operations
+const errorLink = onError(
+    ({ graphQLErrors, networkError, operation, forward }) => {
+        const hasAuthError = isAuthError(graphQLErrors);
+
+        // Check for network 401 errors
+        const isNetworkAuthError =
+            networkError &&
+            "statusCode" in networkError &&
+            networkError.statusCode === 401;
+
+        if (hasAuthError || isNetworkAuthError) {
+            return new Observable((observer) => {
+                forceTokenRefresh()
+                    .then(() => {
+                        // Retry the operation
+                        forward(operation).subscribe({
+                            next: observer.next.bind(observer),
+                            error: observer.error.bind(observer),
+                            complete: observer.complete.bind(observer),
+                        });
+                    })
+                    .catch((refreshError) => {
+                        // Token refresh failed, emit original error
+                        console.error("Token refresh failed:", refreshError);
+
+                        // Show user-friendly error toast
+                        showToast.danger({
+                            title: "Authentication Error",
+                            message:
+                                "Your session has expired. Please log in again.",
+                            duration: 8000,
+                            closable: true,
+                        });
+
+                        if (graphQLErrors) {
+                            observer.error({ graphQLErrors });
+                        } else if (networkError) {
+                            observer.error(networkError);
+                        }
+                    });
+            });
+        }
+    }
+);
+
 // Create WebSocket client with lazy connectionParams for token refresh
 function createWsClient(): Client {
     return createClient({
         url: wsUrl,
         connectionParams: async () => {
+            // If flagged, refresh token before connecting
+            if (shouldRefreshTokenOnReconnect) {
+                try {
+                    await forceTokenRefresh();
+                    shouldRefreshTokenOnReconnect = false;
+                } catch (e) {
+                    console.error(
+                        "Failed to refresh token for WS reconnect:",
+                        e
+                    );
+                    showToast.danger({
+                        title: "Connection Error",
+                        message:
+                            "Unable to re-authenticate WebSocket connection. Please refresh the page.",
+                        duration: 10000,
+                        closable: true,
+                    });
+                }
+            }
+
             const campaignId = getCurrentCampaignId();
             return {
                 headers: {
@@ -80,6 +167,38 @@ function createWsClient(): Client {
                 "x-selected-campaign-id": campaignId || null,
                 Authorization: authToken ? `Bearer ${authToken}` : null,
             };
+        },
+        retryAttempts: 5,
+        shouldRetry: (errOrCloseEvent) => {
+            // Check for auth-related close codes
+            if (
+                errOrCloseEvent &&
+                typeof errOrCloseEvent === "object" &&
+                "code" in errOrCloseEvent
+            ) {
+                const code = (errOrCloseEvent as CloseEvent).code;
+                // 4401/4403 are common auth failure codes, 3000 is Forbidden
+                if (code === 4401 || code === 4403 || code === 3000) {
+                    shouldRefreshTokenOnReconnect = true;
+                    return true;
+                }
+            }
+            return true;
+        },
+        on: {
+            closed: (event) => {
+                const closeEvent = event as CloseEvent;
+                if (
+                    closeEvent.code === 4401 ||
+                    closeEvent.code === 4403 ||
+                    closeEvent.code === 3000
+                ) {
+                    console.warn(
+                        "WebSocket closed due to auth error, will refresh token on reconnect"
+                    );
+                    shouldRefreshTokenOnReconnect = true;
+                }
+            },
         },
     });
 }
@@ -109,7 +228,7 @@ let splitLink = createSplitLink();
 
 // Apollo Client
 const client = new ApolloClient({
-    link: from([waitForTokenLink, splitLink]),
+    link: from([errorLink, waitForTokenLink, splitLink]),
     cache: new InMemoryCache(),
 });
 
@@ -131,7 +250,7 @@ export function restartWsClient(): void {
     splitLink = createSplitLink();
 
     // Update Apollo Client's link
-    client.setLink(from([waitForTokenLink, splitLink]));
+    client.setLink(from([errorLink, waitForTokenLink, splitLink]));
 }
 
 export default client;
