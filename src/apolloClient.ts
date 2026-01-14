@@ -81,7 +81,7 @@ function isAuthError(
     return graphQLErrors.some(
         (err) =>
             err.message
-                .toLocaleLowerCase()
+                .toLowerCase()
                 .includes("please provide a valid token") ||
             err.extensions?.code === "UNAUTHENTICATED"
     );
