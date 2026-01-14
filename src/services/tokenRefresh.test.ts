@@ -4,6 +4,7 @@ import { setAuthToken } from "../apolloClient";
 import { auth } from "../components/firebase";
 import {
     cleanupTokenRefresh,
+    forceTokenRefresh,
     initializeTokenRefresh,
     setOnTokenRefresh,
 } from "./tokenRefresh";
@@ -218,6 +219,72 @@ describe("tokenRefresh", () => {
             );
 
             consoleErrorSpy.mockRestore();
+        });
+    });
+
+    describe("forceTokenRefresh", () => {
+        it("should force refresh the Firebase token", async () => {
+            (
+                vi.mocked(auth) as unknown as { currentUser: User | null }
+            ).currentUser = mockUser as User;
+
+            await forceTokenRefresh();
+
+            expect(mockUser.getIdToken).toHaveBeenCalledWith(true);
+            expect(setAuthToken).toHaveBeenCalledWith("mock-token-123");
+        });
+
+        it("should invoke callback on successful refresh", async () => {
+            const mockCallback = vi.fn();
+            setOnTokenRefresh(mockCallback);
+            (
+                vi.mocked(auth) as unknown as { currentUser: User | null }
+            ).currentUser = mockUser as User;
+
+            await forceTokenRefresh();
+
+            expect(mockCallback).toHaveBeenCalledTimes(1);
+        });
+
+        it("should deduplicate concurrent refresh requests", async () => {
+            (
+                vi.mocked(auth) as unknown as { currentUser: User | null }
+            ).currentUser = mockUser as User;
+
+            const [result1, result2, result3] = await Promise.all([
+                forceTokenRefresh(),
+                forceTokenRefresh(),
+                forceTokenRefresh(),
+            ]);
+
+            expect(result1).toBe("mock-token-123");
+            expect(result2).toBe("mock-token-123");
+            expect(result3).toBe("mock-token-123");
+            expect(mockUser.getIdToken).toHaveBeenCalledTimes(1);
+        });
+
+        it("should throw when no user is authenticated", async () => {
+            (
+                vi.mocked(auth) as unknown as { currentUser: User | null }
+            ).currentUser = null;
+
+            await expect(forceTokenRefresh()).rejects.toThrow(
+                "No authenticated user"
+            );
+        });
+
+        it("should allow new refresh after previous completes", async () => {
+            (
+                vi.mocked(auth) as unknown as { currentUser: User | null }
+            ).currentUser = mockUser as User;
+
+            // First refresh
+            await forceTokenRefresh();
+            expect(mockUser.getIdToken).toHaveBeenCalledTimes(1);
+
+            // Second refresh (should be a new call)
+            await forceTokenRefresh();
+            expect(mockUser.getIdToken).toHaveBeenCalledTimes(2);
         });
     });
 });

@@ -31,6 +31,46 @@ export const useToaster = () => {
     return context;
 };
 
+// Global toast service for non-React code (e.g., Apollo Client)
+let globalToastService: ToasterContextProps["toast"] | null = null;
+
+export const setGlobalToastService = (
+    service: ToasterContextProps["toast"] | null
+) => {
+    globalToastService = service;
+};
+
+export const showToast = {
+    success: (options: ToastOptions) => {
+        if (globalToastService) {
+            globalToastService.success(options);
+        } else {
+            console.warn("Toast service not initialized:", options);
+        }
+    },
+    danger: (options: ToastOptions) => {
+        if (globalToastService) {
+            globalToastService.danger(options);
+        } else {
+            console.warn("Toast service not initialized:", options);
+        }
+    },
+    warning: (options: ToastOptions) => {
+        if (globalToastService) {
+            globalToastService.warning(options);
+        } else {
+            console.warn("Toast service not initialized:", options);
+        }
+    },
+    info: (options: ToastOptions) => {
+        if (globalToastService) {
+            globalToastService.info(options);
+        } else {
+            console.warn("Toast service not initialized:", options);
+        }
+    },
+};
+
 type InternalToast = ToastOptions & {
     type: string;
     id: string;
@@ -91,6 +131,12 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
         () => ({ toast: { success, danger, warning, info } }),
         [success, danger, warning, info]
     );
+
+    // Register global toast service on mount
+    React.useEffect(() => {
+        setGlobalToastService({ success, danger, warning, info });
+        return () => setGlobalToastService(null);
+    }, [success, danger, warning, info]);
 
     return (
         <ToasterContext.Provider value={contextValue}>

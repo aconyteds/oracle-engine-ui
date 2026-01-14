@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import client, { setAuthToken } from "./apolloClient";
+import client, { restartWsClient, setAuthToken } from "./apolloClient";
 
 describe("apolloClient", () => {
     test("should export Apollo Client instance", () => {
@@ -60,5 +60,16 @@ describe("apolloClient", () => {
     test("client should have writeQuery method", () => {
         expect(client.writeQuery).toBeDefined();
         expect(typeof client.writeQuery).toBe("function");
+    });
+
+    test("should export restartWsClient function", () => {
+        expect(restartWsClient).toBeDefined();
+        expect(typeof restartWsClient).toBe("function");
+    });
+
+    test("restartWsClient should not throw when called", () => {
+        // This tests that the function exists and is callable
+        // Actual WebSocket functionality is tested in integration tests
+        expect(() => restartWsClient()).not.toThrow();
     });
 });

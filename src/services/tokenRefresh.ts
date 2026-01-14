@@ -7,6 +7,7 @@ const TOKEN_REFRESH_INTERVAL = 50 * 60 * 1000;
 
 let refreshInterval: NodeJS.Timeout | null = null;
 let unsubscribeIdTokenChanged: (() => void) | null = null;
+let refreshPromise: Promise<string> | null = null;
 
 /**
  * Refreshes the Firebase ID token and updates Apollo Client
@@ -97,4 +98,39 @@ export function cleanupTokenRefresh(): void {
     }
 
     // Don't clear the callback - it should persist across cleanup/re-initialization
+}
+
+/**
+ * Force refreshes the Firebase token with race condition protection.
+ * Multiple calls while a refresh is in progress will await the same promise.
+ * @returns The new token
+ * @throws Error if refresh fails or no user is authenticated
+ */
+export async function forceTokenRefresh(): Promise<string> {
+    // If already refreshing, return the existing promise
+    if (refreshPromise) {
+        return refreshPromise;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("No authenticated user");
+    }
+
+    refreshPromise = (async () => {
+        try {
+            const token = await user.getIdToken(true); // Force refresh
+            setAuthToken(token);
+
+            if (onTokenRefreshCallback) {
+                onTokenRefreshCallback();
+            }
+
+            return token;
+        } finally {
+            refreshPromise = null;
+        }
+    })();
+
+    return refreshPromise;
 }
