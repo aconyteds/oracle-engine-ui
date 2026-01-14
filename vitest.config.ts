@@ -10,11 +10,14 @@ export default mergeConfig(
             environment: "jsdom",
             setupFiles: "./setupTests.ts",
             pool: "forks",
-            poolOptions: {
-                forks: {
-                    singleFork: true,
-                },
-            },
+            // This causes test pollution, and fails to isolate tests properly
+            // This might need to be enabled for tests to pass during CI.
+            // If this needs to be enabled due to memory constraints in CI, we might need an isolated running like on the server
+            // poolOptions: {
+            //     forks: {
+            //         singleFork: true,
+            //     },
+            // },
         },
         resolve: {
             alias: {

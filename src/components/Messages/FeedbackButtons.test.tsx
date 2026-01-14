@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FeedbackButtons } from "./FeedbackButtons";
 import { FeedbackModalProps } from "./FeedbackModal";
@@ -88,22 +94,24 @@ describe("FeedbackButtons Component", () => {
         // Submit modal
         fireEvent.click(screen.getByTestId("submit-modal"));
 
-        // Expect mutation to be called
-        expect(mockSendFeedback).toHaveBeenCalledWith({
-            variables: {
-                input: {
-                    messageId: "123",
-                    humanSentiment: true,
-                    comments: "test comment",
+        // Wait for mutation to be called
+        await waitFor(() => {
+            expect(mockSendFeedback).toHaveBeenCalledWith({
+                variables: {
+                    input: {
+                        messageId: "123",
+                        humanSentiment: true,
+                        comments: "test comment",
+                    },
                 },
-            },
+            });
         });
 
         // Expect success toast
-        // Wait for async operations
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        expect(mockToastSuccess).toHaveBeenCalledWith({
-            message: "Thank you for your feedback!",
+        await waitFor(() => {
+            expect(mockToastSuccess).toHaveBeenCalledWith({
+                message: "Thank you for your feedback!",
+            });
         });
     });
 
@@ -121,10 +129,10 @@ describe("FeedbackButtons Component", () => {
         fireEvent.click(screen.getByTestId("fa-icon-thumbs-up"));
         fireEvent.click(screen.getByTestId("submit-modal"));
 
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
-        expect(mockToastDanger).toHaveBeenCalledWith({
-            message: "Failed to submit feedback. Please try again.",
+        await waitFor(() => {
+            expect(mockToastDanger).toHaveBeenCalledWith({
+                message: "Failed to submit feedback. Please try again.",
+            });
         });
 
         consoleSpy.mockRestore();
