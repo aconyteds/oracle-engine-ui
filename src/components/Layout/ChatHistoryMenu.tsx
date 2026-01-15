@@ -45,14 +45,24 @@ export const ChatHistoryMenu: React.FC = () => {
 
     // Organize threads into pinned and unpinned
     const { pinnedThreads, recentThreads, olderThreads } = useMemo(() => {
-        const pinned = threadList.filter((thread) => thread.isPinned);
-        const unpinned = threadList.filter((thread) => !thread.isPinned);
+        const pinned: typeof threadList = [];
+        const unpinned: typeof threadList = [];
+
+        // Single pass to partition threads
+        for (const thread of threadList) {
+            if (thread.isPinned) {
+                pinned.push(thread);
+            } else {
+                unpinned.push(thread);
+            }
+        }
 
         // Sort unpinned by lastUsed (most recent first)
-        const sortedUnpinned = [...unpinned].sort((a, b) => {
-            const dateA = new Date(a.lastUsed).getTime();
-            const dateB = new Date(b.lastUsed).getTime();
-            return dateB - dateA;
+        const sortedUnpinned = unpinned.sort((a, b) => {
+            // Pre-compute timestamps once for comparison
+            return (
+                new Date(b.lastUsed).getTime() - new Date(a.lastUsed).getTime()
+            );
         });
 
         const recent = sortedUnpinned.slice(0, 10);
