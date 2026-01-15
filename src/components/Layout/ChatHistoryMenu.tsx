@@ -1,17 +1,26 @@
 import { useThreadsContext } from "@context";
+import { faMap } from "@fortawesome/free-regular-svg-icons";
 import {
     faBars,
     faChevronDown,
+    faMapPin,
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { Dropdown } from "react-bootstrap";
+import { formatRelativeTime } from "../../utils";
 import "./ChatHistoryMenu.scss";
 
 export const ChatHistoryMenu: React.FC = () => {
-    const { threadList, selectThread, isGenerating, selectedThread } =
-        useThreadsContext();
+    const {
+        threadList,
+        selectThread,
+        isGenerating,
+        selectedThread,
+        togglePinThread,
+    } = useThreadsContext();
+    const [showAll, setShowAll] = useState(false);
 
     const handleNewChat = () => {
         selectThread(null);
@@ -21,15 +30,84 @@ export const ChatHistoryMenu: React.FC = () => {
         selectThread(threadId);
     };
 
+    const handleTogglePin = (
+        threadId: string,
+        isPinned: boolean,
+        event: React.MouseEvent
+    ) => {
+        event.stopPropagation();
+        togglePinThread(threadId, isPinned);
+    };
+
+    const handleToggleShowAll = () => {
+        setShowAll(!showAll);
+    };
+
+    // Organize threads into pinned and unpinned
+    const { pinnedThreads, recentThreads, olderThreads } = useMemo(() => {
+        const pinned = threadList.filter((thread) => thread.isPinned);
+        const unpinned = threadList.filter((thread) => !thread.isPinned);
+
+        // Sort unpinned by lastUsed (most recent first)
+        const sortedUnpinned = [...unpinned].sort((a, b) => {
+            const dateA = new Date(a.lastUsed).getTime();
+            const dateB = new Date(b.lastUsed).getTime();
+            return dateB - dateA;
+        });
+
+        const recent = sortedUnpinned.slice(0, 10);
+        const older = sortedUnpinned.slice(10);
+
+        return {
+            pinnedThreads: pinned,
+            recentThreads: recent,
+            olderThreads: older,
+        };
+    }, [threadList]);
+
     if (threadList.length === 0) {
         return null;
     }
 
     const showNewChatButton =
         selectedThread !== null || threadList.length === 0;
-    const chatHistory = threadList.filter(
-        (thread) => !selectedThread || thread.id !== selectedThread.id
-    );
+
+    const renderThreadItem = (thread: (typeof threadList)[0]) => {
+        const isSelected = selectedThread?.id === thread.id;
+        const timeAgo = formatRelativeTime(thread.lastUsed);
+
+        return (
+            <Dropdown.Item
+                key={thread.id}
+                onClick={() => handleSelectThread(thread.id)}
+                active={isSelected}
+                className="thread-item d-flex justify-content-between align-items-center"
+            >
+                <div className="thread-info flex-grow-1">
+                    <div className="thread-title">{thread.title}</div>
+                    <div className="thread-time text-muted small">
+                        {timeAgo}
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    className="btn btn-sm btn-link p-0 ms-2 pin-button"
+                    onClick={(e) =>
+                        handleTogglePin(thread.id, !thread.isPinned, e)
+                    }
+                    aria-label={thread.isPinned ? "Unpin thread" : "Pin thread"}
+                >
+                    <FontAwesomeIcon
+                        icon={thread.isPinned ? faMapPin : faMap}
+                        className={
+                            thread.isPinned ? "text-primary" : "text-muted"
+                        }
+                    />
+                </button>
+            </Dropdown.Item>
+        );
+    };
+
     return (
         <Dropdown>
             <Dropdown.Toggle
@@ -54,35 +132,61 @@ export const ChatHistoryMenu: React.FC = () => {
                     </>
                 )}
 
-                {chatHistory.length > 0 ? (
-                    <Dropdown.Header>Chat History</Dropdown.Header>
-                ) : null}
-                <div className="thread-list">
-                    {chatHistory.map((thread) => {
-                        if (selectedThread?.id === thread.id) {
-                            return null;
-                        }
+                {showNewChatButton && (
+                    <Dropdown.Item
+                        onClick={handleNewChat}
+                        disabled={isGenerating}
+                    >
+                        <FontAwesomeIcon icon={faPlus} className="me-2" />
+                        New Chat
+                    </Dropdown.Item>
+                )}
 
-                        return (
-                            <Dropdown.Item
-                                key={thread.id}
-                                onClick={() => handleSelectThread(thread.id)}
-                                active={selectedThread?.id === thread.id}
-                            >
-                                {thread.title}
-                            </Dropdown.Item>
-                        );
-                    })}
-                    {showNewChatButton && (
+                {pinnedThreads.length > 0 && (
+                    <>
+                        <Dropdown.Divider />
+                        <Dropdown.Header>
+                            <FontAwesomeIcon icon={faMapPin} className="me-2" />
+                            Pinned
+                        </Dropdown.Header>
+                        <div className="thread-list">
+                            {pinnedThreads.map(renderThreadItem)}
+                        </div>
+                    </>
+                )}
+
+                {recentThreads.length > 0 && (
+                    <>
+                        <Dropdown.Divider />
+                        <Dropdown.Header>Recent</Dropdown.Header>
+                        <div className="thread-list">
+                            {recentThreads.map(renderThreadItem)}
+                        </div>
+                    </>
+                )}
+
+                {olderThreads.length > 0 && (
+                    <>
+                        <Dropdown.Divider />
                         <Dropdown.Item
-                            onClick={handleNewChat}
-                            disabled={isGenerating}
+                            onClick={handleToggleShowAll}
+                            className="show-all-toggle"
                         >
-                            <FontAwesomeIcon icon={faPlus} className="me-2" />
-                            New Chat
+                            <FontAwesomeIcon
+                                icon={faChevronDown}
+                                className={`me-2 ${showAll ? "rotate-180" : ""}`}
+                            />
+                            {showAll
+                                ? `Hide older (${olderThreads.length})`
+                                : `Show all (${olderThreads.length} more)`}
                         </Dropdown.Item>
-                    )}
-                </div>
+                        {showAll && (
+                            <div className="thread-list thread-list-expanded">
+                                {olderThreads.map(renderThreadItem)}
+                            </div>
+                        )}
+                    </>
+                )}
             </Dropdown.Menu>
         </Dropdown>
     );

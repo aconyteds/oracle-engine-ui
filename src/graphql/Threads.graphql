@@ -2,6 +2,7 @@ fragment ThreadDetails on Thread {
     id
     lastUsed
     title
+    isPinned
 }
 
 query GetThreadByID($getThreadInput: GetThreadInput!) {
@@ -17,6 +18,18 @@ query GetThreadByID($getThreadInput: GetThreadInput!) {
 
 query GetMyThreads {
     threads {
+        ...ThreadDetails
+    }
+}
+
+mutation PinThread($threadId: String!) {
+    pinThread(threadId: $threadId) {
+        ...ThreadDetails
+    }
+}
+
+mutation UnpinThread($threadId: String!) {
+    unpinThread(threadId: $threadId) {
         ...ThreadDetails
     }
 }
