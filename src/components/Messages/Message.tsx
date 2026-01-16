@@ -45,12 +45,13 @@ export const Message: React.FC<MessageProps> = ({
                     ({ messageType }) =>
                         showDebug || messageType === ResponseType.Intermediate
                 )
-                .map((workspaceItem) => {
+                .map((workspaceItem, indx) => {
                     return (
                         <ListGroupItem
                             key={
                                 workspaceItem.messageType +
-                                workspaceItem.timestamp
+                                "-" +
+                                indx.toString()
                             }
                             className="message-workspace pt-1 pb-0 rounded-0 border-top-0 text-muted small bg-dark"
                         >

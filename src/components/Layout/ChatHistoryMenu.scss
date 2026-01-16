@@ -1,16 +1,44 @@
 .chat-history-dropdown {
     min-width: 250px;
     max-width: 350px;
+    max-height: 60vh;
+    // Need specificity to override bootstrap
+    &.dropdown-menu {
+        overflow-y: auto;
+    }
 
     .thread-list {
-        max-height: 50vh;
-        overflow-y: auto;
-
         .dropdown-item {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
             font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+
+            &.thread-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+
+                .thread-info {
+                    flex: 1;
+                    min-width: 0;
+
+                    .thread-title {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+
+                .pin-button {
+                    flex-shrink: 0;
+                    color: inherit;
+                    text-decoration: none;
+                    
+                    &:hover {
+                        color: var(--bs-primary);
+                    }
+                }
+            }
         }
     }
 }

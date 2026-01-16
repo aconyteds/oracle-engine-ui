@@ -3,6 +3,7 @@ export * from "./useAutoGrowTextarea";
 export * from "./useDebounce";
 export * from "./useMap";
 export * from "./useMessageGeneration";
+export * from "./useRelativeTime";
 export * from "./useStorage";
 export * from "./useTheme";
 export * from "./useToggle";

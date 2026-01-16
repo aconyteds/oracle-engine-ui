@@ -5,6 +5,7 @@ import {
     useCreateMessageMutation,
     useGetMyThreadsLazyQuery,
     useGetThreadByIdQuery,
+    useUpdateThreadMutation,
 } from "@graphql";
 import {
     useArray,
@@ -35,6 +36,7 @@ type ThreadsContextPayload = {
     isGenerating: boolean;
     generatingContent: string;
     refreshThreads: () => Promise<void>;
+    togglePinThread: (threadId: string, pin: boolean) => Promise<void>;
 };
 
 const ThreadsContext = createContext<ThreadsContextPayload | undefined>(
@@ -110,6 +112,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             fetchPolicy: "network-only",
         });
     const [createMessage] = useCreateMessageMutation();
+    const [updateThread] = useUpdateThreadMutation();
 
     const processThreadData = useCallback(
         async (
@@ -243,6 +246,25 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
         }
     }, [getMyThreads, clearThreads, setThreadList, toast]);
 
+    const togglePinThread = useCallback(
+        async (threadId: string, pin: boolean) => {
+            try {
+                await updateThread({
+                    variables: { input: { threadId, isPinned: pin } },
+                });
+                // Refresh threads to get updated pin status
+                await refreshThreads();
+            } catch (_error) {
+                toast.danger({
+                    title: "Error Updating Thread",
+                    message: "Failed to update thread pin status.",
+                    duration: 5000,
+                });
+            }
+        },
+        [updateThread, refreshThreads, toast]
+    );
+
     // Refresh threads when campaign changes
     // biome-ignore lint/correctness/useExhaustiveDependencies: This effect should only run when selectedCampaign.id changes
     useEffect(() => {
@@ -327,6 +349,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             isGenerating,
             generatingContent,
             refreshThreads,
+            togglePinThread,
         }),
         [
             threadList,
@@ -338,6 +361,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             isGenerating,
             generatingContent,
             refreshThreads,
+            togglePinThread,
         ]
     );
 
