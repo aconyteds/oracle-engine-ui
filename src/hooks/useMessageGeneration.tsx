@@ -5,6 +5,12 @@ import {
 } from "@graphql";
 import { useCallback, useRef, useState } from "react";
 
+// Pattern to detect asset creation/update messages from AI
+// Matches: "Created [Name](Type:id)" or "Updated [Name](Type:id)"
+// where Type is NPC, Location, or Plot
+const ASSET_PATTERN =
+    /(Created|Updated)\s+\[([^\]]+)\]\((NPC|Location|Plot):([^)]+)\)/;
+
 type UseMessageGenerationProps = {
     showDebug?: boolean;
     onMessageComplete: (message: MessageDetailsFragment) => void;
@@ -68,12 +74,8 @@ export function useMessageGeneration({
             }
 
             // Check for asset creation/update patterns
-            // Pattern: "Created [Name](Type:id)" or "Updated [Name](Type:id)"
-            // where Type is NPC, Location, or Plot
             if (responseType === ResponseType.Intermediate && onAssetModified) {
-                const assetPattern =
-                    /(Created|Updated)\s+\[([^\]]+)\]\((NPC|Location|Plot):([^)]+)\)/;
-                const match = content.match(assetPattern);
+                const match = content.match(ASSET_PATTERN);
                 if (match) {
                     const assetType = match[3];
                     const assetId = match[4];
