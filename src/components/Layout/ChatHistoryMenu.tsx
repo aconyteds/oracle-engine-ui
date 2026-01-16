@@ -1,16 +1,18 @@
 import { useThreadsContext } from "@context";
-import { faMap } from "@fortawesome/free-regular-svg-icons";
 import {
     faBars,
     faChevronDown,
-    faMapPin,
+    faChevronUp,
     faPlus,
+    faStar as faStarSolid,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo, useState } from "react";
-import { Dropdown } from "react-bootstrap";
-import { formatRelativeTime } from "../../utils";
+import { Collapse, Dropdown } from "react-bootstrap";
+import { HistoryThreadItem } from "./HistoryThreadItem";
 import "./ChatHistoryMenu.scss";
+
+const THREADS_TO_SHOW_INITIALLY = 3;
 
 export const ChatHistoryMenu: React.FC = () => {
     const {
@@ -39,7 +41,9 @@ export const ChatHistoryMenu: React.FC = () => {
         togglePinThread(threadId, isPinned);
     };
 
-    const handleToggleShowAll = () => {
+    const handleToggleShowAll = (e: React.MouseEvent<HTMLButtonElement>) => {
+        // Prevent dropdown item click
+        e.stopPropagation();
         setShowAll(!showAll);
     };
 
@@ -65,8 +69,8 @@ export const ChatHistoryMenu: React.FC = () => {
             );
         });
 
-        const recent = sortedUnpinned.slice(0, 10);
-        const older = sortedUnpinned.slice(10);
+        const recent = sortedUnpinned.slice(0, THREADS_TO_SHOW_INITIALLY);
+        const older = sortedUnpinned.slice(THREADS_TO_SHOW_INITIALLY);
 
         return {
             pinnedThreads: pinned,
@@ -81,42 +85,6 @@ export const ChatHistoryMenu: React.FC = () => {
 
     const showNewChatButton =
         selectedThread !== null || threadList.length === 0;
-
-    const renderThreadItem = (thread: (typeof threadList)[0]) => {
-        const isSelected = selectedThread?.id === thread.id;
-        const timeAgo = formatRelativeTime(thread.lastUsed);
-
-        return (
-            <Dropdown.Item
-                key={thread.id}
-                onClick={() => handleSelectThread(thread.id)}
-                active={isSelected}
-                className="thread-item d-flex justify-content-between align-items-center"
-            >
-                <div className="thread-info flex-grow-1">
-                    <div className="thread-title">{thread.title}</div>
-                    <div className="thread-time text-muted small">
-                        {timeAgo}
-                    </div>
-                </div>
-                <button
-                    type="button"
-                    className="btn btn-sm btn-link p-0 ms-2 pin-button"
-                    onClick={(e) =>
-                        handleTogglePin(thread.id, !thread.isPinned, e)
-                    }
-                    aria-label={thread.isPinned ? "Unpin thread" : "Pin thread"}
-                >
-                    <FontAwesomeIcon
-                        icon={thread.isPinned ? faMapPin : faMap}
-                        className={
-                            thread.isPinned ? "text-primary" : "text-muted"
-                        }
-                    />
-                </button>
-            </Dropdown.Item>
-        );
-    };
 
     return (
         <Dropdown>
@@ -143,24 +111,39 @@ export const ChatHistoryMenu: React.FC = () => {
                 )}
 
                 {showNewChatButton && (
-                    <Dropdown.Item
-                        onClick={handleNewChat}
-                        disabled={isGenerating}
-                    >
-                        <FontAwesomeIcon icon={faPlus} className="me-2" />
-                        New Chat
-                    </Dropdown.Item>
+                    <>
+                        <Dropdown.Item
+                            onClick={handleNewChat}
+                            disabled={isGenerating}
+                        >
+                            <FontAwesomeIcon icon={faPlus} className="me-2" />
+                            New Chat
+                        </Dropdown.Item>
+                        <Dropdown.Divider />
+                    </>
                 )}
 
                 {pinnedThreads.length > 0 && (
                     <>
-                        <Dropdown.Divider />
                         <Dropdown.Header>
-                            <FontAwesomeIcon icon={faMapPin} className="me-2" />
-                            Pinned
+                            <FontAwesomeIcon
+                                icon={faStarSolid}
+                                className="me-2"
+                            />
+                            Favorite Threads
                         </Dropdown.Header>
                         <div className="thread-list">
-                            {pinnedThreads.map(renderThreadItem)}
+                            {pinnedThreads.map((thread) => (
+                                <HistoryThreadItem
+                                    key={thread.id}
+                                    thread={thread}
+                                    isSelected={
+                                        selectedThread?.id === thread.id
+                                    }
+                                    onSelect={handleSelectThread}
+                                    onTogglePin={handleTogglePin}
+                                />
+                            ))}
                         </div>
                     </>
                 )}
@@ -170,7 +153,17 @@ export const ChatHistoryMenu: React.FC = () => {
                         <Dropdown.Divider />
                         <Dropdown.Header>Recent</Dropdown.Header>
                         <div className="thread-list">
-                            {recentThreads.map(renderThreadItem)}
+                            {recentThreads.map((thread) => (
+                                <HistoryThreadItem
+                                    key={thread.id}
+                                    thread={thread}
+                                    isSelected={
+                                        selectedThread?.id === thread.id
+                                    }
+                                    onSelect={handleSelectThread}
+                                    onTogglePin={handleTogglePin}
+                                />
+                            ))}
                         </div>
                     </>
                 )}
@@ -178,23 +171,31 @@ export const ChatHistoryMenu: React.FC = () => {
                 {olderThreads.length > 0 && (
                     <>
                         <Dropdown.Divider />
-                        <Dropdown.Item
-                            onClick={handleToggleShowAll}
-                            className="show-all-toggle"
-                        >
-                            <FontAwesomeIcon
-                                icon={faChevronDown}
-                                className={`me-2 ${showAll ? "rotate-180" : ""}`}
-                            />
-                            {showAll
-                                ? `Hide older (${olderThreads.length})`
-                                : `Show all (${olderThreads.length} more)`}
-                        </Dropdown.Item>
-                        {showAll && (
-                            <div className="thread-list thread-list-expanded">
-                                {olderThreads.map(renderThreadItem)}
+                        <Dropdown.Item onClick={handleToggleShowAll}>
+                            <div className="d-flex justify-content-between align-items-center cursor-pointer">
+                                {showAll
+                                    ? `Hide older (${olderThreads.length})`
+                                    : `Show all (${olderThreads.length} more)`}
+                                <FontAwesomeIcon
+                                    icon={showAll ? faChevronUp : faChevronDown}
+                                />
                             </div>
-                        )}
+                        </Dropdown.Item>
+                        <Collapse in={showAll}>
+                            <div>
+                                {olderThreads.map((thread) => (
+                                    <HistoryThreadItem
+                                        key={thread.id}
+                                        thread={thread}
+                                        isSelected={
+                                            selectedThread?.id === thread.id
+                                        }
+                                        onSelect={handleSelectThread}
+                                        onTogglePin={handleTogglePin}
+                                    />
+                                ))}
+                            </div>
+                        </Collapse>
                     </>
                 )}
             </Dropdown.Menu>

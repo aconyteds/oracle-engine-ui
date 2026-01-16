@@ -5,8 +5,7 @@ import {
     useCreateMessageMutation,
     useGetMyThreadsLazyQuery,
     useGetThreadByIdQuery,
-    usePinThreadMutation,
-    useUnpinThreadMutation,
+    useUpdateThreadMutation,
 } from "@graphql";
 import {
     useArray,
@@ -113,8 +112,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             fetchPolicy: "network-only",
         });
     const [createMessage] = useCreateMessageMutation();
-    const [pinThread] = usePinThreadMutation();
-    const [unpinThread] = useUnpinThreadMutation();
+    const [updateThread] = useUpdateThreadMutation();
 
     const processThreadData = useCallback(
         async (
@@ -251,11 +249,9 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     const togglePinThread = useCallback(
         async (threadId: string, pin: boolean) => {
             try {
-                if (pin) {
-                    await pinThread({ variables: { threadId } });
-                } else {
-                    await unpinThread({ variables: { threadId } });
-                }
+                await updateThread({
+                    variables: { input: { threadId, isPinned: pin } },
+                });
                 // Refresh threads to get updated pin status
                 await refreshThreads();
             } catch (_error) {
@@ -266,7 +262,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                 });
             }
         },
-        [pinThread, unpinThread, refreshThreads, toast]
+        [updateThread, refreshThreads, toast]
     );
 
     // Refresh threads when campaign changes

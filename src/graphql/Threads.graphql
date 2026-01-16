@@ -22,14 +22,10 @@ query GetMyThreads {
     }
 }
 
-mutation PinThread($threadId: String!) {
-    pinThread(threadId: $threadId) {
-        ...ThreadDetails
-    }
-}
-
-mutation UnpinThread($threadId: String!) {
-    unpinThread(threadId: $threadId) {
-        ...ThreadDetails
+mutation UpdateThread($input: UpdateThreadInput!) {
+    updateThread(input: $input) {
+        thread {
+            ...ThreadDetails
+        }
     }
 }
