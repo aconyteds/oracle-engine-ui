@@ -590,4 +590,191 @@ describe("useMessageGeneration", () => {
             );
         });
     });
+
+    test("should call onAssetModified when asset Created pattern is detected", async () => {
+        const mockOnAssetModified = vi.fn();
+        const { result } = renderHook(() =>
+            useMessageGeneration({
+                onMessageComplete: mockOnMessageComplete,
+                onAssetModified: mockOnAssetModified,
+            })
+        );
+
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: "🧙 Created [Gandalf](NPC:npc-123)",
+                            responseType: ResponseType.Intermediate,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(mockOnAssetModified).toHaveBeenCalledWith("NPC", "npc-123");
+        });
+    });
+
+    test("should call onAssetModified when asset Updated pattern is detected", async () => {
+        const mockOnAssetModified = vi.fn();
+        const { result } = renderHook(() =>
+            useMessageGeneration({
+                onMessageComplete: mockOnMessageComplete,
+                onAssetModified: mockOnAssetModified,
+            })
+        );
+
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: "📍 Updated [Rivendell](Location:loc-456)",
+                            responseType: ResponseType.Intermediate,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(mockOnAssetModified).toHaveBeenCalledWith(
+                "Location",
+                "loc-456"
+            );
+        });
+    });
+
+    test("should call onAssetModified for Plot assets", async () => {
+        const mockOnAssetModified = vi.fn();
+        const { result } = renderHook(() =>
+            useMessageGeneration({
+                onMessageComplete: mockOnMessageComplete,
+                onAssetModified: mockOnAssetModified,
+            })
+        );
+
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content:
+                                "📖 Created [Quest to Mount Doom](Plot:plot-789)",
+                            responseType: ResponseType.Intermediate,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(mockOnAssetModified).toHaveBeenCalledWith(
+                "Plot",
+                "plot-789"
+            );
+        });
+    });
+
+    test("should not call onAssetModified when pattern does not match", async () => {
+        const mockOnAssetModified = vi.fn();
+        const { result } = renderHook(() =>
+            useMessageGeneration({
+                onMessageComplete: mockOnMessageComplete,
+                onAssetModified: mockOnAssetModified,
+            })
+        );
+
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: "Just some regular content",
+                            responseType: ResponseType.Intermediate,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(result.current.generatingContent).toContain(
+                "Just some regular content"
+            );
+        });
+
+        expect(mockOnAssetModified).not.toHaveBeenCalled();
+    });
+
+    test("should not call onAssetModified when callback is not provided", async () => {
+        const { result } = renderHook(() =>
+            useMessageGeneration({
+                onMessageComplete: mockOnMessageComplete,
+            })
+        );
+
+        act(() => {
+            result.current.startGeneration("thread-123");
+        });
+
+        await waitFor(() => {
+            expect(result.current.isGenerating).toBe(true);
+        });
+
+        // This should not throw an error even though onAssetModified is not provided
+        act(() => {
+            global.__subscriptionCallbacks?.onData({
+                data: {
+                    data: {
+                        generateMessage: {
+                            content: "🧙 Created [Gandalf](NPC:npc-123)",
+                            responseType: ResponseType.Intermediate,
+                        },
+                    },
+                },
+            });
+        });
+
+        await waitFor(() => {
+            expect(result.current.generatingContent).toContain(
+                "Created [Gandalf]"
+            );
+        });
+    });
 });

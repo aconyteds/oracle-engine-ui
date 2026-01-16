@@ -9,12 +9,14 @@ type UseMessageGenerationProps = {
     showDebug?: boolean;
     onMessageComplete: (message: MessageDetailsFragment) => void;
     onError?: (error: Error) => void;
+    onAssetModified?: (assetType: string, assetId: string) => void;
 };
 
 export function useMessageGeneration({
     showDebug = false,
     onMessageComplete,
     onError,
+    onAssetModified,
 }: UseMessageGenerationProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
@@ -64,6 +66,21 @@ export function useMessageGeneration({
             if (!showContent) {
                 return;
             }
+
+            // Check for asset creation/update patterns
+            // Pattern: "Created [Name](Type:id)" or "Updated [Name](Type:id)"
+            // where Type is NPC, Location, or Plot
+            if (responseType === ResponseType.Intermediate && onAssetModified) {
+                const assetPattern =
+                    /(Created|Updated)\s+\[([^\]]+)\]\((NPC|Location|Plot):([^)]+)\)/;
+                const match = content.match(assetPattern);
+                if (match) {
+                    const assetType = match[3];
+                    const assetId = match[4];
+                    onAssetModified(assetType, assetId);
+                }
+            }
+
             generatingContentRef.current +=
                 content.length > 0 ? `\n\n${content}` : content;
             setGeneratingContent(generatingContentRef.current);

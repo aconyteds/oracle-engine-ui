@@ -1,3 +1,4 @@
+import { useApolloClient } from "@apollo/client";
 import {
     GetThreadByIdQueryVariables,
     MessageDetailsFragment,
@@ -63,6 +64,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     const { toast } = useToaster();
     const { selectedCampaign } = useCampaignContext();
     const { showDebug } = useUserContext();
+    const apolloClient = useApolloClient();
     const [storedThreadId, setStoredThreadId] = useSessionStorage<
         string | null
     >("selectedThreadId", null);
@@ -93,6 +95,15 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                     duration: 5000,
                 });
             },
+            onAssetModified: useCallback(
+                (_assetType: string, _assetId: string) => {
+                    // Refetch the ListCampaignAssets query to update the asset menu
+                    apolloClient.refetchQueries({
+                        include: ["ListCampaignAssets"],
+                    });
+                },
+                [apolloClient]
+            ),
         });
 
     const variables = useMemo<GetThreadByIdQueryVariables>(() => {
