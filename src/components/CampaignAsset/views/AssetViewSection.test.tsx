@@ -9,9 +9,7 @@ describe("AssetViewSection Component", () => {
     });
 
     test("should render label and content", () => {
-        render(
-            <AssetViewSection label="Test Label" content="Test content" />
-        );
+        render(<AssetViewSection label="Test Label" content="Test content" />);
 
         expect(screen.getByText("Test Label")).toBeInTheDocument();
         expect(screen.getByText("Test content")).toBeInTheDocument();
@@ -34,9 +32,7 @@ describe("AssetViewSection Component", () => {
         render(<AssetViewSection label="Test Label" content="" />);
 
         expect(screen.getByText("Test Label")).toBeInTheDocument();
-        expect(
-            screen.getByText("No information provided")
-        ).toBeInTheDocument();
+        expect(screen.getByText("No information provided")).toBeInTheDocument();
     });
 
     test("should render with blockquote wrapper when specified", () => {

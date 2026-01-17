@@ -1,58 +1,14 @@
-import { PlotStatus, Urgency } from "@graphql";
 import React from "react";
 import { Badge } from "react-bootstrap";
+import {
+    formatPlotStatus,
+    getPlotStatusVariant,
+    getUrgencyVariant,
+} from "../plotUtils";
 import type { AssetViewProps, PlotFormData } from "../types";
 import { AssetViewSection } from "./AssetViewSection";
 
 export type PlotViewProps = AssetViewProps<PlotFormData>;
-
-// Helper to get badge variant based on status
-const getStatusVariant = (status: PlotStatus): string => {
-    switch (status) {
-        case PlotStatus.Closed:
-            return "success";
-        case PlotStatus.InProgress:
-            return "primary";
-        case PlotStatus.WillNotDo:
-            return "secondary";
-        case PlotStatus.Rumored:
-            return "info";
-        case PlotStatus.Unknown:
-        default:
-            return "secondary";
-    }
-};
-
-// Helper to get badge variant based on urgency
-const getUrgencyVariant = (urgency: Urgency): string => {
-    switch (urgency) {
-        case Urgency.Critical:
-            return "danger";
-        case Urgency.Ongoing:
-            return "warning";
-        case Urgency.Resolved:
-            return "success";
-        default:
-            return "secondary";
-    }
-};
-
-// Helper to format status for display
-const formatStatus = (status: PlotStatus): string => {
-    switch (status) {
-        case PlotStatus.Closed:
-            return "Completed";
-        case PlotStatus.InProgress:
-            return "In Progress";
-        case PlotStatus.WillNotDo:
-            return "Will Not Do";
-        case PlotStatus.Rumored:
-            return "Rumored";
-        case PlotStatus.Unknown:
-        default:
-            return "Unknown";
-    }
-};
 
 /**
  * PlotView - Read-only view component for Plot assets
@@ -77,8 +33,8 @@ export const PlotView: React.FC<PlotViewProps> = ({ formData }) => {
             <div className="mb-3">
                 <strong className="d-block mb-2">Status & Urgency</strong>
                 <div className="d-flex gap-2">
-                    <Badge bg={getStatusVariant(formData.status)}>
-                        {formatStatus(formData.status)}
+                    <Badge bg={getPlotStatusVariant(formData.status)}>
+                        {formatPlotStatus(formData.status)}
                     </Badge>
                     <Badge bg={getUrgencyVariant(formData.urgency)}>
                         {formData.urgency}

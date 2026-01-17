@@ -49,7 +49,7 @@ export const MarkdownTextarea: React.FC<MarkdownTextareaProps> = ({
 
         // Future: Detect @ mentions for asset linking
         if (onMentionTrigger) {
-            const cursorPosition = e.target.selectionStart;
+            const cursorPosition = e.target.selectionStart ?? 0;
             const textBeforeCursor = newValue.substring(0, cursorPosition);
             const lastAtSymbol = textBeforeCursor.lastIndexOf("@");
 

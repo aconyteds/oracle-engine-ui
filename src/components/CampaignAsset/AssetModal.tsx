@@ -464,7 +464,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                             <HoldConfirmButton
                                 onConfirm={handleDelete}
                                 variant="danger"
-                                disabled={isSaving}
+                                disabled={isSaving || isResetting}
                             >
                                 {isSaving ? "Deleting..." : "Delete"}
                             </HoldConfirmButton>

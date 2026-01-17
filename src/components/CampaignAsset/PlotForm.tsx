@@ -3,21 +3,8 @@ import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
 import { MarkdownTextarea } from "../Common";
+import { PLOT_STATUS_OPTIONS, URGENCY_OPTIONS } from "./plotUtils";
 import type { AssetFormProps, PlotFormData } from "./types";
-
-const STATUS_OPTIONS: { value: PlotStatus; label: string }[] = [
-    { value: PlotStatus.Unknown, label: "Unknown" },
-    { value: PlotStatus.Rumored, label: "Rumored" },
-    { value: PlotStatus.InProgress, label: "In Progress" },
-    { value: PlotStatus.Closed, label: "Completed" },
-    { value: PlotStatus.WillNotDo, label: "Will Not Do" },
-];
-
-const URGENCY_OPTIONS: { value: Urgency; label: string }[] = [
-    { value: Urgency.Ongoing, label: "Ongoing" },
-    { value: Urgency.Critical, label: "Critical" },
-    { value: Urgency.Resolved, label: "Resolved" },
-];
 
 export type PlotFormProps = AssetFormProps<PlotFormData>;
 
@@ -93,7 +80,7 @@ export const PlotForm: React.FC<PlotFormProps> = ({
                             }
                             disabled={disabled}
                         >
-                            {STATUS_OPTIONS.map((option) => (
+                            {PLOT_STATUS_OPTIONS.map((option) => (
                                 <option key={option.value} value={option.value}>
                                     {option.label}
                                 </option>

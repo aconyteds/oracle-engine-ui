@@ -90,11 +90,7 @@ describe("MarkdownTextarea Component", () => {
     test("should use provided id", () => {
         const mockOnChange = vi.fn();
         render(
-            <MarkdownTextarea
-                value=""
-                onChange={mockOnChange}
-                id="custom-id"
-            />
+            <MarkdownTextarea value="" onChange={mockOnChange} id="custom-id" />
         );
 
         const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
