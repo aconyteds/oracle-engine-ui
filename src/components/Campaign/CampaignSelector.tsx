@@ -5,9 +5,10 @@ import {
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
-import { Dropdown } from "react-bootstrap";
+import React, { useMemo } from "react";
+import { Dropdown, OverlayTrigger, Popover } from "react-bootstrap";
 import "./CampaignSelector.scss";
+import { useGetUsageLimitsQuery } from "../../graphql/generated";
 
 export const CampaignSelector: React.FC = () => {
     const {
@@ -17,6 +18,23 @@ export const CampaignSelector: React.FC = () => {
         openCampaignModal,
         loading,
     } = useCampaignContext();
+
+    const { data: usageData } = useGetUsageLimitsQuery({
+        fetchPolicy: "network-only",
+    });
+
+    const { canCreate, campaignLimit } = useMemo(() => {
+        if (!usageData || !usageData.currentUser?.usageLimits?.campaignUsage)
+            return {
+                canCreate: false,
+                campaignLimit: 0,
+            };
+        const campaignUsage = usageData.currentUser.usageLimits.campaignUsage;
+        return {
+            canCreate: campaignUsage.canCreate ?? false,
+            campaignLimit: campaignUsage.limit ?? 0,
+        };
+    }, [usageData]);
 
     const handleSelectCampaign = (campaignId: string) => {
         selectCampaign(campaignId);
@@ -71,40 +89,86 @@ export const CampaignSelector: React.FC = () => {
                     )}
                     <Dropdown.Divider />
                     {campaignList.length > 1 && (
-                        <Dropdown.Header>Campaigns</Dropdown.Header>
-                    )}
-                    <div className="campaign-list">
-                        {campaignList.map((campaign) => {
-                            if (campaign.id === selectedCampaign?.id)
-                                return null;
-                            return (
-                                <Dropdown.Item
-                                    key={campaign.id}
-                                    onClick={() =>
-                                        handleSelectCampaign(campaign.id)
-                                    }
-                                    active={
-                                        selectedCampaign?.id === campaign.id
-                                    }
-                                >
-                                    <div className="campaign-item">
-                                        <div className="campaign-name">
-                                            {campaign.name}
-                                        </div>
-                                        {campaign.ruleset && (
-                                            <div className="campaign-ruleset">
-                                                {campaign.ruleset}
+                        <>
+                            <Dropdown.Header>Campaigns</Dropdown.Header>
+                            <div className="campaign-list">
+                                {campaignList.map((campaign) => {
+                                    if (campaign.id === selectedCampaign?.id)
+                                        return null;
+                                    return (
+                                        <Dropdown.Item
+                                            key={campaign.id}
+                                            onClick={() =>
+                                                handleSelectCampaign(
+                                                    campaign.id
+                                                )
+                                            }
+                                            active={
+                                                selectedCampaign?.id ===
+                                                campaign.id
+                                            }
+                                        >
+                                            <div className="campaign-item">
+                                                <div className="campaign-name">
+                                                    {campaign.name}
+                                                </div>
+                                                {campaign.ruleset && (
+                                                    <div className="campaign-ruleset">
+                                                        {campaign.ruleset}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
+                                        </Dropdown.Item>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
+
+                    {!canCreate ? (
+                        <OverlayTrigger
+                            placement="right"
+                            overlay={
+                                <Popover id="campaign-limit-popover">
+                                    <Popover.Header as="h3">
+                                        Campaign Limit Reached
+                                    </Popover.Header>
+                                    <Popover.Body>
+                                        You've reached your limit of{" "}
+                                        {campaignLimit}{" "}
+                                        {campaignLimit === 1
+                                            ? "campaign"
+                                            : "campaigns"}
+                                        . To create more, upgrade your
+                                        subscription or delete an existing
+                                        campaign.
+                                    </Popover.Body>
+                                </Popover>
+                            }
+                        >
+                            <span
+                                className="d-block"
+                                style={{ cursor: "not-allowed" }}
+                            >
+                                <Dropdown.Item
+                                    disabled
+                                    className="d-flex align-items-center"
+                                    style={{ pointerEvents: "none" }}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faPlus}
+                                        className="me-2"
+                                    />
+                                    New Campaign
                                 </Dropdown.Item>
-                            );
-                        })}
-                    </div>
-                    <Dropdown.Item onClick={handleNewCampaign}>
-                        <FontAwesomeIcon icon={faPlus} className="me-2" />
-                        New Campaign
-                    </Dropdown.Item>
+                            </span>
+                        </OverlayTrigger>
+                    ) : (
+                        <Dropdown.Item onClick={handleNewCampaign}>
+                            <FontAwesomeIcon icon={faPlus} className="me-2" />
+                            New Campaign
+                        </Dropdown.Item>
+                    )}
                 </Dropdown.Menu>
             </Dropdown>
         </div>
