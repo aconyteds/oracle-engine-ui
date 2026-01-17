@@ -1,5 +1,9 @@
 import { useUserContext } from "@context";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+    getAdditionalUserInfo,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+} from "firebase/auth";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "../../test-utils";
 import { Login } from "./Login";
@@ -12,6 +16,8 @@ vi.mock("../firebase", () => ({
 }));
 vi.mock("firebase/auth", () => ({
     signInWithEmailAndPassword: vi.fn(),
+    createUserWithEmailAndPassword: vi.fn(),
+    getAdditionalUserInfo: vi.fn(),
     GoogleAuthProvider: vi.fn(),
     signInWithPopup: vi.fn(),
     getAuth: vi.fn(() => ({})),
@@ -114,6 +120,11 @@ describe("Login Component", () => {
             },
         });
         vi.mocked(signInWithPopup).mockImplementation(mockGoogleSignin);
+        vi.mocked(getAdditionalUserInfo).mockReturnValue({
+            isNewUser: false,
+            profile: null,
+            providerId: "google.com",
+        });
 
         render(<Login />, { env: { VITE_ALLOW_REGISTRATION: "true" } });
 

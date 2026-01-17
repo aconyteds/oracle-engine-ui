@@ -29,13 +29,14 @@ type AvailableEvents =
     | "create_asset"
     | "edit_asset"
     | "delete_asset"
-    | "human-feedback";
+    | "human_feedback"
+    | "sign_up";
 
 export function LogEvent(
     eventName: AvailableEvents,
     params?: { [key: string]: string }
 ) {
     if (analytics) {
-        logEvent(analytics, eventName, params);
+        logEvent(analytics, eventName as string, params);
     }
 }
