@@ -10,7 +10,7 @@ import {
     createDefaultFormData,
     isFormDataEqual,
     validateFormData,
-} from "../components/CampaignAsset/formDataUtils";
+} from "../components/CampaignAsset";
 import type { AssetFormData } from "../components/CampaignAsset/types";
 
 export interface UseAssetModalStateOptions {

@@ -1,4 +1,5 @@
 import React from "react";
+import { Tab, Tabs } from "react-bootstrap";
 import type { AssetViewProps, LocationFormData } from "../types";
 import { AssetViewSection } from "./AssetViewSection";
 
@@ -12,71 +13,75 @@ export type LocationViewProps = AssetViewProps<LocationFormData>;
  */
 export const LocationView: React.FC<LocationViewProps> = ({ formData }) => {
     return (
-        <div className="location-view">
-            {/* Name - displayed as heading */}
-            <h2 className="h4 mb-3">{formData.name || "Untitled Location"}</h2>
+        <Tabs
+            defaultActiveKey="gm"
+            className="mb-3"
+            style={{
+                marginLeft: "-1rem",
+                marginRight: "-1rem",
+            }}
+        >
+            <Tab eventKey="gm" title="GM Information">
+                {/* GM Summary */}
+                <AssetViewSection
+                    label="GM Summary"
+                    content={formData.gmSummary}
+                    emptyText="No GM summary provided"
+                />
 
-            {/* GM Summary */}
-            <AssetViewSection
-                label="GM Summary"
-                content={formData.gmSummary}
-                emptyText="No GM summary provided"
-            />
+                {/* Description - with blockquote wrapper */}
+                <AssetViewSection
+                    label="Description"
+                    content={formData.description}
+                    wrapper="blockquote"
+                    emptyText="No description provided"
+                />
 
-            {/* Description - with blockquote wrapper */}
-            <AssetViewSection
-                label="Description"
-                content={formData.description}
-                wrapper="blockquote"
-                emptyText="No description provided"
-            />
+                {/* Condition - inline text */}
+                {formData.condition && (
+                    <div className="mb-3">
+                        <strong className="d-block mb-2">Condition</strong>
+                        <p className="mb-0">{formData.condition}</p>
+                    </div>
+                )}
 
-            {/* Condition - inline text */}
-            {formData.condition && (
-                <div className="mb-3">
-                    <strong className="d-block mb-2">Condition</strong>
-                    <p className="mb-0">{formData.condition}</p>
-                </div>
-            )}
+                {/* Characters */}
+                <AssetViewSection
+                    label="Characters"
+                    content={formData.characters}
+                    emptyText="No characters listed"
+                />
 
-            {/* Characters */}
-            <AssetViewSection
-                label="Characters"
-                content={formData.characters}
-                emptyText="No characters listed"
-            />
+                {/* Points of Interest */}
+                <AssetViewSection
+                    label="Points of Interest"
+                    content={formData.pointsOfInterest}
+                    emptyText="No points of interest listed"
+                />
 
-            {/* Points of Interest */}
-            <AssetViewSection
-                label="Points of Interest"
-                content={formData.pointsOfInterest}
-                emptyText="No points of interest listed"
-            />
+                {/* GM Notes */}
+                <AssetViewSection
+                    label="GM Notes"
+                    content={formData.gmNotes}
+                    emptyText="No GM notes"
+                />
+            </Tab>
 
-            {/* GM Notes */}
-            <AssetViewSection
-                label="GM Notes"
-                content={formData.gmNotes}
-                emptyText="No GM notes"
-            />
+            <Tab eventKey="player" title="Player Information">
+                {/* Player Summary */}
+                <AssetViewSection
+                    label="Player Summary"
+                    content={formData.playerSummary}
+                    emptyText="No player summary provided"
+                />
 
-            {/* Shared with Players */}
-            <hr className="my-4" />
-            <h3 className="h5 mb-3">Shared with Players</h3>
-
-            {/* Player Summary */}
-            <AssetViewSection
-                label="Player Summary"
-                content={formData.playerSummary}
-                emptyText="No player summary provided"
-            />
-
-            {/* Player Notes */}
-            <AssetViewSection
-                label="Player Notes"
-                content={formData.playerNotes}
-                emptyText="No player notes"
-            />
-        </div>
+                {/* Player Notes */}
+                <AssetViewSection
+                    label="Player Notes"
+                    content={formData.playerNotes}
+                    emptyText="No player notes"
+                />
+            </Tab>
+        </Tabs>
     );
 };

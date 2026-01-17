@@ -107,8 +107,20 @@ ThreadsContext demonstrates the data flow:
 
 After making changes, always:
 1. Run `bun run lint` - Biome will check formatting and linting rules
-2. Start dev server (`bun run dev`) and verify login screen at http://localhost:5173/login
-3. Test authentication flow and chat functionality
+2. Run `bun run test` - Ensure all tests pass
+3. Start dev server (`bun run dev`) and verify login screen at http://localhost:5173/login
+4. Test authentication flow and chat functionality
+
+### Writing Tests
+
+**IMPORTANT**: When writing or modifying tests, refer to `.claude/skills/testing.md` for comprehensive testing best practices.
+
+Key testing principles:
+- Use `test.each` for repetitive tests with similar patterns (reduces duplication)
+- Import `render`, `screen`, etc. from `../../test-utils` (not `@testing-library/react` directly)
+- Always use `vi.clearAllMocks()` in `beforeEach` and `cleanup()` in `afterEach`
+- Expected console output is suppressed globally in `setupTests.ts`
+- Use `suppressConsole()` from `test-utils/consoleUtils.ts` for per-test console control
 
 ### Adding GraphQL Operations
 
@@ -150,6 +162,7 @@ Required in `.env`:
 - Build output: `dist/` directory
 - NEVER cancel builds (`bun run build`) - they complete in ~11 seconds
 - Vitest uses jsdom environment for React component testing
+- Test utilities in `src/test-utils/` provide custom render with providers and console suppression utilities
 
 ## CI/CD Pipeline
 
@@ -163,3 +176,8 @@ GitHub Actions workflow:
 Required GitHub secrets:
 - `VITE_API_URL`, `VITE_WS_URL`, `VITE_ALLOW_REGISTRATION`
 - `FIREBASE_SERVICE_ACCOUNT_ORACLE_ENGINE_7DFA6`
+
+## Skills
+
+Project-specific skills are located in `.claude/skills/`:
+- `testing.md` - Testing best practices, patterns, and utilities for this codebase

@@ -12,7 +12,7 @@ import type {
     LocationFormData,
     NPCFormData,
     PlotFormData,
-} from "./types";
+} from "../types";
 
 /**
  * Create default form data for a new asset based on asset type

@@ -1,8 +1,8 @@
 import { PlotStatus, Urgency } from "@graphql";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "../../test-utils";
+import { cleanup, fireEvent, render, screen } from "../../../test-utils";
+import type { PlotFormData } from "../types";
 import { PlotForm } from "./PlotForm";
-import type { PlotFormData } from "./types";
 
 const createDefaultFormData = (): PlotFormData => ({
     name: "",
@@ -78,171 +78,98 @@ describe("PlotForm Component", () => {
         expect(urgencySelect.value).toBe(Urgency.Critical);
     });
 
-    test("should call onChange with field and value when name changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <PlotForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
+    describe("field onChange handlers", () => {
+        test.each([
+            ["name", "Enter plot name", "New Plot Name"],
+            ["gmSummary", "Brief description of the plot", "Test summary"],
+            ["gmNotes", "GM notes (not visible to players)", "Secret GM notes"],
+            [
+                "playerNotes",
+                "Information visible to players",
+                "Public information",
+            ],
+        ])(
+            "should call onChange when %s changes",
+            (fieldName, placeholder, testValue) => {
+                const mockOnChange = vi.fn();
+                render(
+                    <PlotForm
+                        formData={createDefaultFormData()}
+                        onChange={mockOnChange}
+                    />
+                );
+
+                const input = screen.getByPlaceholderText(placeholder);
+                fireEvent.change(input, { target: { value: testValue } });
+
+                expect(mockOnChange).toHaveBeenCalledWith(fieldName, testValue);
+            }
         );
 
-        const nameInput = screen.getByPlaceholderText(
-            "Enter plot name"
-        ) as HTMLInputElement;
+        test.each([
+            ["status", 0, PlotStatus.InProgress],
+            ["urgency", 1, Urgency.Critical],
+        ])(
+            "should call onChange when %s select changes",
+            (fieldName, selectIndex, testValue) => {
+                const mockOnChange = vi.fn();
+                const { container } = render(
+                    <PlotForm
+                        formData={createDefaultFormData()}
+                        onChange={mockOnChange}
+                    />
+                );
 
-        fireEvent.change(nameInput, { target: { value: "New Plot Name" } });
+                const selects = container.querySelectorAll("select");
+                const select = selects[selectIndex] as HTMLSelectElement;
 
-        expect(mockOnChange).toHaveBeenCalledWith("name", "New Plot Name");
-    });
+                fireEvent.change(select, { target: { value: testValue } });
 
-    test("should call onChange when summary changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <PlotForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const summaryInput = screen.getByPlaceholderText(
-            "Brief description of the plot"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(summaryInput, {
-            target: { value: "This is a test summary" },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith(
-            "gmSummary",
-            "This is a test summary"
-        );
-    });
-
-    test("should call onChange when status changes", () => {
-        const mockOnChange = vi.fn();
-        const { container } = render(
-            <PlotForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const selects = container.querySelectorAll("select");
-        const statusSelect = selects[0] as HTMLSelectElement;
-
-        fireEvent.change(statusSelect, {
-            target: { value: PlotStatus.InProgress },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith(
-            "status",
-            PlotStatus.InProgress
+                expect(mockOnChange).toHaveBeenCalledWith(fieldName, testValue);
+            }
         );
     });
 
-    test("should call onChange when urgency changes", () => {
-        const mockOnChange = vi.fn();
-        const { container } = render(
-            <PlotForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
+    describe("select options", () => {
+        test.each([
+            [
+                "status",
+                0,
+                [
+                    PlotStatus.Unknown,
+                    PlotStatus.Rumored,
+                    PlotStatus.InProgress,
+                    PlotStatus.Closed,
+                    PlotStatus.WillNotDo,
+                ],
+            ],
+            [
+                "urgency",
+                1,
+                [Urgency.Ongoing, Urgency.Critical, Urgency.Resolved],
+            ],
+        ])(
+            "should render all %s options",
+            (_, selectIndex, expectedOptions) => {
+                const mockOnChange = vi.fn();
+                const { container } = render(
+                    <PlotForm
+                        formData={createDefaultFormData()}
+                        onChange={mockOnChange}
+                    />
+                );
+
+                const selects = container.querySelectorAll("select");
+                const select = selects[selectIndex] as HTMLSelectElement;
+                const options = Array.from(select.options).map(
+                    (option) => option.value
+                );
+
+                for (const expectedOption of expectedOptions) {
+                    expect(options).toContain(expectedOption);
+                }
+            }
         );
-
-        const selects = container.querySelectorAll("select");
-        const urgencySelect = selects[1] as HTMLSelectElement;
-
-        fireEvent.change(urgencySelect, {
-            target: { value: Urgency.Critical },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith("urgency", Urgency.Critical);
-    });
-
-    test("should call onChange when GM notes changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <PlotForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const notesInput = screen.getByPlaceholderText(
-            "GM notes (not visible to players)"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(notesInput, {
-            target: { value: "Secret GM notes" },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith("gmNotes", "Secret GM notes");
-    });
-
-    test("should call onChange when player notes changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <PlotForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const sharedInput = screen.getByPlaceholderText(
-            "Information visible to players"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(sharedInput, {
-            target: { value: "Public information" },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith(
-            "playerNotes",
-            "Public information"
-        );
-    });
-
-    test("should render all status options", () => {
-        const mockOnChange = vi.fn();
-        const { container } = render(
-            <PlotForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const selects = container.querySelectorAll("select");
-        const statusSelect = selects[0] as HTMLSelectElement;
-        const options = Array.from(statusSelect.options).map(
-            (option) => option.value
-        );
-
-        expect(options).toContain(PlotStatus.Unknown);
-        expect(options).toContain(PlotStatus.Rumored);
-        expect(options).toContain(PlotStatus.InProgress);
-        expect(options).toContain(PlotStatus.Closed);
-        expect(options).toContain(PlotStatus.WillNotDo);
-    });
-
-    test("should render all urgency options", () => {
-        const mockOnChange = vi.fn();
-        const { container } = render(
-            <PlotForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const selects = container.querySelectorAll("select");
-        const urgencySelect = selects[1] as HTMLSelectElement;
-        const options = Array.from(urgencySelect.options).map(
-            (option) => option.value
-        );
-
-        expect(options).toContain(Urgency.Ongoing);
-        expect(options).toContain(Urgency.Critical);
-        expect(options).toContain(Urgency.Resolved);
     });
 
     test("should show validation error when name is empty", () => {

@@ -26,10 +26,8 @@ import {
 import { useCampaignContext, useToaster } from "../../contexts";
 import { DraggableModal, HoldConfirmButton } from "../Common";
 import { LogEvent } from "../firebase";
-import { LocationForm } from "./LocationForm";
+import { LocationForm, NPCForm, PlotForm } from "./forms";
 import { ASSET_TYPE_ICONS } from "./models";
-import { NPCForm } from "./NPCForm";
-import { PlotForm } from "./PlotForm";
 import type {
     AssetFormData,
     AssetMode,
@@ -38,7 +36,6 @@ import type {
     PlotFormData,
 } from "./types";
 import { LocationView, NPCView, PlotView } from "./views";
-
 export interface AssetModalProps {
     modalState: AssetModalState;
 }
@@ -208,6 +205,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 // Sync form with server data and clear stale flag
                 await handleSaveComplete();
                 assetModalManager.clearStaleFlag(modalId);
+                setMode("view");
             } else {
                 // Create new asset
                 if (!sharedInput.name) {
@@ -317,8 +315,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     );
 
     // Handle Edit button click
-    const handleEdit = () => {
-        setMode("edit");
+    const changeMode = () => {
+        setMode((mode) => (mode === "view" ? "edit" : "view"));
     };
 
     // Handle Cancel button click
@@ -383,12 +381,15 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
 
     const footer = (
         <Row className="d-flex justify-content-between w-100 gap-2">
-            <Col xs="auto">
-                {isStale && isDirty && mode === "edit" && (
+            <Col xs="auto" className="d-flex gap-2 align-items-center">
+                <Button variant="secondary" onClick={changeMode}>
+                    {mode === "view" ? "Edit" : "View"}
+                </Button>
+                {isStale && isDirty && (
                     <OverlayTrigger
                         placement="top"
                         overlay={
-                            <Popover id="stale-popover">
+                            <Popover>
                                 <Popover.Header as="h3">
                                     Asset Stale
                                 </Popover.Header>
@@ -419,104 +420,34 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 )}
             </Col>
             <Col xs="auto" className="d-flex gap-2 align-items-center">
-                {isDirty && !isStale && mode === "edit" && (
+                {isDirty && !isStale && (
                     <span className="text-secondary small fst-italic">
                         Unsaved changes
                     </span>
                 )}
-
-                {/* View mode buttons */}
-                {mode === "view" && (
-                    <>
-                        {assetId && (
+                {/* Save button with stale handling */}
+                {isStale ? (
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={
+                            <Popover>
+                                <Popover.Header as="h3">
+                                    Asset Stale
+                                </Popover.Header>
+                                <Popover.Body>
+                                    This asset was modified elsewhere. Saving
+                                    now would overwrite those updates. It is
+                                    recommended to reload the asset to get the
+                                    latest data.
+                                </Popover.Body>
+                            </Popover>
+                        }
+                    >
+                        <div>
                             <HoldConfirmButton
-                                onConfirm={handleDelete}
-                                variant="danger"
-                                disabled={isSaving || isResetting}
-                            >
-                                {isSaving ? "Deleting..." : "Delete"}
-                            </HoldConfirmButton>
-                        )}
-                        <Button
-                            variant="primary"
-                            onClick={handleEdit}
-                            disabled={isSaving || isResetting}
-                        >
-                            Edit
-                        </Button>
-                        {/* Show Save button in view mode if there are unsaved changes */}
-                        {isDirty && (
-                            <Button
-                                variant="success"
-                                onClick={handleSave}
-                                disabled={isSaving || !isValid || isResetting}
-                            >
-                                {isSaving ? "Saving..." : "Save"}
-                            </Button>
-                        )}
-                    </>
-                )}
-
-                {/* Edit mode buttons */}
-                {mode === "edit" && (
-                    <>
-                        {assetId && (
-                            <HoldConfirmButton
-                                onConfirm={handleDelete}
-                                variant="danger"
-                                disabled={isSaving || isResetting}
-                            >
-                                {isSaving ? "Deleting..." : "Delete"}
-                            </HoldConfirmButton>
-                        )}
-                        {/* Cancel button - only for existing assets with changes */}
-                        {assetId && isDirty && (
-                            <Button
-                                variant="secondary"
-                                onClick={handleCancel}
-                                disabled={isSaving || isResetting}
-                            >
-                                Cancel
-                            </Button>
-                        )}
-                        {/* Save button with stale handling */}
-                        {isStale ? (
-                            <OverlayTrigger
-                                placement="top"
-                                overlay={
-                                    <Popover id="stale-popover">
-                                        <Popover.Header as="h3">
-                                            Asset Stale
-                                        </Popover.Header>
-                                        <Popover.Body>
-                                            This asset was modified elsewhere.
-                                            Saving now would overwrite those
-                                            updates. It is recommended to reload
-                                            the asset to get the latest data.
-                                        </Popover.Body>
-                                    </Popover>
-                                }
-                            >
-                                <div>
-                                    <HoldConfirmButton
-                                        onConfirm={handleSave}
-                                        variant="primary"
-                                        holdDuration={1000}
-                                        disabled={
-                                            isSaving ||
-                                            !isValid ||
-                                            isResetting ||
-                                            !isDirty
-                                        }
-                                    >
-                                        {isSaving ? "Saving..." : "Save"}
-                                    </HoldConfirmButton>
-                                </div>
-                            </OverlayTrigger>
-                        ) : (
-                            <Button
+                                onConfirm={handleSave}
                                 variant="primary"
-                                onClick={handleSave}
+                                holdDuration={1000}
                                 disabled={
                                     isSaving ||
                                     !isValid ||
@@ -525,9 +456,39 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                                 }
                             >
                                 {isSaving ? "Saving..." : "Save"}
-                            </Button>
-                        )}
-                    </>
+                            </HoldConfirmButton>
+                        </div>
+                    </OverlayTrigger>
+                ) : (
+                    <Button
+                        variant="primary"
+                        onClick={handleSave}
+                        disabled={
+                            isSaving || !isValid || isResetting || !isDirty
+                        }
+                    >
+                        {isSaving ? "Saving..." : "Save"}
+                    </Button>
+                )}
+                {/* Cancel button - only for existing assets*/}
+                {assetId && (
+                    <HoldConfirmButton
+                        variant="secondary"
+                        onConfirm={handleCancel}
+                        disabled={isSaving || isResetting || !isDirty}
+                        holdDuration={1000}
+                    >
+                        Cancel
+                    </HoldConfirmButton>
+                )}
+                {assetId && (
+                    <HoldConfirmButton
+                        onConfirm={handleDelete}
+                        variant="danger"
+                        disabled={isSaving || isResetting}
+                    >
+                        {isSaving ? "Deleting..." : "Delete"}
+                    </HoldConfirmButton>
                 )}
             </Col>
         </Row>

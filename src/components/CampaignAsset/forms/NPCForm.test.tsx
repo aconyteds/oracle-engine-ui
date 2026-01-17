@@ -1,8 +1,8 @@
 import "@testing-library/jest-dom";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "../../test-utils";
+import { cleanup, fireEvent, render, screen } from "../../../test-utils";
+import type { NPCFormData } from "../types";
 import { NPCForm } from "./NPCForm";
-import type { NPCFormData } from "./types";
 
 const createDefaultFormData = (): NPCFormData => ({
     name: "",
@@ -77,133 +77,42 @@ describe("NPCForm Component", () => {
         expect(physicalInput.value).toBe("Tall and muscular");
     });
 
-    test("should call onChange with field and value when name changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <NPCForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
+    describe("field onChange handlers", () => {
+        test.each([
+            ["name", "Enter NPC name", "New NPC Name"],
+            [
+                "physicalDescription",
+                "Describe the NPC's appearance",
+                "Tall and muscular",
+            ],
+            ["motivation", "What drives this NPC?", "Seeking revenge"],
+            [
+                "mannerisms",
+                "Distinctive behaviors, speech patterns, or quirks",
+                "Cracks knuckles often",
+            ],
+            ["gmNotes", "GM notes (not visible to players)", "Secret GM notes"],
+            [
+                "playerNotes",
+                "Information visible to players",
+                "Public information",
+            ],
+        ])(
+            "should call onChange when %s changes",
+            (fieldName, placeholder, testValue) => {
+                const mockOnChange = vi.fn();
+                render(
+                    <NPCForm
+                        formData={createDefaultFormData()}
+                        onChange={mockOnChange}
+                    />
+                );
 
-        const nameInput = screen.getByPlaceholderText(
-            "Enter NPC name"
-        ) as HTMLInputElement;
+                const input = screen.getByPlaceholderText(placeholder);
+                fireEvent.change(input, { target: { value: testValue } });
 
-        fireEvent.change(nameInput, { target: { value: "New NPC Name" } });
-
-        expect(mockOnChange).toHaveBeenCalledWith("name", "New NPC Name");
-    });
-
-    test("should call onChange when physical description changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <NPCForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const physicalInput = screen.getByPlaceholderText(
-            "Describe the NPC's appearance"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(physicalInput, {
-            target: { value: "Tall and muscular" },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith(
-            "physicalDescription",
-            "Tall and muscular"
-        );
-    });
-
-    test("should call onChange when motivation changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <NPCForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const motivationInput = screen.getByPlaceholderText(
-            "What drives this NPC?"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(motivationInput, {
-            target: { value: "Seeking revenge" },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith(
-            "motivation",
-            "Seeking revenge"
-        );
-    });
-
-    test("should call onChange when mannerisms changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <NPCForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const mannerismsInput = screen.getByPlaceholderText(
-            "Distinctive behaviors, speech patterns, or quirks"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(mannerismsInput, {
-            target: { value: "Cracks knuckles often" },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith(
-            "mannerisms",
-            "Cracks knuckles often"
-        );
-    });
-
-    test("should call onChange when GM notes changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <NPCForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const notesInput = screen.getByPlaceholderText(
-            "GM notes (not visible to players)"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(notesInput, {
-            target: { value: "Secret GM notes" },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith("gmNotes", "Secret GM notes");
-    });
-
-    test("should call onChange when player notes changes", () => {
-        const mockOnChange = vi.fn();
-        render(
-            <NPCForm
-                formData={createDefaultFormData()}
-                onChange={mockOnChange}
-            />
-        );
-
-        const sharedInput = screen.getByPlaceholderText(
-            "Information visible to players"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(sharedInput, {
-            target: { value: "Public information" },
-        });
-
-        expect(mockOnChange).toHaveBeenCalledWith(
-            "playerNotes",
-            "Public information"
+                expect(mockOnChange).toHaveBeenCalledWith(fieldName, testValue);
+            }
         );
     });
 

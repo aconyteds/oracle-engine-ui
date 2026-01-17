@@ -4,7 +4,14 @@ import { defineConfig, UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export const sharedConfig: UserConfig = {
-    plugins: [react(), tsconfigPaths()],
+    plugins: [
+        react({
+            babel: {
+                plugins: ["module:@preact/signals-react-transform"],
+            },
+        }),
+        tsconfigPaths(),
+    ],
     resolve: {
         alias: {
             "@graphql": path.resolve(__dirname, "src/graphql/generated.ts"), // Create alias for the generated file

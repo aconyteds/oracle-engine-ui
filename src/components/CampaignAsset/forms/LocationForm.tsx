@@ -1,8 +1,8 @@
 import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
-import { MarkdownTextarea } from "../Common";
-import type { AssetFormProps, LocationFormData } from "./types";
+import { MarkdownTextarea } from "../../Common";
+import type { AssetFormProps, LocationFormData } from "../types";
 
 export type LocationFormProps = AssetFormProps<LocationFormData>;
 

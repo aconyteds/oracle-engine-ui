@@ -28,13 +28,13 @@ export const AssetViewSection: React.FC<AssetViewSectionProps> = ({
 
     return (
         <div className="mb-3">
-            <strong className="d-block mb-2">{label}</strong>
+            <h4 className="d-block mb-2">{label}</h4>
             {isEmpty ? (
                 <p className="text-muted fst-italic">{emptyText}</p>
             ) : wrapper === "blockquote" ? (
-                <blockquote className="blockquote border-start border-3 border-secondary ps-3 mb-0">
-                    <MarkdownRenderer content={content} />
-                </blockquote>
+                <MarkdownRenderer
+                    content={` \`\`\`Read_Aloud\n${content}\n\`\`\``}
+                />
             ) : (
                 <MarkdownRenderer content={content} />
             )}

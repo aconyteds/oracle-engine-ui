@@ -2,9 +2,9 @@ import { PlotStatus, Urgency } from "@graphql";
 import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
-import { MarkdownTextarea } from "../Common";
-import { PLOT_STATUS_OPTIONS, URGENCY_OPTIONS } from "./plotUtils";
-import type { AssetFormProps, PlotFormData } from "./types";
+import { MarkdownTextarea } from "../../Common";
+import { PLOT_STATUS_OPTIONS, URGENCY_OPTIONS } from "../plotUtils";
+import type { AssetFormProps, PlotFormData } from "../types";
 
 export type PlotFormProps = AssetFormProps<PlotFormData>;
 

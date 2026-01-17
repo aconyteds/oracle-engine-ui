@@ -23,58 +23,33 @@ describe("AssetLink Component", () => {
     });
 
     describe("Asset Link Pattern Matching", () => {
-        test("should recognize valid asset link format with Plot type", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`Plot:${validId}`}>Test Plot Link</AssetLink>
-            );
+        const validId = "507f1f77bcf86cd799439011";
 
-            const link = screen.getByText("Test Plot Link");
-            fireEvent.click(link);
+        test.each([
+            ["Plot", RecordType.Plot, "Test Plot Link"],
+            ["NPC", RecordType.Npc, "Test NPC Link"],
+            ["Location", RecordType.Location, "Test Location Link"],
+        ])(
+            "should recognize valid asset link format with %s type",
+            (typeName, expectedRecordType, linkText) => {
+                render(
+                    <AssetLink href={`${typeName}:${validId}`}>
+                        {linkText}
+                    </AssetLink>
+                );
 
-            expect(mockOpenModal).toHaveBeenCalledWith(
-                RecordType.Plot,
-                validId,
-                "Test Plot Link"
-            );
-        });
+                const link = screen.getByText(linkText);
+                fireEvent.click(link);
 
-        test("should recognize valid asset link format with NPC type", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`NPC:${validId}`}>Test NPC Link</AssetLink>
-            );
-
-            const link = screen.getByText("Test NPC Link");
-            fireEvent.click(link);
-
-            expect(mockOpenModal).toHaveBeenCalledWith(
-                RecordType.Npc,
-                validId,
-                "Test NPC Link"
-            );
-        });
-
-        test("should recognize valid asset link format with Location type", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`Location:${validId}`}>
-                    Test Location Link
-                </AssetLink>
-            );
-
-            const link = screen.getByText("Test Location Link");
-            fireEvent.click(link);
-
-            expect(mockOpenModal).toHaveBeenCalledWith(
-                RecordType.Location,
-                validId,
-                "Test Location Link"
-            );
-        });
+                expect(mockOpenModal).toHaveBeenCalledWith(
+                    expectedRecordType,
+                    validId,
+                    linkText
+                );
+            }
+        );
 
         test("should handle URL-encoded colons in asset links", () => {
-            const validId = "507f1f77bcf86cd799439011";
             render(
                 <AssetLink href={`Plot%3A${validId}`}>
                     Encoded Plot Link
@@ -91,115 +66,58 @@ describe("AssetLink Component", () => {
             );
         });
 
-        test("should reject invalid ID format (too short)", () => {
-            render(<AssetLink href="Plot:123">Invalid Short ID</AssetLink>);
+        test.each([
+            ["too short ID", "Plot:123", "Plot:123"],
+            [
+                "non-hex characters",
+                "Plot:507f1f77bcf86cd79943901g",
+                "Plot:507f1f77bcf86cd79943901g",
+            ],
+            [
+                "invalid asset type",
+                `InvalidType:${validId}`,
+                `InvalidType:${validId}`,
+            ],
+            ["no colon separator", "NoColonHere", "NoColonHere"],
+        ])("should reject invalid link format: %s", (_, href, expectedHref) => {
+            render(<AssetLink href={href}>Invalid Link</AssetLink>);
 
-            const link = screen.getByText("Invalid Short ID");
+            const link = screen.getByText("Invalid Link");
             expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", "Plot:123");
-        });
-
-        test("should reject invalid ID format (non-hex characters)", () => {
-            const invalidId = "507f1f77bcf86cd79943901g"; // 'g' is not hex
-            render(
-                <AssetLink href={`Plot:${invalidId}`}>Invalid Hex ID</AssetLink>
-            );
-
-            const link = screen.getByText("Invalid Hex ID");
-            expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", `Plot:${invalidId}`);
-        });
-
-        test("should reject invalid asset type", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`InvalidType:${validId}`}>
-                    Invalid Type
-                </AssetLink>
-            );
-
-            const link = screen.getByText("Invalid Type");
-            expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", `InvalidType:${validId}`);
-        });
-
-        test("should reject links without colon separator", () => {
-            render(<AssetLink href="NoColonHere">No Colon</AssetLink>);
-
-            const link = screen.getByText("No Colon");
-            expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", "NoColonHere");
+            expect(link).toHaveAttribute("href", expectedHref);
         });
     });
 
     describe("Asset Type Resolution", () => {
-        test("should match Plot type case-sensitively", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`Plot:${validId}`}>Case Sensitive</AssetLink>
-            );
+        const validId = "507f1f77bcf86cd799439011";
 
-            const link = screen.getByText("Case Sensitive");
-            fireEvent.click(link);
+        test.each([
+            ["Plot (exact case)", "Plot", RecordType.Plot],
+            ["npc (lowercase)", "npc", RecordType.Npc],
+            ["location (lowercase)", "location", RecordType.Location],
+            ["pLoT (mixed case)", "pLoT", RecordType.Plot],
+            ["NPC (uppercase)", "NPC", RecordType.Npc],
+            ["LOCATION (uppercase)", "LOCATION", RecordType.Location],
+        ])(
+            "should match %s type case-insensitively",
+            (_, typeName, expectedRecordType) => {
+                const linkText = `${typeName} Link`;
+                render(
+                    <AssetLink href={`${typeName}:${validId}`}>
+                        {linkText}
+                    </AssetLink>
+                );
 
-            expect(mockOpenModal).toHaveBeenCalledWith(
-                RecordType.Plot,
-                validId,
-                "Case Sensitive"
-            );
-        });
+                const link = screen.getByText(linkText);
+                fireEvent.click(link);
 
-        test("should match NPC type case-insensitively (lowercase)", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`npc:${validId}`}>
-                    Lowercase NPC Link
-                </AssetLink>
-            );
-
-            const link = screen.getByText("Lowercase NPC Link");
-            fireEvent.click(link);
-
-            expect(mockOpenModal).toHaveBeenCalledWith(
-                RecordType.Npc,
-                validId,
-                "Lowercase NPC Link"
-            );
-        });
-
-        test("should match Location type case-insensitively (lowercase)", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`location:${validId}`}>
-                    Lowercase Location
-                </AssetLink>
-            );
-
-            const link = screen.getByText("Lowercase Location");
-            fireEvent.click(link);
-
-            expect(mockOpenModal).toHaveBeenCalledWith(
-                RecordType.Location,
-                validId,
-                "Lowercase Location"
-            );
-        });
-
-        test("should match Plot type case-insensitively (mixed case)", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`pLoT:${validId}`}>Mixed Case Plot</AssetLink>
-            );
-
-            const link = screen.getByText("Mixed Case Plot");
-            fireEvent.click(link);
-
-            expect(mockOpenModal).toHaveBeenCalledWith(
-                RecordType.Plot,
-                validId,
-                "Mixed Case Plot"
-            );
-        });
+                expect(mockOpenModal).toHaveBeenCalledWith(
+                    expectedRecordType,
+                    validId,
+                    linkText
+                );
+            }
+        );
     });
 
     describe("Modal Opening Behavior", () => {
@@ -278,54 +196,39 @@ describe("AssetLink Component", () => {
     });
 
     describe("Keyboard Navigation", () => {
-        test("should open modal on Enter key press", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`Plot:${validId}`}>Keyboard Plot</AssetLink>
-            );
+        const validId = "507f1f77bcf86cd799439011";
 
-            const link = screen.getByText("Keyboard Plot");
-            fireEvent.keyDown(link, { key: "Enter" });
+        test.each([
+            ["Enter", "Enter", "Enter Key Link"],
+            ["Space", " ", "Space Key Link"],
+        ])("should open modal on %s key press", (_, key, linkText) => {
+            render(<AssetLink href={`Plot:${validId}`}>{linkText}</AssetLink>);
 
-            expect(mockOpenModal).toHaveBeenCalledWith(
-                RecordType.Plot,
-                validId,
-                "Keyboard Plot"
-            );
-        });
-
-        test("should open modal on Space key press", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`Plot:${validId}`}>Space Key Plot</AssetLink>
-            );
-
-            const link = screen.getByText("Space Key Plot");
-            fireEvent.keyDown(link, { key: " " });
+            const link = screen.getByText(linkText);
+            fireEvent.keyDown(link, { key });
 
             expect(mockOpenModal).toHaveBeenCalledWith(
                 RecordType.Plot,
                 validId,
-                "Space Key Plot"
+                linkText
             );
         });
 
-        test("should not open modal on other key presses", () => {
-            const validId = "507f1f77bcf86cd799439011";
-            render(
-                <AssetLink href={`Plot:${validId}`}>Other Key Plot</AssetLink>
-            );
+        test.each([["Tab"], ["Escape"], ["a"]])(
+            "should not open modal on %s key press",
+            (key) => {
+                render(
+                    <AssetLink href={`Plot:${validId}`}>Key Test</AssetLink>
+                );
 
-            const link = screen.getByText("Other Key Plot");
-            fireEvent.keyDown(link, { key: "Tab" });
-            fireEvent.keyDown(link, { key: "Escape" });
-            fireEvent.keyDown(link, { key: "a" });
+                const link = screen.getByText("Key Test");
+                fireEvent.keyDown(link, { key });
 
-            expect(mockOpenModal).not.toHaveBeenCalled();
-        });
+                expect(mockOpenModal).not.toHaveBeenCalled();
+            }
+        );
 
         test("should prevent default behavior on Enter key", () => {
-            const validId = "507f1f77bcf86cd799439011";
             render(<AssetLink href={`Plot:${validId}`}>Enter Key</AssetLink>);
 
             const link = screen.getByText("Enter Key");
@@ -341,7 +244,6 @@ describe("AssetLink Component", () => {
         });
 
         test("should stop propagation on Space key", () => {
-            const validId = "507f1f77bcf86cd799439011";
             render(<AssetLink href={`Plot:${validId}`}>Space Key</AssetLink>);
 
             const link = screen.getByText("Space Key");
@@ -358,34 +260,23 @@ describe("AssetLink Component", () => {
     });
 
     describe("Fallback to Regular Anchor Links", () => {
-        test("should render regular anchor for HTTP URLs", () => {
-            render(
-                <AssetLink href="https://example.com">External Link</AssetLink>
-            );
+        test.each([
+            [
+                "HTTP URL",
+                "https://example.com",
+                { target: "_blank", rel: "noopener noreferrer" },
+            ],
+            ["relative URL", "/relative/path", {}],
+            ["mailto link", "mailto:test@example.com", {}],
+        ])("should render regular anchor for %s", (_, href, expectedAttrs) => {
+            render(<AssetLink href={href}>Test Link</AssetLink>);
 
-            const link = screen.getByText("External Link");
+            const link = screen.getByText("Test Link");
             expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", "https://example.com");
-            expect(link).toHaveAttribute("target", "_blank");
-            expect(link).toHaveAttribute("rel", "noopener noreferrer");
-        });
-
-        test("should render regular anchor for relative URLs", () => {
-            render(<AssetLink href="/relative/path">Relative Link</AssetLink>);
-
-            const link = screen.getByText("Relative Link");
-            expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", "/relative/path");
-        });
-
-        test("should render regular anchor for mailto links", () => {
-            render(
-                <AssetLink href="mailto:test@example.com">Email Link</AssetLink>
-            );
-
-            const link = screen.getByText("Email Link");
-            expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", "mailto:test@example.com");
+            expect(link).toHaveAttribute("href", href);
+            for (const [attr, value] of Object.entries(expectedAttrs)) {
+                expect(link).toHaveAttribute(attr, value);
+            }
         });
 
         test("should not call openModal for regular links", () => {
@@ -517,24 +408,19 @@ describe("AssetLink Component", () => {
             );
         });
 
-        test("should reject 23-character IDs", () => {
-            const invalidId = "abcdef1234567890abcdef1"; // 23 chars
+        test.each([
+            ["23-character ID", "abcdef1234567890abcdef1"],
+            ["25-character ID", "abcdef1234567890abcdef123"],
+            ["uppercase hex", "ABCDEF1234567890ABCDEF12"],
+            ["mixed case hex", "AbCdEf1234567890aBcDeF12"],
+        ])("should reject %s", (_, invalidId) => {
             render(
-                <AssetLink href={`Plot:${invalidId}`}>Short ID Link</AssetLink>
+                <AssetLink href={`Plot:${invalidId}`}>Invalid Link</AssetLink>
             );
 
-            const link = screen.getByText("Short ID Link");
+            const link = screen.getByText("Invalid Link");
             expect(link.tagName).toBe("A");
-        });
-
-        test("should reject 25-character IDs", () => {
-            const invalidId = "abcdef1234567890abcdef123"; // 25 chars
-            render(
-                <AssetLink href={`Plot:${invalidId}`}>Long ID Link</AssetLink>
-            );
-
-            const link = screen.getByText("Long ID Link");
-            expect(link.tagName).toBe("A");
+            expect(link).toHaveAttribute("href", `Plot:${invalidId}`);
         });
 
         test("should handle multiple colons in href", () => {
@@ -542,30 +428,6 @@ describe("AssetLink Component", () => {
 
             const link = screen.getByText("Multiple Colons");
             expect(link.tagName).toBe("A");
-        });
-
-        test("should reject uppercase hex characters in ID", () => {
-            // MongoDB ObjectIDs are typically lowercase hex, so uppercase is rejected
-            const invalidId = "ABCDEF1234567890ABCDEF12";
-            render(
-                <AssetLink href={`Plot:${invalidId}`}>Uppercase Hex</AssetLink>
-            );
-
-            const link = screen.getByText("Uppercase Hex");
-            expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", `Plot:${invalidId}`);
-        });
-
-        test("should reject mixed case hex characters in ID", () => {
-            // MongoDB ObjectIDs are typically lowercase hex, so mixed case is rejected
-            const invalidId = "AbCdEf1234567890aBcDeF12";
-            render(
-                <AssetLink href={`Plot:${invalidId}`}>Mixed Hex Case</AssetLink>
-            );
-
-            const link = screen.getByText("Mixed Hex Case");
-            expect(link.tagName).toBe("A");
-            expect(link).toHaveAttribute("href", `Plot:${invalidId}`);
         });
     });
 });

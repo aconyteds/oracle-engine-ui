@@ -99,35 +99,40 @@ describe("useArray", () => {
     });
 
     describe("update", () => {
-        test("should update element at specific index", () => {
-            const { result } = renderHook(() => useArray([1, 2, 3]));
+        test.each([
+            {
+                position: "first",
+                index: 0,
+                initial: ["a", "b", "c"],
+                newValue: "z",
+                expected: ["z", "b", "c"],
+            },
+            {
+                position: "middle",
+                index: 1,
+                initial: ["a", "b", "c"],
+                newValue: "z",
+                expected: ["a", "z", "c"],
+            },
+            {
+                position: "last",
+                index: 2,
+                initial: ["a", "b", "c"],
+                newValue: "z",
+                expected: ["a", "b", "z"],
+            },
+        ])(
+            "should update $position element at index $index",
+            ({ index, initial, newValue, expected }) => {
+                const { result } = renderHook(() => useArray(initial));
 
-            act(() => {
-                result.current.update(1, 99);
-            });
+                act(() => {
+                    result.current.update(index, newValue);
+                });
 
-            expect(result.current.array).toEqual([1, 99, 3]);
-        });
-
-        test("should update first element", () => {
-            const { result } = renderHook(() => useArray(["a", "b", "c"]));
-
-            act(() => {
-                result.current.update(0, "z");
-            });
-
-            expect(result.current.array).toEqual(["z", "b", "c"]);
-        });
-
-        test("should update last element", () => {
-            const { result } = renderHook(() => useArray(["a", "b", "c"]));
-
-            act(() => {
-                result.current.update(2, "z");
-            });
-
-            expect(result.current.array).toEqual(["a", "b", "z"]);
-        });
+                expect(result.current.array).toEqual(expected);
+            }
+        );
 
         test("should handle updating complex objects", () => {
             const { result } = renderHook(() =>
@@ -172,35 +177,37 @@ describe("useArray", () => {
     });
 
     describe("remove", () => {
-        test("should remove element at specific index", () => {
-            const { result } = renderHook(() => useArray([1, 2, 3]));
+        test.each([
+            {
+                position: "first",
+                index: 0,
+                initial: ["a", "b", "c"],
+                expected: ["b", "c"],
+            },
+            {
+                position: "middle",
+                index: 1,
+                initial: ["a", "b", "c"],
+                expected: ["a", "c"],
+            },
+            {
+                position: "last",
+                index: 2,
+                initial: ["a", "b", "c"],
+                expected: ["a", "b"],
+            },
+        ])(
+            "should remove $position element at index $index",
+            ({ index, initial, expected }) => {
+                const { result } = renderHook(() => useArray(initial));
 
-            act(() => {
-                result.current.remove(1);
-            });
+                act(() => {
+                    result.current.remove(index);
+                });
 
-            expect(result.current.array).toEqual([1, 3]);
-        });
-
-        test("should remove first element", () => {
-            const { result } = renderHook(() => useArray(["a", "b", "c"]));
-
-            act(() => {
-                result.current.remove(0);
-            });
-
-            expect(result.current.array).toEqual(["b", "c"]);
-        });
-
-        test("should remove last element", () => {
-            const { result } = renderHook(() => useArray(["a", "b", "c"]));
-
-            act(() => {
-                result.current.remove(2);
-            });
-
-            expect(result.current.array).toEqual(["a", "b"]);
-        });
+                expect(result.current.array).toEqual(expected);
+            }
+        );
 
         test("should remove multiple elements sequentially", () => {
             const { result } = renderHook(() => useArray([1, 2, 3, 4, 5]));

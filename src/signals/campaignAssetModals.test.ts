@@ -54,26 +54,33 @@ describe("campaignAssetModals", () => {
             expect(modals[0].name).toBe("New Asset");
         });
 
-        test("should allow multiple new asset modals simultaneously", async () => {
-            const modalId1 = assetModalManager.openModal(
-                RecordType.Plot,
-                null,
-                "New Asset"
-            );
+        test("should allow multiple new asset modals simultaneously", () => {
+            // Mock Date.now to return different timestamps
+            let mockTime = 1000000000000;
+            const originalDateNow = Date.now;
+            Date.now = () => mockTime++;
 
-            // Wait 1ms to ensure different timestamp
-            await new Promise((resolve) => setTimeout(resolve, 1));
+            try {
+                const modalId1 = assetModalManager.openModal(
+                    RecordType.Plot,
+                    null,
+                    "New Asset"
+                );
 
-            const modalId2 = assetModalManager.openModal(
-                RecordType.Plot,
-                null,
-                "New Asset"
-            );
+                const modalId2 = assetModalManager.openModal(
+                    RecordType.Plot,
+                    null,
+                    "New Asset"
+                );
 
-            expect(modalId1).not.toBe(modalId2);
+                expect(modalId1).not.toBe(modalId2);
 
-            const modals = Array.from(assetModalsSignal.value.values());
-            expect(modals).toHaveLength(2);
+                const modals = Array.from(assetModalsSignal.value.values());
+                expect(modals).toHaveLength(2);
+            } finally {
+                // Restore original Date.now
+                Date.now = originalDateNow;
+            }
         });
 
         test("should reuse existing modal for same assetId", () => {

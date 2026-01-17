@@ -28,4 +28,3 @@ webpack*
 .env.*
 *generated*
 tsconfig.tsbuildinfo
-src/graphql/generated.ts

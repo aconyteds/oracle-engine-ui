@@ -15,6 +15,7 @@ import { AssetModal } from "./AssetModal";
 vi.mock("../../contexts", () => ({
     useCampaignContext: vi.fn(),
     useToaster: vi.fn(),
+    ToasterProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock("../../signals/campaignAssetModals", () => ({
