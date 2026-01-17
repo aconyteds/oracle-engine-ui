@@ -11,9 +11,13 @@ import { assetModalManager } from "../../signals/campaignAssetModals";
 import { cleanup, fireEvent, render, screen } from "../../test-utils";
 import { AssetModal } from "./AssetModal";
 
-// Mock dependencies
-vi.mock("../../contexts", () => ({
+// Mock individual context files to preserve ThemeProvider for test-utils wrapper
+vi.mock("../../contexts/Campaign.context", () => ({
     useCampaignContext: vi.fn(),
+    CampaignProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+vi.mock("../../contexts/Toaster.context", () => ({
     useToaster: vi.fn(),
     ToasterProvider: ({ children }: { children: React.ReactNode }) => children,
 }));

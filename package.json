@@ -27,6 +27,7 @@
         "@popperjs/core": "^2.11.8",
         "@preact/signals-react": "^3.6.1",
         "@types/react-syntax-highlighter": "^15.5.13",
+        "@uiw/react-md-editor": "^4.0.11",
         "bootstrap": "^5.3.8",
         "firebase": "^10.14.1",
         "graphql": "^16.12.0",

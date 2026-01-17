@@ -1,22 +1,25 @@
 import "@testing-library/jest-dom";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "../../test-utils";
 import { MarkdownTextarea } from "./MarkdownTextarea";
 
 describe("MarkdownTextarea Component", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
     afterEach(() => {
         cleanup();
     });
 
-    test("should render textarea with value", () => {
+    test("should render with value", () => {
         const mockOnChange = vi.fn();
         render(
             <MarkdownTextarea value="Test content" onChange={mockOnChange} />
         );
 
-        const textarea = screen.getByDisplayValue(
-            "Test content"
-        ) as HTMLTextAreaElement;
+        // MDEditor renders the value in a textarea
+        const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
         expect(textarea).toBeInTheDocument();
         expect(textarea.value).toBe("Test content");
     });
@@ -73,18 +76,33 @@ describe("MarkdownTextarea Component", () => {
         expect(textarea).not.toBeDisabled();
     });
 
-    test("should respect maxLength prop", () => {
+    test("should apply disabled class to wrapper when disabled", () => {
         const mockOnChange = vi.fn();
-        render(
+        const { container } = render(
             <MarkdownTextarea
                 value=""
                 onChange={mockOnChange}
-                maxLength={100}
+                disabled={true}
             />
         );
 
+        const wrapper = container.querySelector(".markdown-textarea-wrapper");
+        expect(wrapper).toHaveClass("md-editor-disabled");
+    });
+
+    test("should enforce maxLength via onChange", () => {
+        const mockOnChange = vi.fn();
+        render(
+            <MarkdownTextarea value="" onChange={mockOnChange} maxLength={10} />
+        );
+
         const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
-        expect(textarea.maxLength).toBe(100);
+        fireEvent.change(textarea, {
+            target: { value: "This is way too long" },
+        });
+
+        // Should truncate to maxLength
+        expect(mockOnChange).toHaveBeenCalledWith("This is wa");
     });
 
     test("should use provided id", () => {
@@ -97,13 +115,14 @@ describe("MarkdownTextarea Component", () => {
         expect(textarea.id).toBe("custom-id");
     });
 
-    test("should have resize:none and overflow:hidden styles", () => {
+    test("should set data-color-mode attribute based on theme", () => {
         const mockOnChange = vi.fn();
-        render(<MarkdownTextarea value="" onChange={mockOnChange} />);
+        const { container } = render(
+            <MarkdownTextarea value="" onChange={mockOnChange} />
+        );
 
-        const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
-        expect(textarea.style.resize).toBe("none");
-        expect(textarea.style.overflow).toBe("hidden");
+        const wrapper = container.querySelector(".markdown-textarea-wrapper");
+        expect(wrapper).toHaveAttribute("data-color-mode", "light");
     });
 
     test("should trigger onMentionTrigger when @ is typed", () => {
@@ -159,5 +178,16 @@ describe("MarkdownTextarea Component", () => {
         }).not.toThrow();
 
         expect(mockOnChange).toHaveBeenCalledWith("@test");
+    });
+
+    test("should render toolbar", () => {
+        const mockOnChange = vi.fn();
+        const { container } = render(
+            <MarkdownTextarea value="" onChange={mockOnChange} />
+        );
+
+        // MDEditor renders a toolbar
+        const toolbar = container.querySelector(".w-md-editor-toolbar");
+        expect(toolbar).toBeInTheDocument();
     });
 });

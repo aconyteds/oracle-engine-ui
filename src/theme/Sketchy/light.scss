@@ -1,0 +1,118 @@
+// Light theme variables for Sketchy
+// Based on Sketchy 5.3.3 - default Bootstrap light mode with Sketchy styling
+
+// Apply light theme variables when theme-light class is present
+.theme-light {
+    --bs-body-bg: #{$white};
+    --bs-body-color: #{$gray-800};
+    --bs-primary: #{$primary};
+    --bs-secondary: #{$secondary};
+    --bs-success: #{$success};
+    --bs-info: #{$info};
+    --bs-warning: #{$warning};
+    --bs-danger: #{$danger};
+    --bs-light: #{$light};
+    --bs-dark: #{$dark};
+
+    // Border colors
+    --bs-border-color: #{$gray-800};
+    --bs-border-color-translucent: rgba(51, 51, 51, 0.175);
+
+    // Component specific overrides
+    .card {
+        --bs-card-bg: #{$white};
+        --bs-card-border-color: #{$gray-800};
+    }
+
+    .toast {
+        --bs-toast-bg: #{$white};
+        --bs-toast-border-color: #{$gray-800};
+        --bs-toast-header-color: #{$gray-800};
+        --bs-toast-header-bg: #{$gray-100};
+        --bs-toast-header-border-color: #{$gray-800};
+    }
+
+    .table {
+        --bs-table-bg: #{$white};
+        --bs-table-border-color: #{$gray-800};
+
+        th,
+        td {
+            background-color: var(--bs-table-bg);
+            border-color: var(--bs-table-border-color);
+        }
+    }
+
+    .form-control {
+        --bs-form-control-bg: #{$gray-100};
+        --bs-form-control-border-color: #{$gray-800};
+        --bs-form-control-color: #{$gray-800};
+    }
+
+    .btn-outline-primary {
+        --bs-btn-color: #{$primary};
+        --bs-btn-border-color: #{$primary};
+        --bs-btn-hover-bg: #{$primary};
+        --bs-btn-hover-border-color: #{$primary};
+        --bs-btn-hover-color: #{$white};
+    }
+
+    .dropdown-menu {
+        --bs-dropdown-bg: #{$white};
+        --bs-dropdown-border-color: #{$gray-800};
+        --bs-dropdown-color: #{$gray-800};
+        --bs-dropdown-link-color: #{$gray-800};
+        --bs-dropdown-link-hover-bg: #{$gray-200};
+    }
+
+    .nav-tabs {
+        --bs-nav-tabs-border-color: #{$gray-800};
+        --bs-nav-tabs-link-hover-border-color: #{$gray-800};
+        --bs-nav-tabs-link-active-color: #{$gray-800};
+        --bs-nav-tabs-link-active-bg: #{$white};
+        --bs-nav-tabs-link-active-border-color: #{$gray-800};
+    }
+
+    .navbar {
+        &.bg-light {
+            --bs-navbar-bg: #{$white};
+            --bs-navbar-border-color: #{$gray-800};
+        }
+    }
+
+    // Code blocks styling for light theme
+    .card {
+        &.bg-dark {
+            --bs-card-bg: #1e1e1e;
+            --bs-card-color: #f8f8f2;
+        }
+    }
+
+    // Message input container styling
+    .message-input-container {
+        --bs-bg-opacity: 0.8;
+        backdrop-filter: blur(10px);
+    }
+
+    // Message styling in light theme
+    .message {
+        &.bg-light {
+            --bs-bg-opacity: 0.9;
+            background-color: #{$gray-100} !important;
+            color: #{$gray-800} !important;
+        }
+
+        &.bg-primary {
+            --bs-bg-opacity: 1;
+        }
+    }
+
+    // Shadows for light theme
+    .shadow-sm {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+
+    .shadow-lg {
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+    }
+}
