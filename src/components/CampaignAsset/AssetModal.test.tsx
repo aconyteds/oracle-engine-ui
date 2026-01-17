@@ -1,5 +1,10 @@
 import { MockedProvider } from "@apollo/client/testing";
-import { RecordType } from "@graphql";
+import {
+    GetCampaignAssetDocument,
+    PlotStatus,
+    RecordType,
+    Urgency,
+} from "@graphql";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { useCampaignContext, useToaster } from "../../contexts";
 import { assetModalManager } from "../../signals/campaignAssetModals";
@@ -16,10 +21,14 @@ vi.mock("../../signals/campaignAssetModals", () => ({
     assetModalManager: {
         closeModal: vi.fn(),
         minimizeModal: vi.fn(),
+        maximizeModal: vi.fn(),
         updateModalTransform: vi.fn(),
         updateModalName: vi.fn(),
         openModal: vi.fn(),
+        markAssetStale: vi.fn(),
+        clearStaleFlag: vi.fn(),
     },
+    subscribeToAssetStale: vi.fn().mockReturnValue(vi.fn()),
     useAssetModalZIndex: vi.fn().mockReturnValue({
         zIndex: 1050,
         bringToFront: vi.fn(),
@@ -120,19 +129,21 @@ describe("AssetModal Component", () => {
         ).toBeInTheDocument();
     });
 
-    test("should show unsupported message for unknown asset type", () => {
+    test("should throw error for unknown asset type", () => {
         const unknownState = {
             ...mockModalState,
             assetType: "UnknownType" as RecordType,
         };
 
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <AssetModal modalState={unknownState} />
-            </MockedProvider>
-        );
-
-        expect(screen.getByText(/Unsupported asset type/i)).toBeInTheDocument();
+        // The component should throw an error for unknown asset types
+        // since createDefaultFormData throws for invalid types
+        expect(() => {
+            render(
+                <MockedProvider mocks={[]} addTypename={false}>
+                    <AssetModal modalState={unknownState} />
+                </MockedProvider>
+            );
+        }).toThrow("Unknown asset type: UnknownType");
     });
 
     test("should display modal title with asset type and name", () => {
@@ -210,8 +221,38 @@ describe("AssetModal Component", () => {
             name: "Existing Plot",
         };
 
+        const mocks = [
+            {
+                request: {
+                    query: GetCampaignAssetDocument,
+                    variables: { input: { assetId: "asset-123" } },
+                },
+                result: {
+                    data: {
+                        getCampaignAsset: {
+                            asset: {
+                                id: "asset-123",
+                                campaignId: "campaign-123",
+                                name: "Existing Plot",
+                                recordType: RecordType.Plot,
+                                gmSummary: "",
+                                gmNotes: "",
+                                playerSummary: "",
+                                playerNotes: "",
+                                updatedAt: "2024-01-01",
+                                data: {
+                                    status: PlotStatus.Rumored,
+                                    urgency: Urgency.Ongoing,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
+            <MockedProvider mocks={mocks} addTypename={false}>
                 <AssetModal modalState={existingAssetState} />
             </MockedProvider>
         );

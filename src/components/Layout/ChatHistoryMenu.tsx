@@ -145,12 +145,12 @@ export const ChatHistoryMenu: React.FC = () => {
                                 />
                             ))}
                         </div>
+                        <Dropdown.Divider />
                     </>
                 )}
 
                 {recentThreads.length > 0 && (
                     <>
-                        <Dropdown.Divider />
                         <Dropdown.Header>Recent</Dropdown.Header>
                         <div className="thread-list">
                             {recentThreads.map((thread) => (
@@ -165,12 +165,12 @@ export const ChatHistoryMenu: React.FC = () => {
                                 />
                             ))}
                         </div>
+                        <Dropdown.Divider />
                     </>
                 )}
 
                 {olderThreads.length > 0 && (
                     <>
-                        <Dropdown.Divider />
                         <Dropdown.Item onClick={handleToggleShowAll}>
                             <div className="d-flex justify-content-between align-items-center cursor-pointer">
                                 {showAll

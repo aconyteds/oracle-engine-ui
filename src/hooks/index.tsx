@@ -1,4 +1,5 @@
 export * from "./useArray";
+export * from "./useAssetModalState";
 export * from "./useAutoGrowTextarea";
 export * from "./useDebounce";
 export * from "./useMap";

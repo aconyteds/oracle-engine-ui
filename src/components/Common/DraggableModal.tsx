@@ -49,9 +49,9 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     onMaximize,
 }) => {
     const [position, setPosition] = useState({ x: initialX, y: initialY });
-    const [size, setSize] = useState({ width: 500, height: 0 }); // height 0 = auto
+    const [size, setSize] = useState({ width: 750, height: 0 }); // height 0 = auto
     // Store previous size to restore when maximizing
-    const [prevSize, setPrevSize] = useState({ width: 500, height: 0 });
+    const [prevSize, setPrevSize] = useState({ width: 750, height: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });

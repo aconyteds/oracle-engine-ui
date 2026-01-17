@@ -50,8 +50,8 @@ export const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({
                 setShowModal(false);
 
                 // Log to Firebase
-                LogEvent("human-feedback", {
-                    humanSentiment: pendingSentiment.toString(),
+                LogEvent("human_feedback", {
+                    humanSentiment: pendingSentiment ? "positive" : "negative",
                 });
 
                 // Send to GraphQL server

@@ -1,3 +1,4 @@
+import { faSync } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     CreateCampaignAssetInput,
@@ -7,41 +8,85 @@ import {
     useDeleteCampaignAssetMutation,
     useUpdateCampaignAssetMutation,
 } from "@graphql";
+import { useAssetModalState } from "@hooks";
 import {
     type AssetModalState,
     assetModalManager,
     useAssetModalZIndex,
 } from "@signals";
-import React, { useCallback, useRef, useState } from "react";
-import { Button } from "react-bootstrap";
+import React, { useCallback, useState } from "react";
+import {
+    Button,
+    Col,
+    OverlayTrigger,
+    Popover,
+    Row,
+    Spinner,
+} from "react-bootstrap";
 import { useCampaignContext, useToaster } from "../../contexts";
 import { DraggableModal, HoldConfirmButton } from "../Common";
 import { LogEvent } from "../firebase";
-import {
-    LocationForm,
-    LocationFormData,
-    type LocationFormRef,
-} from "./LocationForm";
+import { LocationForm } from "./LocationForm";
 import { ASSET_TYPE_ICONS } from "./models";
-import { NPCForm, NPCFormData, type NPCFormRef } from "./NPCForm";
-import { PlotForm, PlotFormData, type PlotFormRef } from "./PlotForm";
+import { NPCForm } from "./NPCForm";
+import { PlotForm } from "./PlotForm";
+import type {
+    AssetFormData,
+    LocationFormData,
+    NPCFormData,
+    PlotFormData,
+} from "./types";
 
 export interface AssetModalProps {
     modalState: AssetModalState;
 }
 
-type AssetFormRef = PlotFormRef | NPCFormRef | LocationFormRef;
-
+/**
+ * AssetModal - Modal component for creating and editing campaign assets
+ *
+ * This component is the single source of truth for asset data. It manages:
+ * - Server data fetching via useAssetModalState hook
+ * - Local form state
+ * - Dirty/stale detection
+ * - Save/delete operations
+ *
+ * The form components (PlotForm, NPCForm, LocationForm) are "dumb" display
+ * components that receive data via props and report changes upward.
+ */
 export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
-    const { modalId, assetType, assetId, isMinimized, position, name } =
-        modalState;
+    const {
+        modalId,
+        assetType,
+        assetId,
+        isMinimized,
+        position,
+        name,
+        isStale: isStaleFromModal,
+    } = modalState;
+
     const { selectedCampaign } = useCampaignContext();
     const { toast } = useToaster();
     const [isSaving, setIsSaving] = useState(false);
-    const [isFormValid, setIsFormValid] = useState(false);
-    const formRef = useRef<AssetFormRef>(null);
 
     const { zIndex, bringToFront } = useAssetModalZIndex(modalId);
+
+    // Use the custom hook for all state management
+    const {
+        formData,
+        isDirty,
+        isStale,
+        isValid,
+        isResetting,
+        setFormField,
+        handleReload,
+        handleSaveComplete,
+    } = useAssetModalState({
+        assetId,
+        assetType,
+        modalId,
+        initialName: name,
+        isStale: isStaleFromModal ?? false,
+    });
 
     const [createAsset] = useCreateCampaignAssetMutation();
     const [updateAsset] = useUpdateCampaignAssetMutation();
@@ -62,15 +107,12 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         [modalId]
     );
 
-    const handleFormChange = useCallback((isValid: boolean) => {
-        setIsFormValid(isValid);
-    }, []);
+    const handleMaximize = () => {
+        assetModalManager.maximizeModal(modalId);
+    };
 
     const handleSave = async () => {
-        if (!selectedCampaign || !formRef.current) return;
-
-        const formData = formRef.current.getFormData();
-        if (!formData) return;
+        if (!selectedCampaign) return;
 
         setIsSaving(true);
         try {
@@ -83,6 +125,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 gmNotes: formData.gmNotes,
                 playerNotes: formData.playerNotes,
             };
+
+            // Add type-specific data
             switch (assetType) {
                 case RecordType.Plot: {
                     const plotData = formData as PlotFormData;
@@ -111,7 +155,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                     };
                     break;
                 }
-                // Future asset types can be handled here
                 default:
                     console.warn(
                         `Save not implemented for asset type: ${String(assetType).toLowerCase()}`
@@ -121,8 +164,9 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                     });
                     return;
             }
+
             if (assetId) {
-                // Update existing
+                // Update existing asset
                 await updateAsset({
                     variables: {
                         input: {
@@ -141,19 +185,24 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 });
 
                 toast.success({
-                    message: `${assetType.toLowerCase()} "${formData.name}" updated successfully`,
+                    message: `${assetType} "${formData.name}" updated successfully`,
                 });
 
                 // Update modal name if changed
                 if (sharedInput.name !== name) {
                     assetModalManager.updateModalName(modalId, formData.name);
                 }
+
+                // Sync form with server data and clear stale flag
+                await handleSaveComplete();
+                assetModalManager.clearStaleFlag(modalId);
             } else {
+                // Create new asset
                 if (!sharedInput.name) {
                     // Form validation should prevent this, but double-check
                     return;
                 }
-                // Create new
+
                 const result = await createAsset({
                     variables: {
                         input: {
@@ -166,13 +215,14 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                     awaitRefetchQueries: true,
                     refetchQueries: ["ListCampaignAssets"],
                 });
+
                 LogEvent("create_asset", {
                     campaignId: selectedCampaign.id,
                     assetType: assetType,
                 });
 
                 toast.success({
-                    message: `${assetType.toLowerCase()} "${formData.name}" created successfully`,
+                    message: `${assetType} "${formData.name}" created successfully`,
                 });
 
                 // Close the "New Asset" modal and open with the real asset ID at same position
@@ -206,6 +256,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             setIsSaving(false);
         }
     };
+
     const handleDelete = async () => {
         if (!assetId) return;
 
@@ -245,29 +296,152 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         }
     };
 
-    const handleMaximize = () => {
-        assetModalManager.maximizeModal(modalId);
+    // Generic onChange handler that works with all form types
+    const handleFormChange = useCallback(
+        <T extends AssetFormData, K extends keyof T>(field: K, value: T[K]) => {
+            setFormField(field, value);
+        },
+        [setFormField]
+    );
+
+    // Render the appropriate form based on asset type
+    const renderForm = () => {
+        if (isResetting) {
+            return (
+                <div className="text-center p-4">
+                    <Spinner animation="border" role="status" />
+                    <p className="mt-2">Reloading...</p>
+                </div>
+            );
+        }
+
+        switch (assetType) {
+            case RecordType.Plot:
+                return (
+                    <PlotForm
+                        formData={formData as PlotFormData}
+                        onChange={handleFormChange}
+                        disabled={isSaving}
+                    />
+                );
+            case RecordType.Npc:
+                return (
+                    <NPCForm
+                        formData={formData as NPCFormData}
+                        onChange={handleFormChange}
+                        disabled={isSaving}
+                    />
+                );
+            case RecordType.Location:
+                return (
+                    <LocationForm
+                        formData={formData as LocationFormData}
+                        onChange={handleFormChange}
+                        disabled={isSaving}
+                    />
+                );
+        }
     };
 
     const footer = (
-        <div className="d-flex justify-content-end w-100 gap-2">
-            {assetId && (
-                <HoldConfirmButton
-                    onConfirm={handleDelete}
-                    variant="danger"
-                    disabled={isSaving || !assetId}
-                >
-                    {isSaving ? "Deleting..." : "Delete"}
-                </HoldConfirmButton>
-            )}
-            <Button
-                variant="primary"
-                onClick={handleSave}
-                disabled={isSaving || !isFormValid}
-            >
-                {isSaving ? "Saving..." : "Save"}
-            </Button>
-        </div>
+        <Row className="d-flex justify-content-between w-100 gap-2">
+            <Col xs="auto">
+                {isStale && isDirty && (
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={
+                            <Popover id="stale-popover">
+                                <Popover.Header as="h3">
+                                    Asset Stale
+                                </Popover.Header>
+                                <Popover.Body>
+                                    This asset was modified elsewhere and your
+                                    changes may overwrite those updates. It is
+                                    recommended to reload the asset to get the
+                                    latest data.
+                                </Popover.Body>
+                            </Popover>
+                        }
+                    >
+                        <div>
+                            <HoldConfirmButton
+                                onConfirm={handleReload}
+                                variant="warning"
+                                holdDuration={1000}
+                                disabled={isResetting}
+                            >
+                                <FontAwesomeIcon
+                                    icon={faSync}
+                                    className="me-1"
+                                />
+                                {isResetting ? "Reloading..." : "Reload"}
+                            </HoldConfirmButton>
+                        </div>
+                    </OverlayTrigger>
+                )}
+            </Col>
+            <Col xs="auto" className="d-flex gap-2 align-items-center">
+                {isDirty && !isStale && (
+                    <span className="text-secondary small fst-italic">
+                        Unsaved changes
+                    </span>
+                )}
+                {isStale ? (
+                    <OverlayTrigger
+                        placement="top"
+                        overlay={
+                            <Popover id="stale-popover">
+                                <Popover.Header as="h3">
+                                    Asset Stale
+                                </Popover.Header>
+                                <Popover.Body>
+                                    This asset was modified elsewhere. Saving
+                                    now would overwrite those updates. It is
+                                    recommended to reload the asset to get the
+                                    latest data.
+                                </Popover.Body>
+                            </Popover>
+                        }
+                    >
+                        <div>
+                            <HoldConfirmButton
+                                onConfirm={handleSave}
+                                variant="primary"
+                                holdDuration={1000}
+                                disabled={
+                                    isSaving ||
+                                    !isValid ||
+                                    isResetting ||
+                                    !isDirty
+                                }
+                            >
+                                {isSaving ? "Saving..." : "Save"}
+                            </HoldConfirmButton>
+                        </div>
+                    </OverlayTrigger>
+                ) : (
+                    <Button
+                        variant="primary"
+                        onClick={handleSave}
+                        disabled={
+                            isSaving || !isValid || isResetting || !isDirty
+                        }
+                    >
+                        {isSaving ? "Saving..." : "Save"}
+                    </Button>
+                )}
+
+                {assetId && (
+                    <HoldConfirmButton
+                        onConfirm={handleDelete}
+                        variant="danger"
+                        disabled={isSaving || !assetId}
+                    >
+                        {isSaving ? "Deleting..." : "Delete"}
+                    </HoldConfirmButton>
+                )}
+            </Col>
+        </Row>
     );
 
     return (
@@ -278,7 +452,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                         icon={ASSET_TYPE_ICONS[assetType]}
                         className="me-2"
                     />
-                    {assetType}: {name}
+                    {assetType}: {formData.name || name}
                 </div>
             }
             onClose={handleClose}
@@ -292,27 +466,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             zIndex={zIndex}
             onInteract={bringToFront}
         >
-            {assetType === RecordType.Plot ? (
-                <PlotForm
-                    ref={formRef as React.RefObject<PlotFormRef>}
-                    modalState={modalState}
-                    onChange={handleFormChange}
-                />
-            ) : assetType === RecordType.Npc ? (
-                <NPCForm
-                    ref={formRef as React.RefObject<NPCFormRef>}
-                    modalState={modalState}
-                    onChange={handleFormChange}
-                />
-            ) : assetType === RecordType.Location ? (
-                <LocationForm
-                    ref={formRef as React.RefObject<LocationFormRef>}
-                    modalState={modalState}
-                    onChange={handleFormChange}
-                />
-            ) : (
-                <div>Unsupported asset type.</div>
-            )}
+            {renderForm()}
         </DraggableModal>
     );
 };

@@ -8,6 +8,11 @@ import { Message } from "./Message";
 // if we import it directly in the component.
 // However, since we are using vitest, we can mock the module.
 vi.mock("../../graphql/generated", () => ({
+    RecordType: {
+        Npc: "NPC",
+        Location: "Location",
+        Plot: "Plot",
+    },
     ResponseType: {
         Intermediate: "Intermediate",
         Final: "Final",

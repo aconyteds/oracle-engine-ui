@@ -1,20 +1,33 @@
 import {
     MessageDetailsFragment,
+    RecordType,
     ResponseType,
     useGenerateMessageSubscription,
 } from "@graphql";
 import { useCallback, useRef, useState } from "react";
 
+// Pattern to detect asset creation/update messages from AI
+// Matches: "Created [Name](Type:id)" or "Updated [Name](Type:id)"
+// where Type is one of the RecordType enum values
+const ASSET_PATTERN = new RegExp(
+    `(created|updated)\\s+\\[([^\\]]+)\\]\\((${Object.values(RecordType).join(
+        "|"
+    )}):([^)]+)\\)`,
+    "i"
+);
+
 type UseMessageGenerationProps = {
     showDebug?: boolean;
     onMessageComplete: (message: MessageDetailsFragment) => void;
     onError?: (error: Error) => void;
+    onAssetModified?: (assetType: string, assetId: string) => void;
 };
 
 export function useMessageGeneration({
     showDebug = false,
     onMessageComplete,
     onError,
+    onAssetModified,
 }: UseMessageGenerationProps) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
@@ -64,6 +77,17 @@ export function useMessageGeneration({
             if (!showContent) {
                 return;
             }
+
+            // Check for asset creation/update patterns
+            if (responseType === ResponseType.Intermediate && onAssetModified) {
+                const match = content.match(ASSET_PATTERN);
+                if (match) {
+                    const assetType = match[3];
+                    const assetId = match[4];
+                    onAssetModified(assetType, assetId);
+                }
+            }
+
             generatingContentRef.current +=
                 content.length > 0 ? `\n\n${content}` : content;
             setGeneratingContent(generatingContentRef.current);

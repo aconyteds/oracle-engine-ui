@@ -3,6 +3,7 @@ import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     createUserWithEmailAndPassword,
+    getAdditionalUserInfo,
     signInWithEmailAndPassword,
     signInWithPopup,
     UserCredential,
@@ -11,7 +12,7 @@ import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { setAuthToken } from "../../apolloClient";
-import { auth, googleProvider } from "../firebase";
+import { auth, googleProvider, LogEvent } from "../firebase";
 
 export const Login: React.FC = () => {
     const [email, setEmail] = useState("");
@@ -50,6 +51,7 @@ export const Login: React.FC = () => {
                 email,
                 password
             );
+            LogEvent("sign_up", { method: "email" });
             await handleSuccessfulLogin(userCredentials);
         } catch (_e) {
             setError("Failed to register. Please try again.");
@@ -59,6 +61,10 @@ export const Login: React.FC = () => {
     const handleGoogleSignIn = async () => {
         try {
             const userCredentials = await signInWithPopup(auth, googleProvider);
+            const additionalInfo = getAdditionalUserInfo(userCredentials);
+            if (additionalInfo?.isNewUser) {
+                LogEvent("sign_up", { method: "google" });
+            }
             await handleSuccessfulLogin(userCredentials);
         } catch (_e) {
             setError("Failed to sign in with Google. Please try again.");
