@@ -1,6 +1,7 @@
 import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
+import { MarkdownTextarea } from "../Common";
 import type { AssetFormProps, LocationFormData } from "./types";
 
 export type LocationFormProps = AssetFormProps<LocationFormData>;
@@ -18,17 +19,9 @@ export const LocationForm: React.FC<LocationFormProps> = ({
 }) => {
     const formId = useId();
 
-    // Auto-grow textarea refs
+    // Auto-grow textarea refs for gmSummary and playerSummary (with maxLength)
     const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 2);
-    const descriptionRef = useAutoGrowTextarea(formData.description, 3);
-    const charactersRef = useAutoGrowTextarea(formData.characters, 2);
-    const pointsOfInterestRef = useAutoGrowTextarea(
-        formData.pointsOfInterest,
-        2
-    );
-    const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
     const playerSummaryRef = useAutoGrowTextarea(formData.playerSummary, 2);
-    const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
 
     return (
         <Form className="location-form">
@@ -75,15 +68,13 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                 <Form.Label htmlFor={`${formId}-description`}>
                     Description
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={descriptionRef}
+                <MarkdownTextarea
                     value={formData.description}
-                    onChange={(e) => onChange("description", e.target.value)}
+                    onChange={(value) => onChange("description", value)}
                     placeholder="Detailed description"
                     id={`${formId}-description`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
 
@@ -107,15 +98,13 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                 <Form.Label htmlFor={`${formId}-characters`}>
                     Characters
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={charactersRef}
+                <MarkdownTextarea
                     value={formData.characters}
-                    onChange={(e) => onChange("characters", e.target.value)}
+                    onChange={(value) => onChange("characters", value)}
                     placeholder="Key characters present"
                     id={`${formId}-characters`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={2}
                 />
             </Form.Group>
 
@@ -124,32 +113,26 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                 <Form.Label htmlFor={`${formId}-points-of-interest`}>
                     Points of Interest
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={pointsOfInterestRef}
+                <MarkdownTextarea
                     value={formData.pointsOfInterest}
-                    onChange={(e) =>
-                        onChange("pointsOfInterest", e.target.value)
-                    }
+                    onChange={(value) => onChange("pointsOfInterest", value)}
                     placeholder="Notable spots within this location"
                     id={`${formId}-points-of-interest`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={2}
                 />
             </Form.Group>
 
             {/* GM Notes */}
             <Form.Group className="mb-3">
                 <Form.Label htmlFor={`${formId}-gm-notes`}>GM Notes</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={gmNotesRef}
+                <MarkdownTextarea
                     value={formData.gmNotes}
-                    onChange={(e) => onChange("gmNotes", e.target.value)}
+                    onChange={(value) => onChange("gmNotes", value)}
                     placeholder="GM notes (not visible to players)"
                     id={`${formId}-gm-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={4}
                 />
             </Form.Group>
 
@@ -176,15 +159,13 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                 <Form.Label htmlFor={`${formId}-player-notes`}>
                     Player Notes (Shared)
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={playerNotesRef}
+                <MarkdownTextarea
                     value={formData.playerNotes}
-                    onChange={(e) => onChange("playerNotes", e.target.value)}
+                    onChange={(value) => onChange("playerNotes", value)}
                     placeholder="Information visible to players"
                     id={`${formId}-player-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
         </Form>

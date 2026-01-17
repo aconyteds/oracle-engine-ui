@@ -1,6 +1,7 @@
 import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
+import { MarkdownTextarea } from "../Common";
 import type { AssetFormProps, NPCFormData } from "./types";
 
 export type NPCFormProps = AssetFormProps<NPCFormData>;
@@ -18,17 +19,9 @@ export const NPCForm: React.FC<NPCFormProps> = ({
 }) => {
     const formId = useId();
 
-    // Auto-grow textarea refs
-    const physicalDescriptionRef = useAutoGrowTextarea(
-        formData.physicalDescription,
-        2
-    );
+    // Auto-grow textarea ref for gmSummary and playerSummary (with maxLength)
     const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 3);
-    const motivationRef = useAutoGrowTextarea(formData.motivation, 2);
-    const mannerismsRef = useAutoGrowTextarea(formData.mannerisms, 3);
-    const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
     const playerSummaryRef = useAutoGrowTextarea(formData.playerSummary, 3);
-    const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
 
     return (
         <Form className="npc-form">
@@ -75,17 +68,13 @@ export const NPCForm: React.FC<NPCFormProps> = ({
                 <Form.Label htmlFor={`${formId}-physical-description`}>
                     Physical Description
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={physicalDescriptionRef}
+                <MarkdownTextarea
                     value={formData.physicalDescription}
-                    onChange={(e) =>
-                        onChange("physicalDescription", e.target.value)
-                    }
+                    onChange={(value) => onChange("physicalDescription", value)}
                     placeholder="Describe the NPC's appearance"
                     id={`${formId}-physical-description`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={2}
                 />
             </Form.Group>
 
@@ -94,15 +83,13 @@ export const NPCForm: React.FC<NPCFormProps> = ({
                 <Form.Label htmlFor={`${formId}-motivation`}>
                     Motivation
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={motivationRef}
+                <MarkdownTextarea
                     value={formData.motivation}
-                    onChange={(e) => onChange("motivation", e.target.value)}
+                    onChange={(value) => onChange("motivation", value)}
                     placeholder="What drives this NPC?"
                     id={`${formId}-motivation`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={2}
                 />
             </Form.Group>
 
@@ -111,30 +98,26 @@ export const NPCForm: React.FC<NPCFormProps> = ({
                 <Form.Label htmlFor={`${formId}-mannerisms`}>
                     Mannerisms
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={mannerismsRef}
+                <MarkdownTextarea
                     value={formData.mannerisms}
-                    onChange={(e) => onChange("mannerisms", e.target.value)}
+                    onChange={(value) => onChange("mannerisms", value)}
                     placeholder="Distinctive behaviors, speech patterns, or quirks"
                     id={`${formId}-mannerisms`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
 
             {/* GM Notes */}
             <Form.Group className="mb-3">
                 <Form.Label htmlFor={`${formId}-gm-notes`}>GM Notes</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={gmNotesRef}
+                <MarkdownTextarea
                     value={formData.gmNotes}
-                    onChange={(e) => onChange("gmNotes", e.target.value)}
+                    onChange={(value) => onChange("gmNotes", value)}
                     placeholder="GM notes (not visible to players)"
                     id={`${formId}-gm-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={4}
                 />
             </Form.Group>
 
@@ -161,15 +144,13 @@ export const NPCForm: React.FC<NPCFormProps> = ({
                 <Form.Label htmlFor={`${formId}-player-notes`}>
                     Player Notes (Shared)
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={playerNotesRef}
+                <MarkdownTextarea
                     value={formData.playerNotes}
-                    onChange={(e) => onChange("playerNotes", e.target.value)}
+                    onChange={(value) => onChange("playerNotes", value)}
                     placeholder="Information visible to players"
                     id={`${formId}-player-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
         </Form>

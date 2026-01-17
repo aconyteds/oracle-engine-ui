@@ -2,6 +2,7 @@ import { PlotStatus, Urgency } from "@graphql";
 import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
+import { MarkdownTextarea } from "../Common";
 import type { AssetFormProps, PlotFormData } from "./types";
 
 const STATUS_OPTIONS: { value: PlotStatus; label: string }[] = [
@@ -33,11 +34,9 @@ export const PlotForm: React.FC<PlotFormProps> = ({
 }) => {
     const formId = useId();
 
-    // Auto-grow textarea refs
+    // Auto-grow textarea refs for gmSummary and playerSummary (with maxLength)
     const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 2);
-    const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
     const playerSummaryRef = useAutoGrowTextarea(formData.playerSummary, 2);
-    const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
 
     return (
         <Form className="plot-form">
@@ -128,15 +127,13 @@ export const PlotForm: React.FC<PlotFormProps> = ({
             {/* GM Notes */}
             <Form.Group className="mb-3">
                 <Form.Label htmlFor={`${formId}-gm-notes`}>GM Notes</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={gmNotesRef}
+                <MarkdownTextarea
                     value={formData.gmNotes}
-                    onChange={(e) => onChange("gmNotes", e.target.value)}
+                    onChange={(value) => onChange("gmNotes", value)}
                     placeholder="GM notes (not visible to players)"
                     id={`${formId}-gm-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={4}
                 />
             </Form.Group>
 
@@ -163,15 +160,13 @@ export const PlotForm: React.FC<PlotFormProps> = ({
                 <Form.Label htmlFor={`${formId}-player-notes`}>
                     Player Notes (Shared)
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={playerNotesRef}
+                <MarkdownTextarea
                     value={formData.playerNotes}
-                    onChange={(e) => onChange("playerNotes", e.target.value)}
+                    onChange={(value) => onChange("playerNotes", value)}
                     placeholder="Information visible to players"
                     id={`${formId}-player-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
         </Form>

@@ -1,6 +1,11 @@
 import { PlotStatus, Urgency } from "@graphql";
 
 /**
+ * Asset display mode
+ */
+export type AssetMode = "view" | "edit";
+
+/**
  * Base form data shared by all asset types
  */
 export interface BaseAssetFormData {
@@ -54,6 +59,14 @@ export interface AssetFormProps<T extends AssetFormData> {
     onChange: <K extends keyof T>(field: K, value: T[K]) => void;
     /** Whether the form inputs should be disabled */
     disabled?: boolean;
+}
+
+/**
+ * Props interface for view components
+ */
+export interface AssetViewProps<T extends AssetFormData> {
+    /** The form data to display in view mode */
+    formData: T;
 }
 
 /**
