@@ -9,6 +9,7 @@ export interface AssetModalState {
     assetType: RecordType;
     name: string;
     isMinimized: boolean;
+    isStale?: boolean; // true when asset was modified externally
     position?: { x: number; y: number };
     size?: { width: number; height: number };
 }
@@ -21,6 +22,44 @@ export const assetModalsSignal = signal<Map<string, AssetModalState>>(
 // Single source of truth: array of modal IDs in activation order (oldest first)
 export const modalOrderSignal = signal<string[]>([]);
 const BASE_Z_INDEX = 20;
+
+// Signal for stale asset notifications - maps assetId to callback
+type StaleAssetCallback = (assetId: string) => void;
+const staleAssetListenersSignal = signal<Map<string, StaleAssetCallback>>(
+    new Map()
+);
+
+/**
+ * Register a callback to be notified when a specific asset becomes stale
+ * @param assetId - The asset ID to listen for
+ * @param callback - Function to call when asset is marked stale
+ * @returns Cleanup function to unregister the listener
+ */
+export const subscribeToAssetStale = (
+    assetId: string,
+    callback: StaleAssetCallback
+): (() => void) => {
+    const listeners = new Map(staleAssetListenersSignal.value);
+    listeners.set(assetId, callback);
+    staleAssetListenersSignal.value = listeners;
+
+    return () => {
+        const current = new Map(staleAssetListenersSignal.value);
+        current.delete(assetId);
+        staleAssetListenersSignal.value = current;
+    };
+};
+
+/**
+ * Notify that an asset has been modified externally
+ * @param assetId - The asset ID that was modified
+ */
+export const notifyAssetStale = (assetId: string): void => {
+    const callback = staleAssetListenersSignal.value.get(assetId);
+    if (callback) {
+        callback(assetId);
+    }
+};
 
 // Helper to generate unique modal ID
 const generateModalId = (assetType: RecordType, assetId: string | null) => {
@@ -314,6 +353,32 @@ export const assetModalManager = {
     hasModalForAsset: (assetId: string): boolean => {
         const modals = Array.from(assetModalsSignal.value.values());
         return modals.some((modal) => modal.assetId === assetId);
+    },
+
+    /**
+     * Marks a modal as stale (data was modified externally)
+     * @param assetId - The asset ID whose modal should be marked stale
+     */
+    markAssetStale: (assetId: string) => {
+        const modal = getModalByAssetId(assetId);
+        if (modal) {
+            const currentModals = new Map(assetModalsSignal.value);
+            currentModals.set(modal.modalId, { ...modal, isStale: true });
+            assetModalsSignal.value = currentModals;
+        }
+    },
+
+    /**
+     * Clears the stale flag on a modal
+     * @param modalId - The modal ID to clear the stale flag on
+     */
+    clearStaleFlag: (modalId: string) => {
+        const currentModals = new Map(assetModalsSignal.value);
+        const modal = currentModals.get(modalId);
+        if (modal) {
+            currentModals.set(modalId, { ...modal, isStale: false });
+            assetModalsSignal.value = currentModals;
+        }
     },
 };
 

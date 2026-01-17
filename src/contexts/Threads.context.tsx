@@ -1,6 +1,7 @@
 import { useApolloClient } from "@apollo/client";
 import {
     GetThreadByIdQueryVariables,
+    ListCampaignAssetsQueryVariables,
     MessageDetailsFragment,
     ThreadDetailsFragment,
     useCreateMessageMutation,
@@ -14,6 +15,7 @@ import {
     useMessageGeneration,
     useSessionStorage,
 } from "@hooks";
+import { notifyAssetStale } from "@signals";
 import {
     createContext,
     useCallback,
@@ -96,10 +98,30 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                 });
             },
             onAssetModified: useCallback(
-                (_assetType: string, _assetId: string) => {
-                    // Refetch the ListCampaignAssets query to update the asset menu
+                (assetType: string, assetId: string) => {
+                    // Notify open modals that their asset was modified externally
+                    // The modal will auto-refresh if clean, or show a warning if dirty
+                    notifyAssetStale(assetId);
+
+                    // Refetch the ListCampaignAssets query to update the asset menu sidebar
                     apolloClient.refetchQueries({
-                        include: ["ListCampaignAssets"],
+                        include: "active",
+                        onQueryUpdated: (observableQuery) => {
+                            if (
+                                observableQuery.queryName ===
+                                "ListCampaignAssets"
+                            ) {
+                                const variables =
+                                    observableQuery.variables as ListCampaignAssetsQueryVariables;
+                                // Need to perform a case-insensitive check because recordType is an enum (e.g. "NPC")
+                                // but assetType from regex might be mixed case depending on match
+                                return (
+                                    variables?.input?.recordType?.toLowerCase() ===
+                                    assetType.toLowerCase()
+                                );
+                            }
+                            return false;
+                        },
                     });
                 },
                 [apolloClient]

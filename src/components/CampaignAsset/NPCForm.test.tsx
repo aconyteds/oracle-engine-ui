@@ -1,17 +1,19 @@
 import "@testing-library/jest-dom";
-import { MockedProvider } from "@apollo/client/testing";
-import { RecordType } from "@graphql";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "../../test-utils";
-import { NPCForm, type NPCFormRef } from "./NPCForm";
+import { NPCForm } from "./NPCForm";
+import type { NPCFormData } from "./types";
 
-const mockModalState = {
-    modalId: "test-modal-id",
-    assetId: null,
-    assetType: RecordType.Npc,
-    name: "New Asset",
-    isMinimized: false,
-};
+const createDefaultFormData = (): NPCFormData => ({
+    name: "",
+    gmSummary: "",
+    playerSummary: "",
+    physicalDescription: "",
+    motivation: "",
+    mannerisms: "",
+    gmNotes: "",
+    playerNotes: "",
+});
 
 describe("NPCForm Component", () => {
     afterEach(() => {
@@ -19,10 +21,12 @@ describe("NPCForm Component", () => {
     });
 
     test("should render form with all fields", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         expect(
@@ -47,42 +51,39 @@ describe("NPCForm Component", () => {
         ).toBeInTheDocument();
     });
 
-    test("should initialize with default values for new asset", () => {
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
-        );
-
-        const nameInput = screen.getByPlaceholderText(
-            "Enter NPC name"
-        ) as HTMLInputElement;
-        expect(nameInput.value).toBe("");
-    });
-
-    test("should initialize with modal name when provided", () => {
-        const modalStateWithName = {
-            ...mockModalState,
-            name: "Existing NPC",
+    test("should display provided form data", () => {
+        const mockOnChange = vi.fn();
+        const formData: NPCFormData = {
+            name: "Test NPC",
+            gmSummary: "GM Summary",
+            playerSummary: "Player Summary",
+            physicalDescription: "Tall and muscular",
+            motivation: "Seeking revenge",
+            mannerisms: "Cracks knuckles",
+            gmNotes: "GM Notes",
+            playerNotes: "Player Notes",
         };
 
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={modalStateWithName} />
-            </MockedProvider>
-        );
+        render(<NPCForm formData={formData} onChange={mockOnChange} />);
 
         const nameInput = screen.getByPlaceholderText(
             "Enter NPC name"
         ) as HTMLInputElement;
-        expect(nameInput.value).toBe("Existing NPC");
+        expect(nameInput.value).toBe("Test NPC");
+
+        const physicalInput = screen.getByPlaceholderText(
+            "Describe the NPC's appearance"
+        ) as HTMLTextAreaElement;
+        expect(physicalInput.value).toBe("Tall and muscular");
     });
 
-    test("should update name field on input", () => {
+    test("should call onChange with field and value when name changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const nameInput = screen.getByPlaceholderText(
@@ -91,14 +92,16 @@ describe("NPCForm Component", () => {
 
         fireEvent.change(nameInput, { target: { value: "New NPC Name" } });
 
-        expect(nameInput.value).toBe("New NPC Name");
+        expect(mockOnChange).toHaveBeenCalledWith("name", "New NPC Name");
     });
 
-    test("should update physical description field on input", () => {
+    test("should call onChange when physical description changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const physicalInput = screen.getByPlaceholderText(
@@ -109,14 +112,19 @@ describe("NPCForm Component", () => {
             target: { value: "Tall and muscular" },
         });
 
-        expect(physicalInput.value).toBe("Tall and muscular");
+        expect(mockOnChange).toHaveBeenCalledWith(
+            "physicalDescription",
+            "Tall and muscular"
+        );
     });
 
-    test("should update motivation field on input", () => {
+    test("should call onChange when motivation changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const motivationInput = screen.getByPlaceholderText(
@@ -127,14 +135,19 @@ describe("NPCForm Component", () => {
             target: { value: "Seeking revenge" },
         });
 
-        expect(motivationInput.value).toBe("Seeking revenge");
+        expect(mockOnChange).toHaveBeenCalledWith(
+            "motivation",
+            "Seeking revenge"
+        );
     });
 
-    test("should update mannerisms field on input", () => {
+    test("should call onChange when mannerisms changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const mannerismsInput = screen.getByPlaceholderText(
@@ -145,14 +158,19 @@ describe("NPCForm Component", () => {
             target: { value: "Cracks knuckles often" },
         });
 
-        expect(mannerismsInput.value).toBe("Cracks knuckles often");
+        expect(mockOnChange).toHaveBeenCalledWith(
+            "mannerisms",
+            "Cracks knuckles often"
+        );
     });
 
-    test("should update GM notes field on input", () => {
+    test("should call onChange when GM notes changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const notesInput = screen.getByPlaceholderText(
@@ -163,14 +181,16 @@ describe("NPCForm Component", () => {
             target: { value: "Secret GM notes" },
         });
 
-        expect(notesInput.value).toBe("Secret GM notes");
+        expect(mockOnChange).toHaveBeenCalledWith("gmNotes", "Secret GM notes");
     });
 
-    test("should update shared with players field on input", () => {
+    test("should call onChange when player notes changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const sharedInput = screen.getByPlaceholderText(
@@ -181,99 +201,49 @@ describe("NPCForm Component", () => {
             target: { value: "Public information" },
         });
 
-        expect(sharedInput.value).toBe("Public information");
+        expect(mockOnChange).toHaveBeenCalledWith(
+            "playerNotes",
+            "Public information"
+        );
     });
 
     test("should show validation error when name is empty", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const nameInput = screen.getByPlaceholderText(
             "Enter NPC name"
         ) as HTMLInputElement;
 
-        // Name starts empty for new assets
         expect(nameInput.value).toBe("");
         expect(nameInput).toBeInvalid();
     });
 
     test("should mark required field with asterisk", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const asterisks = screen.getAllByText("*");
         expect(asterisks.length).toBeGreaterThan(0);
     });
 
-    test("should expose getFormData method via ref", () => {
-        const ref = { current: null } as React.RefObject<NPCFormRef>;
-
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm ref={ref} modalState={mockModalState} />
-            </MockedProvider>
-        );
-
-        expect(ref.current).not.toBeNull();
-        expect(typeof ref.current?.getFormData).toBe("function");
-    });
-
-    test("should return form data via ref", () => {
-        const ref = { current: null } as React.RefObject<NPCFormRef>;
-
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm ref={ref} modalState={mockModalState} />
-            </MockedProvider>
-        );
-
-        const formData = ref.current?.getFormData();
-
-        expect(formData).toBeDefined();
-        expect(formData?.name).toBe("");
-        expect(formData?.physicalDescription).toBe("");
-        expect(formData?.motivation).toBe("");
-        expect(formData?.mannerisms).toBe("");
-    });
-
-    test("should return updated form data after changes", () => {
-        const ref = { current: null } as React.RefObject<NPCFormRef>;
-
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm ref={ref} modalState={mockModalState} />
-            </MockedProvider>
-        );
-
-        const nameInput = screen.getByPlaceholderText(
-            "Enter NPC name"
-        ) as HTMLInputElement;
-        const physicalInput = screen.getByPlaceholderText(
-            "Describe the NPC's appearance"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(nameInput, { target: { value: "Test NPC" } });
-        fireEvent.change(physicalInput, {
-            target: { value: "Test Description" },
-        });
-
-        const formData = ref.current?.getFormData();
-
-        expect(formData?.name).toBe("Test NPC");
-        expect(formData?.physicalDescription).toBe("Test Description");
-    });
-
     test("should have proper SCSS class on form", () => {
+        const mockOnChange = vi.fn();
         const { container } = render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const form = container.querySelector("form");
@@ -281,10 +251,12 @@ describe("NPCForm Component", () => {
     });
 
     test("should have proper placeholder texts", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         expect(
@@ -309,33 +281,24 @@ describe("NPCForm Component", () => {
         ).toBeInTheDocument();
     });
 
-    test("should handle multiple field updates", () => {
+    test("should disable inputs when disabled prop is true", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <NPCForm modalState={mockModalState} />
-            </MockedProvider>
+            <NPCForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+                disabled={true}
+            />
         );
 
         const nameInput = screen.getByPlaceholderText(
             "Enter NPC name"
         ) as HTMLInputElement;
+        expect(nameInput).toBeDisabled();
+
         const physicalInput = screen.getByPlaceholderText(
             "Describe the NPC's appearance"
         ) as HTMLTextAreaElement;
-        const motivationInput = screen.getByPlaceholderText(
-            "What drives this NPC?"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(nameInput, { target: { value: "Complex NPC" } });
-        fireEvent.change(physicalInput, {
-            target: { value: "Scarred veteran" },
-        });
-        fireEvent.change(motivationInput, {
-            target: { value: "Protect the innocent" },
-        });
-
-        expect(nameInput.value).toBe("Complex NPC");
-        expect(physicalInput.value).toBe("Scarred veteran");
-        expect(motivationInput.value).toBe("Protect the innocent");
+        expect(physicalInput).toBeDisabled();
     });
 });

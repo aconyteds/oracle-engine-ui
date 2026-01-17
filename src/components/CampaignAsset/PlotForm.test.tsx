@@ -1,16 +1,18 @@
-import { MockedProvider } from "@apollo/client/testing";
-import { PlotStatus, RecordType, Urgency } from "@graphql";
-import { afterEach, describe, expect, test } from "vitest";
+import { PlotStatus, Urgency } from "@graphql";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "../../test-utils";
-import { PlotForm, type PlotFormRef } from "./PlotForm";
+import { PlotForm } from "./PlotForm";
+import type { PlotFormData } from "./types";
 
-const mockModalState = {
-    modalId: "test-modal-id",
-    assetId: null,
-    assetType: RecordType.Plot,
-    name: "New Asset",
-    isMinimized: false,
-};
+const createDefaultFormData = (): PlotFormData => ({
+    name: "",
+    gmSummary: "",
+    playerSummary: "",
+    status: PlotStatus.Rumored,
+    urgency: Urgency.Ongoing,
+    gmNotes: "",
+    playerNotes: "",
+});
 
 describe("PlotForm Component", () => {
     afterEach(() => {
@@ -18,10 +20,12 @@ describe("PlotForm Component", () => {
     });
 
     test("should render form with all fields", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         expect(
@@ -40,49 +44,47 @@ describe("PlotForm Component", () => {
         ).toBeInTheDocument();
     });
 
-    test("should initialize with default values for new asset", () => {
+    test("should display provided form data", () => {
+        const mockOnChange = vi.fn();
+        const formData: PlotFormData = {
+            name: "Test Plot",
+            gmSummary: "Test Summary",
+            playerSummary: "",
+            status: PlotStatus.InProgress,
+            urgency: Urgency.Critical,
+            gmNotes: "GM Notes",
+            playerNotes: "Player Notes",
+        };
+
         const { container } = render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm formData={formData} onChange={mockOnChange} />
         );
 
         const nameInput = screen.getByPlaceholderText(
             "Enter plot name"
         ) as HTMLInputElement;
-        expect(nameInput.value).toBe("");
+        expect(nameInput.value).toBe("Test Plot");
+
+        const summaryInput = screen.getByPlaceholderText(
+            "Brief description of the plot"
+        ) as HTMLTextAreaElement;
+        expect(summaryInput.value).toBe("Test Summary");
 
         const selects = container.querySelectorAll("select");
         const statusSelect = selects[0] as HTMLSelectElement;
         const urgencySelect = selects[1] as HTMLSelectElement;
 
-        expect(statusSelect.value).toBe(PlotStatus.Rumored);
-        expect(urgencySelect.value).toBe(Urgency.Ongoing);
+        expect(statusSelect.value).toBe(PlotStatus.InProgress);
+        expect(urgencySelect.value).toBe(Urgency.Critical);
     });
 
-    test("should initialize with modal name when provided", () => {
-        const modalStateWithName = {
-            ...mockModalState,
-            name: "Existing Plot",
-        };
-
+    test("should call onChange with field and value when name changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={modalStateWithName} />
-            </MockedProvider>
-        );
-
-        const nameInput = screen.getByPlaceholderText(
-            "Enter plot name"
-        ) as HTMLInputElement;
-        expect(nameInput.value).toBe("Existing Plot");
-    });
-
-    test("should update name field on input", () => {
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const nameInput = screen.getByPlaceholderText(
@@ -91,14 +93,16 @@ describe("PlotForm Component", () => {
 
         fireEvent.change(nameInput, { target: { value: "New Plot Name" } });
 
-        expect(nameInput.value).toBe("New Plot Name");
+        expect(mockOnChange).toHaveBeenCalledWith("name", "New Plot Name");
     });
 
-    test("should update summary field on input", () => {
+    test("should call onChange when summary changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const summaryInput = screen.getByPlaceholderText(
@@ -109,14 +113,19 @@ describe("PlotForm Component", () => {
             target: { value: "This is a test summary" },
         });
 
-        expect(summaryInput.value).toBe("This is a test summary");
+        expect(mockOnChange).toHaveBeenCalledWith(
+            "gmSummary",
+            "This is a test summary"
+        );
     });
 
-    test("should update status field on select", () => {
+    test("should call onChange when status changes", () => {
+        const mockOnChange = vi.fn();
         const { container } = render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const selects = container.querySelectorAll("select");
@@ -126,14 +135,19 @@ describe("PlotForm Component", () => {
             target: { value: PlotStatus.InProgress },
         });
 
-        expect(statusSelect.value).toBe(PlotStatus.InProgress);
+        expect(mockOnChange).toHaveBeenCalledWith(
+            "status",
+            PlotStatus.InProgress
+        );
     });
 
-    test("should update urgency field on select", () => {
+    test("should call onChange when urgency changes", () => {
+        const mockOnChange = vi.fn();
         const { container } = render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const selects = container.querySelectorAll("select");
@@ -143,14 +157,16 @@ describe("PlotForm Component", () => {
             target: { value: Urgency.Critical },
         });
 
-        expect(urgencySelect.value).toBe(Urgency.Critical);
+        expect(mockOnChange).toHaveBeenCalledWith("urgency", Urgency.Critical);
     });
 
-    test("should update GM notes field on input", () => {
+    test("should call onChange when GM notes changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const notesInput = screen.getByPlaceholderText(
@@ -161,14 +177,16 @@ describe("PlotForm Component", () => {
             target: { value: "Secret GM notes" },
         });
 
-        expect(notesInput.value).toBe("Secret GM notes");
+        expect(mockOnChange).toHaveBeenCalledWith("gmNotes", "Secret GM notes");
     });
 
-    test("should update shared with players field on input", () => {
+    test("should call onChange when player notes changes", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const sharedInput = screen.getByPlaceholderText(
@@ -179,14 +197,19 @@ describe("PlotForm Component", () => {
             target: { value: "Public information" },
         });
 
-        expect(sharedInput.value).toBe("Public information");
+        expect(mockOnChange).toHaveBeenCalledWith(
+            "playerNotes",
+            "Public information"
+        );
     });
 
     test("should render all status options", () => {
+        const mockOnChange = vi.fn();
         const { container } = render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const selects = container.querySelectorAll("select");
@@ -203,10 +226,12 @@ describe("PlotForm Component", () => {
     });
 
     test("should render all urgency options", () => {
+        const mockOnChange = vi.fn();
         const { container } = render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const selects = container.querySelectorAll("select");
@@ -221,94 +246,42 @@ describe("PlotForm Component", () => {
     });
 
     test("should show validation error when name is empty", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const nameInput = screen.getByPlaceholderText(
             "Enter plot name"
         ) as HTMLInputElement;
 
-        // Name starts empty for new assets
         expect(nameInput.value).toBe("");
         expect(nameInput).toBeInvalid();
     });
 
     test("should mark required field with asterisk", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const asterisks = screen.getAllByText("*");
         expect(asterisks.length).toBeGreaterThan(0);
     });
 
-    test("should expose getFormData method via ref", () => {
-        const ref = { current: null } as React.RefObject<PlotFormRef>;
-
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm ref={ref} modalState={mockModalState} />
-            </MockedProvider>
-        );
-
-        expect(ref.current).not.toBeNull();
-        expect(typeof ref.current?.getFormData).toBe("function");
-    });
-
-    test("should return form data via ref", () => {
-        const ref = { current: null } as React.RefObject<PlotFormRef>;
-
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm ref={ref} modalState={mockModalState} />
-            </MockedProvider>
-        );
-
-        const formData = ref.current?.getFormData();
-
-        expect(formData).toBeDefined();
-        expect(formData?.name).toBe("");
-        expect(formData?.status).toBe(PlotStatus.Rumored);
-        expect(formData?.urgency).toBe(Urgency.Ongoing);
-    });
-
-    test("should return updated form data after changes", () => {
-        const ref = { current: null } as React.RefObject<PlotFormRef>;
-
-        render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm ref={ref} modalState={mockModalState} />
-            </MockedProvider>
-        );
-
-        const nameInput = screen.getByPlaceholderText(
-            "Enter plot name"
-        ) as HTMLInputElement;
-        const summaryInput = screen.getByPlaceholderText(
-            "Brief description of the plot"
-        ) as HTMLTextAreaElement;
-
-        fireEvent.change(nameInput, { target: { value: "Test Plot" } });
-        fireEvent.change(summaryInput, {
-            target: { value: "Test Summary" },
-        });
-
-        const formData = ref.current?.getFormData();
-
-        expect(formData?.name).toBe("Test Plot");
-        expect(formData?.gmSummary).toBe("Test Summary");
-    });
-
     test("should have proper SCSS class on form", () => {
+        const mockOnChange = vi.fn();
         const { container } = render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         const form = container.querySelector("form");
@@ -316,10 +289,12 @@ describe("PlotForm Component", () => {
     });
 
     test("should have proper placeholder texts", () => {
+        const mockOnChange = vi.fn();
         render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+            />
         );
 
         expect(
@@ -336,30 +311,29 @@ describe("PlotForm Component", () => {
         ).toBeInTheDocument();
     });
 
-    test("should handle multiple field updates", () => {
+    test("should disable inputs when disabled prop is true", () => {
+        const mockOnChange = vi.fn();
         const { container } = render(
-            <MockedProvider mocks={[]} addTypename={false}>
-                <PlotForm modalState={mockModalState} />
-            </MockedProvider>
+            <PlotForm
+                formData={createDefaultFormData()}
+                onChange={mockOnChange}
+                disabled={true}
+            />
         );
 
         const nameInput = screen.getByPlaceholderText(
             "Enter plot name"
         ) as HTMLInputElement;
+        expect(nameInput).toBeDisabled();
+
+        const summaryInput = screen.getByPlaceholderText(
+            "Brief description of the plot"
+        ) as HTMLTextAreaElement;
+        expect(summaryInput).toBeDisabled();
+
         const selects = container.querySelectorAll("select");
-        const statusSelect = selects[0] as HTMLSelectElement;
-        const urgencySelect = selects[1] as HTMLSelectElement;
-
-        fireEvent.change(nameInput, { target: { value: "Complex Plot" } });
-        fireEvent.change(statusSelect, {
-            target: { value: PlotStatus.InProgress },
+        selects.forEach((select) => {
+            expect(select).toBeDisabled();
         });
-        fireEvent.change(urgencySelect, {
-            target: { value: Urgency.Critical },
-        });
-
-        expect(nameInput.value).toBe("Complex Plot");
-        expect(statusSelect.value).toBe(PlotStatus.InProgress);
-        expect(urgencySelect.value).toBe(Urgency.Critical);
     });
 });

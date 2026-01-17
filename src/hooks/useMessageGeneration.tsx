@@ -1,5 +1,6 @@
 import {
     MessageDetailsFragment,
+    RecordType,
     ResponseType,
     useGenerateMessageSubscription,
 } from "@graphql";
@@ -7,9 +8,13 @@ import { useCallback, useRef, useState } from "react";
 
 // Pattern to detect asset creation/update messages from AI
 // Matches: "Created [Name](Type:id)" or "Updated [Name](Type:id)"
-// where Type is NPC, Location, or Plot
-const ASSET_PATTERN =
-    /(Created|Updated)\s+\[([^\]]+)\]\((NPC|Location|Plot):([^)]+)\)/;
+// where Type is one of the RecordType enum values
+const ASSET_PATTERN = new RegExp(
+    `(created|updated)\\s+\\[([^\\]]+)\\]\\((${Object.values(RecordType).join(
+        "|"
+    )}):([^)]+)\\)`,
+    "i"
+);
 
 type UseMessageGenerationProps = {
     showDebug?: boolean;
