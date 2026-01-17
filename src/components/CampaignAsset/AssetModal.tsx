@@ -14,7 +14,7 @@ import {
     assetModalManager,
     useAssetModalZIndex,
 } from "@signals";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     Button,
     Col,
@@ -26,17 +26,16 @@ import {
 import { useCampaignContext, useToaster } from "../../contexts";
 import { DraggableModal, HoldConfirmButton } from "../Common";
 import { LogEvent } from "../firebase";
-import { LocationForm } from "./LocationForm";
+import { LocationForm, NPCForm, PlotForm } from "./forms";
 import { ASSET_TYPE_ICONS } from "./models";
-import { NPCForm } from "./NPCForm";
-import { PlotForm } from "./PlotForm";
 import type {
     AssetFormData,
+    AssetMode,
     LocationFormData,
     NPCFormData,
     PlotFormData,
 } from "./types";
-
+import { LocationView, NPCView, PlotView } from "./views";
 export interface AssetModalProps {
     modalState: AssetModalState;
 }
@@ -67,6 +66,16 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     const { selectedCampaign } = useCampaignContext();
     const { toast } = useToaster();
     const [isSaving, setIsSaving] = useState(false);
+
+    // Mode state - default to edit for new assets, view for existing
+    const [mode, setMode] = useState<AssetMode>(() =>
+        assetId ? "view" : "edit"
+    );
+
+    // Reset mode when asset changes
+    useEffect(() => {
+        setMode(assetId ? "view" : "edit");
+    }, [assetId]);
 
     const { zIndex, bringToFront } = useAssetModalZIndex(modalId);
 
@@ -196,6 +205,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                 // Sync form with server data and clear stale flag
                 await handleSaveComplete();
                 assetModalManager.clearStaleFlag(modalId);
+                setMode("view");
             } else {
                 // Create new asset
                 if (!sharedInput.name) {
@@ -304,8 +314,19 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         [setFormField]
     );
 
-    // Render the appropriate form based on asset type
-    const renderForm = () => {
+    // Handle Edit button click
+    const changeMode = () => {
+        setMode((mode) => (mode === "view" ? "edit" : "view"));
+    };
+
+    // Handle Cancel button click
+    const handleCancel = async () => {
+        await handleReload();
+        setMode("view");
+    };
+
+    // Render the appropriate content based on mode and asset type
+    const renderContent = () => {
         if (isResetting) {
             return (
                 <div className="text-center p-4">
@@ -315,6 +336,21 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             );
         }
 
+        // View mode - render view components
+        if (mode === "view") {
+            switch (assetType) {
+                case RecordType.Npc:
+                    return <NPCView formData={formData as NPCFormData} />;
+                case RecordType.Location:
+                    return (
+                        <LocationView formData={formData as LocationFormData} />
+                    );
+                case RecordType.Plot:
+                    return <PlotView formData={formData as PlotFormData} />;
+            }
+        }
+
+        // Edit mode - render forms
         switch (assetType) {
             case RecordType.Plot:
                 return (
@@ -345,12 +381,15 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
 
     const footer = (
         <Row className="d-flex justify-content-between w-100 gap-2">
-            <Col xs="auto">
+            <Col xs="auto" className="d-flex gap-2 align-items-center">
+                <Button variant="secondary" onClick={changeMode}>
+                    {mode === "view" ? "Edit" : "View"}
+                </Button>
                 {isStale && isDirty && (
                     <OverlayTrigger
                         placement="top"
                         overlay={
-                            <Popover id="stale-popover">
+                            <Popover>
                                 <Popover.Header as="h3">
                                     Asset Stale
                                 </Popover.Header>
@@ -386,11 +425,12 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                         Unsaved changes
                     </span>
                 )}
+                {/* Save button with stale handling */}
                 {isStale ? (
                     <OverlayTrigger
                         placement="top"
                         overlay={
-                            <Popover id="stale-popover">
+                            <Popover>
                                 <Popover.Header as="h3">
                                     Asset Stale
                                 </Popover.Header>
@@ -430,12 +470,22 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
                         {isSaving ? "Saving..." : "Save"}
                     </Button>
                 )}
-
+                {/* Cancel button - only for existing assets*/}
+                {assetId && (
+                    <HoldConfirmButton
+                        variant="secondary"
+                        onConfirm={handleCancel}
+                        disabled={isSaving || isResetting || !isDirty}
+                        holdDuration={1000}
+                    >
+                        Cancel
+                    </HoldConfirmButton>
+                )}
                 {assetId && (
                     <HoldConfirmButton
                         onConfirm={handleDelete}
                         variant="danger"
-                        disabled={isSaving || !assetId}
+                        disabled={isSaving || isResetting}
                     >
                         {isSaving ? "Deleting..." : "Delete"}
                     </HoldConfirmButton>
@@ -466,7 +516,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             zIndex={zIndex}
             onInteract={bringToFront}
         >
-            {renderForm()}
+            {renderContent()}
         </DraggableModal>
     );
 };

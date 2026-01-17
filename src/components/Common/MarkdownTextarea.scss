@@ -1,0 +1,51 @@
+.markdown-textarea-wrapper {
+    // Ensure the editor matches Bootstrap form control styling
+    .w-md-editor {
+        border-radius: var(--bs-border-radius);
+        border: var(--bs-border-width) solid var(--bs-border-color);
+        background-color: unset;
+        &.w-md-editor-fullscreen{
+            background-color: var(--bs-form-control-bg);
+        }
+
+        &:focus-within {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+        }
+
+        .wmde-markdown {
+            background-color: unset;
+        }
+    }
+
+    // Toolbar styling adjustments
+    .w-md-editor-toolbar {
+        border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+        background-color: var(--bs-tertiary-bg);
+        border-radius: var(--bs-border-radius) var(--bs-border-radius) 0 0;
+    }
+
+    // Text area styling
+    .w-md-editor-text-input,
+    .w-md-editor-text-pre {
+        font-family: inherit;
+    }
+
+    // Placeholder styling
+    .w-md-editor-text-input::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.65;
+    }
+}
+
+// Disabled state styling
+.md-editor-disabled {
+    .w-md-editor {
+        opacity: 0.65;
+        pointer-events: none;
+    }
+
+    .w-md-editor-toolbar {
+        pointer-events: none;
+    }
+}

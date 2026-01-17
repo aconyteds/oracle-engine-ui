@@ -67,6 +67,12 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                     language={language}
                     PreTag="div"
                     className="mb-0 mt-0"
+                    wrapLongLines={true}
+                    codeTagProps={{
+                        style: {
+                            wordBreak: "break-word",
+                        } as React.CSSProperties,
+                    }}
                 >
                     {code}
                 </SyntaxHighlighter>

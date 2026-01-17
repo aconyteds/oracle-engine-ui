@@ -1,37 +1,30 @@
 import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
-import type { AssetFormProps, NPCFormData } from "./types";
+import { MarkdownTextarea } from "../../Common";
+import type { AssetFormProps, LocationFormData } from "../types";
 
-export type NPCFormProps = AssetFormProps<NPCFormData>;
+export type LocationFormProps = AssetFormProps<LocationFormData>;
 
 /**
- * NPCForm - A controlled form component for editing NPC assets
+ * LocationForm - A controlled form component for editing Location assets
  *
  * This component receives form data via props and reports changes upward.
  * It has NO internal state for asset data - the parent is the source of truth.
  */
-export const NPCForm: React.FC<NPCFormProps> = ({
+export const LocationForm: React.FC<LocationFormProps> = ({
     formData,
     onChange,
     disabled = false,
 }) => {
     const formId = useId();
 
-    // Auto-grow textarea refs
-    const physicalDescriptionRef = useAutoGrowTextarea(
-        formData.physicalDescription,
-        2
-    );
-    const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 3);
-    const motivationRef = useAutoGrowTextarea(formData.motivation, 2);
-    const mannerismsRef = useAutoGrowTextarea(formData.mannerisms, 3);
-    const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
-    const playerSummaryRef = useAutoGrowTextarea(formData.playerSummary, 3);
-    const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
+    // Auto-grow textarea refs for gmSummary and playerSummary (with maxLength)
+    const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 2);
+    const playerSummaryRef = useAutoGrowTextarea(formData.playerSummary, 2);
 
     return (
-        <Form className="npc-form">
+        <Form className="location-form">
             {/* Name */}
             <Form.Group className="mb-3">
                 <Form.Label htmlFor={`${formId}-name`}>
@@ -41,7 +34,7 @@ export const NPCForm: React.FC<NPCFormProps> = ({
                     type="text"
                     value={formData.name}
                     onChange={(e) => onChange("name", e.target.value)}
-                    placeholder="Enter NPC name"
+                    placeholder="Enter location name"
                     required
                     isInvalid={!formData.name}
                     id={`${formId}-name`}
@@ -59,82 +52,87 @@ export const NPCForm: React.FC<NPCFormProps> = ({
                 </Form.Label>
                 <Form.Control
                     as="textarea"
+                    ref={gmSummaryRef}
                     value={formData.gmSummary}
                     onChange={(e) => onChange("gmSummary", e.target.value)}
-                    placeholder="Summary visible only to the GM"
+                    placeholder="Brief summary of the location"
                     id={`${formId}-gm-summary`}
                     style={{ overflow: "hidden", resize: "none" }}
+                    disabled={disabled}
                     maxLength={200}
-                    ref={gmSummaryRef}
+                />
+            </Form.Group>
+
+            {/* Description */}
+            <Form.Group className="mb-3">
+                <Form.Label htmlFor={`${formId}-description`}>
+                    Description
+                </Form.Label>
+                <MarkdownTextarea
+                    value={formData.description}
+                    onChange={(value) => onChange("description", value)}
+                    placeholder="Detailed description"
+                    id={`${formId}-description`}
+                    disabled={disabled}
+                    minRows={3}
+                />
+            </Form.Group>
+
+            {/* Condition */}
+            <Form.Group className="mb-3">
+                <Form.Label htmlFor={`${formId}-condition`}>
+                    Condition
+                </Form.Label>
+                <Form.Control
+                    type="text"
+                    value={formData.condition}
+                    onChange={(e) => onChange("condition", e.target.value)}
+                    placeholder="Current condition (e.g. Ruined, Bustling)"
+                    id={`${formId}-condition`}
                     disabled={disabled}
                 />
             </Form.Group>
 
-            {/* Physical Description */}
+            {/* Characters */}
             <Form.Group className="mb-3">
-                <Form.Label htmlFor={`${formId}-physical-description`}>
-                    Physical Description
+                <Form.Label htmlFor={`${formId}-characters`}>
+                    Characters
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={physicalDescriptionRef}
-                    value={formData.physicalDescription}
-                    onChange={(e) =>
-                        onChange("physicalDescription", e.target.value)
-                    }
-                    placeholder="Describe the NPC's appearance"
-                    id={`${formId}-physical-description`}
-                    style={{ overflow: "hidden", resize: "none" }}
+                <MarkdownTextarea
+                    value={formData.characters}
+                    onChange={(value) => onChange("characters", value)}
+                    placeholder="Key characters present"
+                    id={`${formId}-characters`}
                     disabled={disabled}
+                    minRows={2}
                 />
             </Form.Group>
 
-            {/* Motivation */}
+            {/* Points of Interest */}
             <Form.Group className="mb-3">
-                <Form.Label htmlFor={`${formId}-motivation`}>
-                    Motivation
+                <Form.Label htmlFor={`${formId}-points-of-interest`}>
+                    Points of Interest
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={motivationRef}
-                    value={formData.motivation}
-                    onChange={(e) => onChange("motivation", e.target.value)}
-                    placeholder="What drives this NPC?"
-                    id={`${formId}-motivation`}
-                    style={{ overflow: "hidden", resize: "none" }}
+                <MarkdownTextarea
+                    value={formData.pointsOfInterest}
+                    onChange={(value) => onChange("pointsOfInterest", value)}
+                    placeholder="Notable spots within this location"
+                    id={`${formId}-points-of-interest`}
                     disabled={disabled}
-                />
-            </Form.Group>
-
-            {/* Mannerisms */}
-            <Form.Group className="mb-3">
-                <Form.Label htmlFor={`${formId}-mannerisms`}>
-                    Mannerisms
-                </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={mannerismsRef}
-                    value={formData.mannerisms}
-                    onChange={(e) => onChange("mannerisms", e.target.value)}
-                    placeholder="Distinctive behaviors, speech patterns, or quirks"
-                    id={`${formId}-mannerisms`}
-                    style={{ overflow: "hidden", resize: "none" }}
-                    disabled={disabled}
+                    minRows={2}
                 />
             </Form.Group>
 
             {/* GM Notes */}
             <Form.Group className="mb-3">
                 <Form.Label htmlFor={`${formId}-gm-notes`}>GM Notes</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={gmNotesRef}
+                <MarkdownTextarea
                     value={formData.gmNotes}
-                    onChange={(e) => onChange("gmNotes", e.target.value)}
+                    onChange={(value) => onChange("gmNotes", value)}
                     placeholder="GM notes (not visible to players)"
                     id={`${formId}-gm-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={4}
                 />
             </Form.Group>
 
@@ -161,15 +159,13 @@ export const NPCForm: React.FC<NPCFormProps> = ({
                 <Form.Label htmlFor={`${formId}-player-notes`}>
                     Player Notes (Shared)
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={playerNotesRef}
+                <MarkdownTextarea
                     value={formData.playerNotes}
-                    onChange={(e) => onChange("playerNotes", e.target.value)}
+                    onChange={(value) => onChange("playerNotes", value)}
                     placeholder="Information visible to players"
                     id={`${formId}-player-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
         </Form>

@@ -26,7 +26,13 @@ vi.mock("../../apolloClient", () => ({
     default: {},
     setAuthToken: vi.fn(),
 }));
-vi.mock("@context");
+vi.mock("@context", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@context")>();
+    return {
+        ...actual,
+        useUserContext: vi.fn(),
+    };
+});
 
 describe("Login Component", () => {
     const mockUserContext = {

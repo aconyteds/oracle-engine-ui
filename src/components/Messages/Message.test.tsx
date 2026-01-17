@@ -17,6 +17,18 @@ vi.mock("../../graphql/generated", () => ({
         Intermediate: "Intermediate",
         Final: "Final",
     },
+    PlotStatus: {
+        Closed: "Closed",
+        InProgress: "InProgress",
+        Rumored: "Rumored",
+        Unknown: "Unknown",
+        WillNotDo: "WillNotDo",
+    },
+    Urgency: {
+        Critical: "Critical",
+        Ongoing: "Ongoing",
+        Resolved: "Resolved",
+    },
 }));
 
 // Mock MarkdownRenderer
@@ -52,6 +64,11 @@ describe("Message Component", () => {
         mockUseUserContext.mockReturnValue({
             showDebug: false,
         });
+    });
+
+    afterAll(() => {
+        vi.resetAllMocks();
+        vi.restoreAllMocks();
     });
 
     it("renders user message correctly", () => {

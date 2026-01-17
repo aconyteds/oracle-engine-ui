@@ -1,37 +1,30 @@
 import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
-import type { AssetFormProps, LocationFormData } from "./types";
+import { MarkdownTextarea } from "../../Common";
+import type { AssetFormProps, NPCFormData } from "../types";
 
-export type LocationFormProps = AssetFormProps<LocationFormData>;
+export type NPCFormProps = AssetFormProps<NPCFormData>;
 
 /**
- * LocationForm - A controlled form component for editing Location assets
+ * NPCForm - A controlled form component for editing NPC assets
  *
  * This component receives form data via props and reports changes upward.
  * It has NO internal state for asset data - the parent is the source of truth.
  */
-export const LocationForm: React.FC<LocationFormProps> = ({
+export const NPCForm: React.FC<NPCFormProps> = ({
     formData,
     onChange,
     disabled = false,
 }) => {
     const formId = useId();
 
-    // Auto-grow textarea refs
-    const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 2);
-    const descriptionRef = useAutoGrowTextarea(formData.description, 3);
-    const charactersRef = useAutoGrowTextarea(formData.characters, 2);
-    const pointsOfInterestRef = useAutoGrowTextarea(
-        formData.pointsOfInterest,
-        2
-    );
-    const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
-    const playerSummaryRef = useAutoGrowTextarea(formData.playerSummary, 2);
-    const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
+    // Auto-grow textarea ref for gmSummary and playerSummary (with maxLength)
+    const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 3);
+    const playerSummaryRef = useAutoGrowTextarea(formData.playerSummary, 3);
 
     return (
-        <Form className="location-form">
+        <Form className="npc-form">
             {/* Name */}
             <Form.Group className="mb-3">
                 <Form.Label htmlFor={`${formId}-name`}>
@@ -41,7 +34,7 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                     type="text"
                     value={formData.name}
                     onChange={(e) => onChange("name", e.target.value)}
-                    placeholder="Enter location name"
+                    placeholder="Enter NPC name"
                     required
                     isInvalid={!formData.name}
                     id={`${formId}-name`}
@@ -59,97 +52,72 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                 </Form.Label>
                 <Form.Control
                     as="textarea"
-                    ref={gmSummaryRef}
                     value={formData.gmSummary}
                     onChange={(e) => onChange("gmSummary", e.target.value)}
-                    placeholder="Brief summary of the location"
+                    placeholder="Summary visible only to the GM"
                     id={`${formId}-gm-summary`}
                     style={{ overflow: "hidden", resize: "none" }}
-                    disabled={disabled}
                     maxLength={200}
-                />
-            </Form.Group>
-
-            {/* Description */}
-            <Form.Group className="mb-3">
-                <Form.Label htmlFor={`${formId}-description`}>
-                    Description
-                </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={descriptionRef}
-                    value={formData.description}
-                    onChange={(e) => onChange("description", e.target.value)}
-                    placeholder="Detailed description"
-                    id={`${formId}-description`}
-                    style={{ overflow: "hidden", resize: "none" }}
+                    ref={gmSummaryRef}
                     disabled={disabled}
                 />
             </Form.Group>
 
-            {/* Condition */}
+            {/* Physical Description */}
             <Form.Group className="mb-3">
-                <Form.Label htmlFor={`${formId}-condition`}>
-                    Condition
+                <Form.Label htmlFor={`${formId}-physical-description`}>
+                    Physical Description
                 </Form.Label>
-                <Form.Control
-                    type="text"
-                    value={formData.condition}
-                    onChange={(e) => onChange("condition", e.target.value)}
-                    placeholder="Current condition (e.g. Ruined, Bustling)"
-                    id={`${formId}-condition`}
+                <MarkdownTextarea
+                    value={formData.physicalDescription}
+                    onChange={(value) => onChange("physicalDescription", value)}
+                    placeholder="Describe the NPC's appearance"
+                    id={`${formId}-physical-description`}
                     disabled={disabled}
+                    minRows={2}
                 />
             </Form.Group>
 
-            {/* Characters */}
+            {/* Motivation */}
             <Form.Group className="mb-3">
-                <Form.Label htmlFor={`${formId}-characters`}>
-                    Characters
+                <Form.Label htmlFor={`${formId}-motivation`}>
+                    Motivation
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={charactersRef}
-                    value={formData.characters}
-                    onChange={(e) => onChange("characters", e.target.value)}
-                    placeholder="Key characters present"
-                    id={`${formId}-characters`}
-                    style={{ overflow: "hidden", resize: "none" }}
+                <MarkdownTextarea
+                    value={formData.motivation}
+                    onChange={(value) => onChange("motivation", value)}
+                    placeholder="What drives this NPC?"
+                    id={`${formId}-motivation`}
                     disabled={disabled}
+                    minRows={2}
                 />
             </Form.Group>
 
-            {/* Points of Interest */}
+            {/* Mannerisms */}
             <Form.Group className="mb-3">
-                <Form.Label htmlFor={`${formId}-points-of-interest`}>
-                    Points of Interest
+                <Form.Label htmlFor={`${formId}-mannerisms`}>
+                    Mannerisms
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={pointsOfInterestRef}
-                    value={formData.pointsOfInterest}
-                    onChange={(e) =>
-                        onChange("pointsOfInterest", e.target.value)
-                    }
-                    placeholder="Notable spots within this location"
-                    id={`${formId}-points-of-interest`}
-                    style={{ overflow: "hidden", resize: "none" }}
+                <MarkdownTextarea
+                    value={formData.mannerisms}
+                    onChange={(value) => onChange("mannerisms", value)}
+                    placeholder="Distinctive behaviors, speech patterns, or quirks"
+                    id={`${formId}-mannerisms`}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
 
             {/* GM Notes */}
             <Form.Group className="mb-3">
                 <Form.Label htmlFor={`${formId}-gm-notes`}>GM Notes</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={gmNotesRef}
+                <MarkdownTextarea
                     value={formData.gmNotes}
-                    onChange={(e) => onChange("gmNotes", e.target.value)}
+                    onChange={(value) => onChange("gmNotes", value)}
                     placeholder="GM notes (not visible to players)"
                     id={`${formId}-gm-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={4}
                 />
             </Form.Group>
 
@@ -176,15 +144,13 @@ export const LocationForm: React.FC<LocationFormProps> = ({
                 <Form.Label htmlFor={`${formId}-player-notes`}>
                     Player Notes (Shared)
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={playerNotesRef}
+                <MarkdownTextarea
                     value={formData.playerNotes}
-                    onChange={(e) => onChange("playerNotes", e.target.value)}
+                    onChange={(value) => onChange("playerNotes", value)}
                     placeholder="Information visible to players"
                     id={`${formId}-player-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
         </Form>

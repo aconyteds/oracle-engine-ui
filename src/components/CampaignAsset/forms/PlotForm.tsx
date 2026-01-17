@@ -2,21 +2,9 @@ import { PlotStatus, Urgency } from "@graphql";
 import { useAutoGrowTextarea } from "@hooks";
 import React, { useId } from "react";
 import { Form } from "react-bootstrap";
-import type { AssetFormProps, PlotFormData } from "./types";
-
-const STATUS_OPTIONS: { value: PlotStatus; label: string }[] = [
-    { value: PlotStatus.Unknown, label: "Unknown" },
-    { value: PlotStatus.Rumored, label: "Rumored" },
-    { value: PlotStatus.InProgress, label: "In Progress" },
-    { value: PlotStatus.Closed, label: "Completed" },
-    { value: PlotStatus.WillNotDo, label: "Will Not Do" },
-];
-
-const URGENCY_OPTIONS: { value: Urgency; label: string }[] = [
-    { value: Urgency.Ongoing, label: "Ongoing" },
-    { value: Urgency.Critical, label: "Critical" },
-    { value: Urgency.Resolved, label: "Resolved" },
-];
+import { MarkdownTextarea } from "../../Common";
+import { PLOT_STATUS_OPTIONS, URGENCY_OPTIONS } from "../plotUtils";
+import type { AssetFormProps, PlotFormData } from "../types";
 
 export type PlotFormProps = AssetFormProps<PlotFormData>;
 
@@ -33,11 +21,9 @@ export const PlotForm: React.FC<PlotFormProps> = ({
 }) => {
     const formId = useId();
 
-    // Auto-grow textarea refs
+    // Auto-grow textarea refs for gmSummary and playerSummary (with maxLength)
     const gmSummaryRef = useAutoGrowTextarea(formData.gmSummary, 2);
-    const gmNotesRef = useAutoGrowTextarea(formData.gmNotes, 4);
     const playerSummaryRef = useAutoGrowTextarea(formData.playerSummary, 2);
-    const playerNotesRef = useAutoGrowTextarea(formData.playerNotes, 3);
 
     return (
         <Form className="plot-form">
@@ -94,7 +80,7 @@ export const PlotForm: React.FC<PlotFormProps> = ({
                             }
                             disabled={disabled}
                         >
-                            {STATUS_OPTIONS.map((option) => (
+                            {PLOT_STATUS_OPTIONS.map((option) => (
                                 <option key={option.value} value={option.value}>
                                     {option.label}
                                 </option>
@@ -128,15 +114,13 @@ export const PlotForm: React.FC<PlotFormProps> = ({
             {/* GM Notes */}
             <Form.Group className="mb-3">
                 <Form.Label htmlFor={`${formId}-gm-notes`}>GM Notes</Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={gmNotesRef}
+                <MarkdownTextarea
                     value={formData.gmNotes}
-                    onChange={(e) => onChange("gmNotes", e.target.value)}
+                    onChange={(value) => onChange("gmNotes", value)}
                     placeholder="GM notes (not visible to players)"
                     id={`${formId}-gm-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={4}
                 />
             </Form.Group>
 
@@ -163,15 +147,13 @@ export const PlotForm: React.FC<PlotFormProps> = ({
                 <Form.Label htmlFor={`${formId}-player-notes`}>
                     Player Notes (Shared)
                 </Form.Label>
-                <Form.Control
-                    as="textarea"
-                    ref={playerNotesRef}
+                <MarkdownTextarea
                     value={formData.playerNotes}
-                    onChange={(e) => onChange("playerNotes", e.target.value)}
+                    onChange={(value) => onChange("playerNotes", value)}
                     placeholder="Information visible to players"
                     id={`${formId}-player-notes`}
-                    style={{ overflow: "hidden", resize: "none" }}
                     disabled={disabled}
+                    minRows={3}
                 />
             </Form.Group>
         </Form>
