@@ -14,9 +14,17 @@ if (import.meta.env.VITE_ENV && import.meta.env.VITE_SENTRY_DSN) {
         dsn: import.meta.env.VITE_SENTRY_DSN,
         environment: import.meta.env.VITE_ENV,
         tracesSampleRate: 0.1,
+        integrations: [
+            // send console.log, console.warn, and console.error calls as logs to Sentry
+            Sentry.consoleLoggingIntegration({
+                levels: ["log", "warn", "error"],
+            }),
+        ],
+        // Enable logs to be sent to Sentry
+        enableLogs: true,
         // Setting this option to true will send default PII data to Sentry.
         // For example, automatic IP address collection on events
-        sendDefaultPii: true,
+        sendDefaultPii: false,
     });
 }
 
