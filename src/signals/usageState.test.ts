@@ -79,7 +79,6 @@ describe("usageState", () => {
 
             // Use fake timers to ensure different timestamps
             vi.useFakeTimers();
-            const startTime = Date.now();
 
             usageManager.updateUsage(dailyUsage);
             const firstUpdate = usageStateSignal.value.lastUpdated;
@@ -94,7 +93,9 @@ describe("usageState", () => {
             expect(firstUpdate).toBeInstanceOf(Date);
             expect(secondUpdate).toBeInstanceOf(Date);
             expect(firstUpdate).not.toBe(secondUpdate);
-            expect(firstUpdate!.getTime()).toBeGreaterThanOrEqual(startTime);
+            expect(secondUpdate!.getTime()).toBeGreaterThan(
+                firstUpdate!.getTime()
+            );
         });
 
         test("should handle edge case of exactly 0% usage", () => {
