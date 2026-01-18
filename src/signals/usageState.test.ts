@@ -77,12 +77,13 @@ describe("usageState", () => {
                 percentUsed: 0.5,
             };
 
-            const beforeTime = new Date();
+            // Use fake timers to ensure different timestamps
+            vi.useFakeTimers();
+            const startTime = Date.now();
+
             usageManager.updateUsage(dailyUsage);
             const firstUpdate = usageStateSignal.value.lastUpdated;
 
-            // Wait a tiny bit to ensure different timestamp
-            vi.useFakeTimers();
             vi.advanceTimersByTime(100);
 
             usageManager.updateUsage(dailyUsage);
@@ -93,9 +94,7 @@ describe("usageState", () => {
             expect(firstUpdate).toBeInstanceOf(Date);
             expect(secondUpdate).toBeInstanceOf(Date);
             expect(firstUpdate).not.toBe(secondUpdate);
-            expect(firstUpdate!.getTime()).toBeGreaterThanOrEqual(
-                beforeTime.getTime()
-            );
+            expect(firstUpdate!.getTime()).toBeGreaterThanOrEqual(startTime);
         });
 
         test("should handle edge case of exactly 0% usage", () => {
@@ -297,7 +296,7 @@ describe("usageState", () => {
 
             expect(usageStateSignal.value.isLimitExceeded).toBe(false);
 
-            // Manually set limit exceeded (e.g., for testing or special conditions)
+            // Manually override limit exceeded flag (e.g., for testing or special conditions)
             usageManager.setLimitExceeded(true);
 
             expect(usageStateSignal.value.isLimitExceeded).toBe(true);
