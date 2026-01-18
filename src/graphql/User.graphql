@@ -12,6 +12,7 @@ query CurrentUser {
 
 query GetUsageLimits {
     currentUser {
+        id
         usageLimits {
             dailyUsage {
                 limit
