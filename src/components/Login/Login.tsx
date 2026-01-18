@@ -1,6 +1,7 @@
 import { useUserContext } from "@context";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import * as Sentry from "@sentry/react";
 import {
     createUserWithEmailAndPassword,
     getAdditionalUserInfo,
@@ -39,7 +40,10 @@ export const Login: React.FC = () => {
                 password
             );
             await handleSuccessfulLogin(userCredentials);
-        } catch (_e) {
+        } catch (e) {
+            Sentry.captureException(e, {
+                tags: { type: "auth", action: "login" },
+            });
             setError("Failed to log in. Please check your credentials.");
         }
     };
@@ -53,7 +57,10 @@ export const Login: React.FC = () => {
             );
             LogEvent("sign_up", { method: "email" });
             await handleSuccessfulLogin(userCredentials);
-        } catch (_e) {
+        } catch (e) {
+            Sentry.captureException(e, {
+                tags: { type: "auth", action: "register" },
+            });
             setError("Failed to register. Please try again.");
         }
     };
@@ -66,7 +73,10 @@ export const Login: React.FC = () => {
                 LogEvent("sign_up", { method: "google" });
             }
             await handleSuccessfulLogin(userCredentials);
-        } catch (_e) {
+        } catch (e) {
+            Sentry.captureException(e, {
+                tags: { type: "auth", action: "google-signin" },
+            });
             setError("Failed to sign in with Google. Please try again.");
         }
     };
