@@ -26,6 +26,9 @@ if (import.meta.env.VITE_ENV && import.meta.env.VITE_SENTRY_DSN) {
         // For example, automatic IP address collection on events
         sendDefaultPii: false,
     });
+    Sentry.logger.info(
+        `Sentry initialized for user in ${import.meta.env.VITE_ENV}.`
+    );
 }
 
 createRoot(document.getElementById("root")!).render(
