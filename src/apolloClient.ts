@@ -10,6 +10,7 @@ import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition, Observable } from "@apollo/client/utilities";
+import * as Sentry from "@sentry/react";
 import type { GraphQLFormattedError } from "graphql";
 import { Client, createClient } from "graphql-ws";
 import { getCurrentCampaignId } from "./contexts/Campaign.context";
@@ -97,6 +98,35 @@ const errorLink = onError(
             networkError &&
             "statusCode" in networkError &&
             networkError.statusCode === 401;
+
+        // Capture GraphQL errors to Sentry (excluding auth errors)
+        if (graphQLErrors && !hasAuthError) {
+            graphQLErrors.forEach((error) => {
+                Sentry.captureException(error, {
+                    tags: {
+                        type: "graphql",
+                        operation: operation.operationName,
+                    },
+                    extra: {
+                        query: operation.query.loc?.source.body,
+                        variables: operation.variables,
+                    },
+                });
+            });
+        }
+
+        // Capture network errors to Sentry (excluding auth errors)
+        if (networkError && !isNetworkAuthError) {
+            Sentry.captureException(networkError, {
+                tags: {
+                    type: "network",
+                    operation: operation.operationName,
+                },
+                extra: {
+                    variables: operation.variables,
+                },
+            });
+        }
 
         if (hasAuthError || isNetworkAuthError) {
             return new Observable((observer) => {

@@ -1,4 +1,5 @@
 import { useMap } from "@hooks";
+import * as Sentry from "@sentry/react";
 import React, { createContext, useCallback, useContext } from "react";
 import { Toast, ToastContainer } from "react-bootstrap";
 
@@ -49,6 +50,18 @@ export const showToast = {
         }
     },
     danger: (options: ToastOptions) => {
+        // Log danger toasts to Sentry for monitoring
+        Sentry.captureMessage(`Danger Toast: ${options.title || "Error"}`, {
+            level: "error",
+            extra: {
+                title: options.title,
+                message:
+                    typeof options.message === "string"
+                        ? options.message
+                        : "React component",
+            },
+        });
+
         if (globalToastService) {
             globalToastService.danger(options);
         } else {
