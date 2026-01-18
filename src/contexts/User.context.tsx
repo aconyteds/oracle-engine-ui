@@ -1,7 +1,7 @@
 import {
     type CurrentUserQuery,
     useCurrentUserQuery,
-    useGetUsageLimitsLazyQuery,
+    useGetUsageLimitsQuery,
 } from "@graphql";
 import { usageManager } from "@signals";
 import React, {
@@ -58,19 +58,26 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         skip: !isLoggedIn,
     });
 
-    const [getUsageLimits] = useGetUsageLimitsLazyQuery({
+    const {
+        refetch: getUsageLimits,
+        data: usageData,
+        loading: usageLoading,
+    } = useGetUsageLimitsQuery({
         fetchPolicy: "network-only",
-        onCompleted: (usageData) => {
-            const dailyUsage = usageData?.currentUser?.usageLimits?.dailyUsage;
-            if (dailyUsage && dailyUsage.limit) {
-                usageManager.updateUsage({
-                    limit: dailyUsage.limit,
-                    current: dailyUsage.current,
-                    percentUsed: dailyUsage.percentUsed,
-                });
-            }
-        },
+        skip: !isLoggedIn,
     });
+
+    useEffect(() => {
+        if (!usageData?.currentUser?.usageLimits?.dailyUsage || usageLoading)
+            return;
+        const dailyUsage = usageData.currentUser.usageLimits.dailyUsage;
+        if (!dailyUsage.limit) return;
+        usageManager.updateUsage({
+            limit: dailyUsage.limit,
+            current: dailyUsage.current,
+            percentUsed: dailyUsage.percentUsed,
+        });
+    }, [usageData, usageLoading]);
 
     const checkUser = useCallback(async () => {
         if (!user) return;
