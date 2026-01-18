@@ -1,14 +1,17 @@
 import { useThreadsContext } from "@context";
+import { useUsageState } from "@signals";
 import React, { useRef } from "react";
 import { Container } from "react-bootstrap";
 import "./ChatPanel.scss";
 import { MessageInput } from "../CreateMessage";
 import { Message, ScrollToBottomButton } from "../Messages";
+import { DailyLimitAlert } from "../UsageIndicator";
 import { ChatHistoryMenu } from "./ChatHistoryMenu";
 
 export const ChatPanel: React.FC = () => {
     const { selectedThread, messageList, isGenerating, generatingContent } =
         useThreadsContext();
+    const { isLimitExceeded } = useUsageState();
     const chatMessagesRef = useRef<HTMLDivElement>(null);
 
     return (
@@ -48,7 +51,7 @@ export const ChatPanel: React.FC = () => {
                 {selectedThread !== null && (
                     <ScrollToBottomButton containerRef={chatMessagesRef} />
                 )}
-                <MessageInput />
+                {isLimitExceeded ? <DailyLimitAlert /> : <MessageInput />}
             </div>
         </div>
     );
