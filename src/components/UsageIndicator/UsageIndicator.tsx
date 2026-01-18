@@ -34,8 +34,8 @@ const UsageText = styled.span<{
 export const UsageIndicator = () => {
     const { dailyUsage, isLimitExceeded } = useUsageState();
 
-    // Don't render if no usage data or below 60% threshold
-    // percentUsed comes as decimal (0.60 = 60%), so multiply by 100
+    // Don't render if no usage data or below 50% threshold
+    // percentUsed comes as decimal (0.50 = 50%), so multiply by 100
     const percentUsed = (dailyUsage?.percentUsed ?? 0) * 100;
     if (!dailyUsage || percentUsed < 50) {
         return null;
