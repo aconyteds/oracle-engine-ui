@@ -1,4 +1,9 @@
-import { type CurrentUserQuery, useCurrentUserQuery } from "@graphql";
+import {
+    type CurrentUserQuery,
+    useCurrentUserQuery,
+    useGetUsageLimitsLazyQuery,
+} from "@graphql";
+import { usageManager } from "@signals";
 import React, {
     createContext,
     ReactNode,
@@ -29,6 +34,7 @@ type UserContextPayload = {
     isActive: boolean;
     loading: boolean;
     showDebug: boolean;
+    refreshUsage: () => void;
 };
 
 const UserContext = createContext<UserContextPayload | undefined>(undefined);
@@ -50,6 +56,20 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     // TODO:: Handle the login properly
     const { loading, error, data } = useCurrentUserQuery({
         skip: !isLoggedIn,
+    });
+
+    const [getUsageLimits] = useGetUsageLimitsLazyQuery({
+        fetchPolicy: "network-only",
+        onCompleted: (usageData) => {
+            const dailyUsage = usageData?.currentUser?.usageLimits?.dailyUsage;
+            if (dailyUsage && dailyUsage.limit) {
+                usageManager.updateUsage({
+                    limit: dailyUsage.limit,
+                    current: dailyUsage.current,
+                    percentUsed: dailyUsage.percentUsed,
+                });
+            }
+        },
     });
 
     const checkUser = useCallback(async () => {
@@ -82,6 +102,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         };
     }, [isLoggedIn]);
 
+    // Fetch usage limits after current user data is loaded (confirms auth is working)
+    useEffect(() => {
+        if (!data?.currentUser) return;
+        getUsageLimits();
+    }, [data?.currentUser, getUsageLimits]);
+
     useEffect(() => {
         if (loading || !error) return;
         toast.danger({
@@ -95,6 +121,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         setIsLoggedIn(true);
     }, []);
 
+    const refreshUsage = useCallback(() => {
+        getUsageLimits();
+    }, [getUsageLimits]);
+
     const userContextPayload = useMemo<UserContextPayload>(
         () => ({
             isLoggedIn,
@@ -104,8 +134,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
             isActive: data?.currentUser?.isActive || false,
             loading,
             showDebug,
+            refreshUsage,
         }),
-        [isLoggedIn, handleLogin, data?.currentUser, loading]
+        [isLoggedIn, handleLogin, data?.currentUser, loading, refreshUsage]
     );
 
     return (

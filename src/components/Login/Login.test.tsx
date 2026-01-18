@@ -43,6 +43,7 @@ describe("Login Component", () => {
         isActive: false,
         loading: false,
         showDebug: false,
+        refreshUsage: vi.fn(),
     };
 
     beforeEach(() => {

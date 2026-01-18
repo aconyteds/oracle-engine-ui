@@ -26,6 +26,7 @@
         "@fortawesome/react-fontawesome": "^0.2.6",
         "@popperjs/core": "^2.11.8",
         "@preact/signals-react": "^3.6.1",
+        "@sentry/react": "^10.34.0",
         "@types/react-syntax-highlighter": "^15.5.13",
         "@uiw/react-md-editor": "^4.0.11",
         "bootstrap": "^5.3.8",

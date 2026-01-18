@@ -8,8 +8,9 @@ import {
     useValidateCampaignNameQuery,
     ValidateCampaignNameQueryVariables,
 } from "@graphql";
+import { useCampaignLimit } from "@hooks";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, OverlayTrigger, Popover } from "react-bootstrap";
 import { useToaster } from "../../contexts/Toaster.context";
 import { HoldConfirmButton } from "../Common";
 
@@ -54,6 +55,7 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
     const [debouncedName, setDebouncedName] = useState("");
     const [nameError, setNameError] = useState<string | null>(null);
 
+    const { canCreate, limitMessage } = useCampaignLimit();
     const [createCampaign, { loading: creating }] = useCreateCampaignMutation();
     const [updateCampaign, { loading: updating }] = useUpdateCampaignMutation();
     const [deleteCampaign, { loading: deleting }] = useDeleteCampaignMutation();
@@ -310,19 +312,50 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
                     </HoldConfirmButton>
                 )}
                 {!showDelete && <div />}
-
                 <div className="d-flex gap-2">
-                    <Button
-                        variant="primary"
-                        type="submit"
-                        disabled={!canSubmit}
-                        className={submitButtonClassName}
-                    >
-                        {isLoading
-                            ? "Saving..."
-                            : submitButtonText ||
-                              (isEditMode ? "Save Changes" : "Create Campaign")}
-                    </Button>
+                    {!isEditMode && !canCreate ? (
+                        <OverlayTrigger
+                            placement="top"
+                            overlay={
+                                <Popover>
+                                    <Popover.Header as="h3">
+                                        Campaign Limit Reached
+                                    </Popover.Header>
+                                    <Popover.Body>{limitMessage}</Popover.Body>
+                                </Popover>
+                            }
+                        >
+                            <div>
+                                <Button
+                                    variant="primary"
+                                    type="submit"
+                                    disabled
+                                    className={submitButtonClassName}
+                                >
+                                    {isLoading
+                                        ? "Saving..."
+                                        : submitButtonText ||
+                                          (isEditMode
+                                              ? "Save Changes"
+                                              : "Create Campaign")}
+                                </Button>
+                            </div>
+                        </OverlayTrigger>
+                    ) : (
+                        <Button
+                            variant="primary"
+                            type="submit"
+                            disabled={!canSubmit}
+                            className={submitButtonClassName}
+                        >
+                            {isLoading
+                                ? "Saving..."
+                                : submitButtonText ||
+                                  (isEditMode
+                                      ? "Save Changes"
+                                      : "Create Campaign")}
+                        </Button>
+                    )}
                 </div>
             </div>
         </Form>

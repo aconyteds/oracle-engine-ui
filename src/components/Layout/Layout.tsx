@@ -2,6 +2,7 @@ import React from "react";
 import { CampaignModal } from "../Campaign";
 import { ResizablePanel } from "../Common";
 import { HealthCheck } from "../HealthCheck";
+import { UsageIndicator } from "../UsageIndicator";
 import { ChatPanel } from "./ChatPanel";
 import { Header } from "./Header";
 import { Main } from "./Main";
@@ -21,6 +22,7 @@ export const Layout: React.FC = () => {
                             <ChatPanel />
                             <div className="chat-panel-footer">
                                 <HealthCheck />
+                                <UsageIndicator />
                             </div>
                         </div>
                     }

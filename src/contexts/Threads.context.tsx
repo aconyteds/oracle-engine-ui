@@ -65,7 +65,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
 }) => {
     const { toast } = useToaster();
     const { selectedCampaign } = useCampaignContext();
-    const { showDebug } = useUserContext();
+    const { showDebug, refreshUsage } = useUserContext();
     const apolloClient = useApolloClient();
     const [storedThreadId, setStoredThreadId] = useSessionStorage<
         string | null
@@ -89,6 +89,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
             showDebug,
             onMessageComplete: (message) => {
                 addMessage(message);
+                refreshUsage();
             },
             onError: (error) => {
                 toast.danger({

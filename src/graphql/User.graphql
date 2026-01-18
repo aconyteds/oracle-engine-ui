@@ -9,3 +9,20 @@ query CurrentUser {
         isActive
     }
 }
+
+query GetUsageLimits {
+    currentUser {
+        usageLimits {
+            dailyUsage {
+                limit
+                current
+                percentUsed
+            }
+            campaignUsage {
+                limit
+                current
+                canCreate
+            }
+        }
+    }
+}

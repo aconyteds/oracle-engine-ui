@@ -5,8 +5,9 @@ import {
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCampaignLimit } from "@hooks";
 import React from "react";
-import { Dropdown } from "react-bootstrap";
+import { Dropdown, OverlayTrigger, Popover } from "react-bootstrap";
 import "./CampaignSelector.scss";
 
 export const CampaignSelector: React.FC = () => {
@@ -17,6 +18,8 @@ export const CampaignSelector: React.FC = () => {
         openCampaignModal,
         loading,
     } = useCampaignContext();
+
+    const { canCreate, limitMessage } = useCampaignLimit();
 
     const handleSelectCampaign = (campaignId: string) => {
         selectCampaign(campaignId);
@@ -71,40 +74,77 @@ export const CampaignSelector: React.FC = () => {
                     )}
                     <Dropdown.Divider />
                     {campaignList.length > 1 && (
-                        <Dropdown.Header>Campaigns</Dropdown.Header>
-                    )}
-                    <div className="campaign-list">
-                        {campaignList.map((campaign) => {
-                            if (campaign.id === selectedCampaign?.id)
-                                return null;
-                            return (
-                                <Dropdown.Item
-                                    key={campaign.id}
-                                    onClick={() =>
-                                        handleSelectCampaign(campaign.id)
-                                    }
-                                    active={
-                                        selectedCampaign?.id === campaign.id
-                                    }
-                                >
-                                    <div className="campaign-item">
-                                        <div className="campaign-name">
-                                            {campaign.name}
-                                        </div>
-                                        {campaign.ruleset && (
-                                            <div className="campaign-ruleset">
-                                                {campaign.ruleset}
+                        <>
+                            <Dropdown.Header>Campaigns</Dropdown.Header>
+                            <div className="campaign-list">
+                                {campaignList.map((campaign) => {
+                                    if (campaign.id === selectedCampaign?.id)
+                                        return null;
+                                    return (
+                                        <Dropdown.Item
+                                            key={campaign.id}
+                                            onClick={() =>
+                                                handleSelectCampaign(
+                                                    campaign.id
+                                                )
+                                            }
+                                            active={
+                                                selectedCampaign?.id ===
+                                                campaign.id
+                                            }
+                                        >
+                                            <div className="campaign-item">
+                                                <div className="campaign-name">
+                                                    {campaign.name}
+                                                </div>
+                                                {campaign.ruleset && (
+                                                    <div className="campaign-ruleset">
+                                                        {campaign.ruleset}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
+                                        </Dropdown.Item>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
+
+                    {!canCreate ? (
+                        <OverlayTrigger
+                            placement="right"
+                            overlay={
+                                <Popover id="campaign-limit-popover">
+                                    <Popover.Header as="h3">
+                                        Campaign Limit Reached
+                                    </Popover.Header>
+                                    <Popover.Body>{limitMessage}</Popover.Body>
+                                </Popover>
+                            }
+                        >
+                            <span
+                                className="d-block"
+                                style={{ cursor: "not-allowed" }}
+                            >
+                                <Dropdown.Item
+                                    disabled
+                                    className="d-flex align-items-center"
+                                    style={{ pointerEvents: "none" }}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faPlus}
+                                        className="me-2"
+                                    />
+                                    New Campaign
                                 </Dropdown.Item>
-                            );
-                        })}
-                    </div>
-                    <Dropdown.Item onClick={handleNewCampaign}>
-                        <FontAwesomeIcon icon={faPlus} className="me-2" />
-                        New Campaign
-                    </Dropdown.Item>
+                            </span>
+                        </OverlayTrigger>
+                    ) : (
+                        <Dropdown.Item onClick={handleNewCampaign}>
+                            <FontAwesomeIcon icon={faPlus} className="me-2" />
+                            New Campaign
+                        </Dropdown.Item>
+                    )}
                 </Dropdown.Menu>
             </Dropdown>
         </div>
