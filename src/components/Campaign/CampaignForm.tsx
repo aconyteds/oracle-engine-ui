@@ -4,11 +4,11 @@ import type { RelevantCampaignDetailsFragment } from "@graphql";
 import {
     useCreateCampaignMutation,
     useDeleteCampaignMutation,
-    useGetUsageLimitsQuery,
     useUpdateCampaignMutation,
     useValidateCampaignNameQuery,
     ValidateCampaignNameQueryVariables,
 } from "@graphql";
+import { useCampaignLimit } from "@hooks";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Form, OverlayTrigger, Popover } from "react-bootstrap";
 import { useToaster } from "../../contexts/Toaster.context";
@@ -55,9 +55,7 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
     const [debouncedName, setDebouncedName] = useState("");
     const [nameError, setNameError] = useState<string | null>(null);
 
-    const { data: usageData } = useGetUsageLimitsQuery({
-        fetchPolicy: "network-only",
-    });
+    const { canCreate, limitMessage } = useCampaignLimit();
     const [createCampaign, { loading: creating }] = useCreateCampaignMutation();
     const [updateCampaign, { loading: updating }] = useUpdateCampaignMutation();
     const [deleteCampaign, { loading: deleting }] = useDeleteCampaignMutation();
@@ -70,19 +68,6 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
 
         return () => clearTimeout(timer);
     }, [formData.name]);
-
-    const { canCreate, campaignLimit } = useMemo(() => {
-        if (!usageData || !usageData.currentUser?.usageLimits?.campaignUsage)
-            return {
-                canCreate: false,
-                campaignLimit: 0,
-            };
-        const campaignUsage = usageData.currentUser.usageLimits.campaignUsage;
-        return {
-            canCreate: campaignUsage.canCreate ?? false,
-            campaignLimit: campaignUsage.limit ?? 0,
-        };
-    }, [usageData]);
 
     // Build validation input, skip validation if name is empty or unchanged
     const validateNameInput = useMemo<
@@ -336,16 +321,7 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
                                     <Popover.Header as="h3">
                                         Campaign Limit Reached
                                     </Popover.Header>
-                                    <Popover.Body>
-                                        You've reached your limit of{" "}
-                                        {campaignLimit}{" "}
-                                        {campaignLimit === 1
-                                            ? "campaign"
-                                            : "campaigns"}
-                                        . To create more, upgrade your
-                                        subscription or delete an existing
-                                        campaign.
-                                    </Popover.Body>
+                                    <Popover.Body>{limitMessage}</Popover.Body>
                                 </Popover>
                             }
                         >

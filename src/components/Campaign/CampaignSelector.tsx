@@ -5,10 +5,10 @@ import {
     faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useMemo } from "react";
+import { useCampaignLimit } from "@hooks";
+import React from "react";
 import { Dropdown, OverlayTrigger, Popover } from "react-bootstrap";
 import "./CampaignSelector.scss";
-import { useGetUsageLimitsQuery } from "../../graphql/generated";
 
 export const CampaignSelector: React.FC = () => {
     const {
@@ -19,22 +19,7 @@ export const CampaignSelector: React.FC = () => {
         loading,
     } = useCampaignContext();
 
-    const { data: usageData } = useGetUsageLimitsQuery({
-        fetchPolicy: "network-only",
-    });
-
-    const { canCreate, campaignLimit } = useMemo(() => {
-        if (!usageData || !usageData.currentUser?.usageLimits?.campaignUsage)
-            return {
-                canCreate: false,
-                campaignLimit: 0,
-            };
-        const campaignUsage = usageData.currentUser.usageLimits.campaignUsage;
-        return {
-            canCreate: campaignUsage.canCreate ?? false,
-            campaignLimit: campaignUsage.limit ?? 0,
-        };
-    }, [usageData]);
+    const { canCreate, limitMessage } = useCampaignLimit();
 
     const handleSelectCampaign = (campaignId: string) => {
         selectCampaign(campaignId);
@@ -133,16 +118,7 @@ export const CampaignSelector: React.FC = () => {
                                     <Popover.Header as="h3">
                                         Campaign Limit Reached
                                     </Popover.Header>
-                                    <Popover.Body>
-                                        You've reached your limit of{" "}
-                                        {campaignLimit}{" "}
-                                        {campaignLimit === 1
-                                            ? "campaign"
-                                            : "campaigns"}
-                                        . To create more, upgrade your
-                                        subscription or delete an existing
-                                        campaign.
-                                    </Popover.Body>
+                                    <Popover.Body>{limitMessage}</Popover.Body>
                                 </Popover>
                             }
                         >
