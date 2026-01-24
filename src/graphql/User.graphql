@@ -15,8 +15,6 @@ query GetUsageLimits {
         id
         usageLimits {
             dailyUsage {
-                limit
-                current
                 percentUsed
             }
             campaignUsage {

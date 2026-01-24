@@ -2,8 +2,6 @@ import { signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 
 export interface DailyUsage {
-    limit: number;
-    current: number;
     percentUsed: number;
 }
 

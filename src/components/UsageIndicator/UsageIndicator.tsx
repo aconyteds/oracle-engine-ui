@@ -41,7 +41,6 @@ export const UsageIndicator = () => {
         return null;
     }
 
-    const remaining = dailyUsage.limit - dailyUsage.current;
     const percentRemaining = Math.round(100 - percentUsed);
 
     // Determine severity based on usage percentage
@@ -63,12 +62,12 @@ export const UsageIndicator = () => {
             <Popover.Header as="h3">Daily Usage</Popover.Header>
             <Popover.Body>
                 <p>
-                    <strong>{remaining}</strong> message
-                    {remaining === 1 ? "" : "s"} remaining today
-                    <br />({dailyUsage.current} of {dailyUsage.limit} used)
+                    <strong>{percentRemaining}%</strong> of your daily usage
+                    remaining
                 </p>
                 <p className="text-muted small mb-0">
-                    Need more? Consider upgrading your subscription.
+                    Resets at midnight UTC. Need more? Consider upgrading your
+                    subscription.
                 </p>
             </Popover.Body>
         </Popover>
