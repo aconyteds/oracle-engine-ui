@@ -1,4 +1,7 @@
-import { faChartLine } from "@fortawesome/free-solid-svg-icons";
+import {
+    faChartLine,
+    faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useUsageState } from "@signals";
 import { Col, OverlayTrigger, Popover, Row } from "react-bootstrap";
@@ -41,8 +44,10 @@ export const UsageIndicator = () => {
         return null;
     }
 
-    const remaining = dailyUsage.limit - dailyUsage.current;
-    const percentRemaining = Math.round(100 - percentUsed);
+    const percentRemaining = Math.min(
+        100,
+        Math.max(0, Math.round(100 - percentUsed))
+    );
 
     // Determine severity based on usage percentage
     let severity: TextSeverity = "normal";
@@ -63,12 +68,12 @@ export const UsageIndicator = () => {
             <Popover.Header as="h3">Daily Usage</Popover.Header>
             <Popover.Body>
                 <p>
-                    <strong>{remaining}</strong> message
-                    {remaining === 1 ? "" : "s"} remaining today
-                    <br />({dailyUsage.current} of {dailyUsage.limit} used)
+                    <strong>{percentRemaining}%</strong> of your daily usage
+                    remaining
                 </p>
                 <p className="text-muted small mb-0">
-                    Need more? Consider upgrading your subscription.
+                    Resets at midnight UTC. Need more? Consider upgrading your
+                    subscription.
                 </p>
             </Popover.Body>
         </Popover>
@@ -85,7 +90,14 @@ export const UsageIndicator = () => {
                 style={{ fontSize: "0.8em" }}
             >
                 <Col xs="auto" className="p-0 me-1">
-                    <FontAwesomeIcon icon={faChartLine} />
+                    <FontAwesomeIcon
+                        className={`text-${severity}`}
+                        icon={
+                            percentRemaining === 0
+                                ? faTriangleExclamation
+                                : faChartLine
+                        }
+                    />
                 </Col>
                 <Col xs="auto" className="p-0">
                     <UsageText $severity={severity}>

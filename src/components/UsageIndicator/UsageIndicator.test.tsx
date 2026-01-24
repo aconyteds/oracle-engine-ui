@@ -33,8 +33,6 @@ describe("UsageIndicator", () => {
             const { useUsageState } = await import("@signals");
             vi.mocked(useUsageState).mockReturnValue({
                 dailyUsage: {
-                    limit: 100,
-                    current: 49,
                     percentUsed: 0.49,
                 },
                 isLimitExceeded: false,
@@ -50,8 +48,6 @@ describe("UsageIndicator", () => {
             const { useUsageState } = await import("@signals");
             vi.mocked(useUsageState).mockReturnValue({
                 dailyUsage: {
-                    limit: 100,
-                    current: 50,
                     percentUsed: 0.5,
                 },
                 isLimitExceeded: false,
@@ -67,8 +63,6 @@ describe("UsageIndicator", () => {
             const { useUsageState } = await import("@signals");
             vi.mocked(useUsageState).mockReturnValue({
                 dailyUsage: {
-                    limit: 100,
-                    current: 60,
                     percentUsed: 0.6,
                 },
                 isLimitExceeded: false,
@@ -83,16 +77,16 @@ describe("UsageIndicator", () => {
 
     describe("remaining percentage display", () => {
         test.each([
-            { current: 50, limit: 100, percentUsed: 0.5, expected: "50%" },
-            { current: 75, limit: 100, percentUsed: 0.75, expected: "25%" },
-            { current: 90, limit: 100, percentUsed: 0.9, expected: "10%" },
-            { current: 100, limit: 100, percentUsed: 1.0, expected: "0%" },
+            { percentUsed: 0.5, expected: "50%" },
+            { percentUsed: 0.75, expected: "25%" },
+            { percentUsed: 0.9, expected: "10%" },
+            { percentUsed: 1.0, expected: "0%" },
         ])(
-            "should display $expected remaining when $current of $limit used",
-            async ({ limit, current, percentUsed, expected }) => {
+            "should display $expected remaining when percentUsed is $percentUsed",
+            async ({ percentUsed, expected }) => {
                 const { useUsageState } = await import("@signals");
                 vi.mocked(useUsageState).mockReturnValue({
-                    dailyUsage: { limit, current, percentUsed },
+                    dailyUsage: { percentUsed },
                     isLimitExceeded: percentUsed >= 1,
                     lastUpdated: new Date(),
                 });
@@ -164,8 +158,6 @@ describe("UsageIndicator", () => {
                 const { useUsageState } = await import("@signals");
                 vi.mocked(useUsageState).mockReturnValue({
                     dailyUsage: {
-                        limit: 100,
-                        current: Math.round(percentUsed * 100),
                         percentUsed,
                     },
                     isLimitExceeded: percentUsed >= 1,
@@ -188,8 +180,6 @@ describe("UsageIndicator", () => {
             const { useUsageState } = await import("@signals");
             vi.mocked(useUsageState).mockReturnValue({
                 dailyUsage: {
-                    limit: 100,
-                    current: 85,
                     percentUsed: 0.85, // Would normally be warning
                 },
                 isLimitExceeded: true, // But limit exceeded forces danger
@@ -208,8 +198,6 @@ describe("UsageIndicator", () => {
             const { useUsageState } = await import("@signals");
             vi.mocked(useUsageState).mockReturnValue({
                 dailyUsage: {
-                    limit: 100,
-                    current: 60,
                     percentUsed: 0.6,
                 },
                 isLimitExceeded: false,
@@ -228,8 +216,6 @@ describe("UsageIndicator", () => {
             const { useUsageState } = await import("@signals");
             vi.mocked(useUsageState).mockReturnValue({
                 dailyUsage: {
-                    limit: 100,
-                    current: 75,
                     percentUsed: 0.75,
                 },
                 isLimitExceeded: false,

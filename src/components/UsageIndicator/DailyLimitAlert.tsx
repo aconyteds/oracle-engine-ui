@@ -31,8 +31,8 @@ export function DailyLimitAlert() {
     return (
         <Alert variant="danger" className="m-3">
             <Alert.Heading>Daily Limit Reached</Alert.Heading>
-            <p className="mb-0">
-                You've reached your daily message limit. Your limit resets in{" "}
+            <p className="mb-0 font-monospace">
+                You've reached your daily usage limit. Your limit resets in{" "}
                 {timeTillReset} (midnight UTC). If you need more usage, please
                 consider upgrading your subscription.
             </p>

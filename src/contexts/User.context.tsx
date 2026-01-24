@@ -71,10 +71,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         if (!usageData?.currentUser?.usageLimits?.dailyUsage || usageLoading)
             return;
         const dailyUsage = usageData.currentUser.usageLimits.dailyUsage;
-        if (!dailyUsage.limit) return;
+        if (dailyUsage.percentUsed == null) return;
         usageManager.updateUsage({
-            limit: dailyUsage.limit,
-            current: dailyUsage.current,
             percentUsed: dailyUsage.percentUsed,
         });
     }, [usageData, usageLoading]);

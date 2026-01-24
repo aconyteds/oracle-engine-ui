@@ -22,8 +22,6 @@ describe("usageState", () => {
     describe("usageManager.updateUsage", () => {
         test("should update usage with provided daily usage data", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 50,
                 percentUsed: 0.5,
             };
 
@@ -36,8 +34,6 @@ describe("usageState", () => {
 
         test("should set isLimitExceeded to true when percentUsed is 100% (1.0)", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 100,
                 percentUsed: 1.0,
             };
 
@@ -48,8 +44,6 @@ describe("usageState", () => {
 
         test("should set isLimitExceeded to true when percentUsed exceeds 100%", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 120,
                 percentUsed: 1.2,
             };
 
@@ -60,8 +54,6 @@ describe("usageState", () => {
 
         test("should set isLimitExceeded to false when percentUsed is below 100%", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 99,
                 percentUsed: 0.99,
             };
 
@@ -72,8 +64,6 @@ describe("usageState", () => {
 
         test("should update lastUpdated timestamp on each call", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 50,
                 percentUsed: 0.5,
             };
 
@@ -100,8 +90,6 @@ describe("usageState", () => {
 
         test("should handle edge case of exactly 0% usage", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 0,
                 percentUsed: 0,
             };
 
@@ -131,8 +119,6 @@ describe("usageState", () => {
 
         test("should preserve existing dailyUsage and lastUpdated values", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 50,
                 percentUsed: 0.5,
             };
 
@@ -158,8 +144,6 @@ describe("usageState", () => {
     describe("usageManager.reset", () => {
         test("should reset all state to initial values", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 50,
                 percentUsed: 0.5,
             };
 
@@ -181,8 +165,6 @@ describe("usageState", () => {
 
         test("should be idempotent when called multiple times", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 50,
                 percentUsed: 0.5,
             };
 
@@ -207,8 +189,6 @@ describe("usageState", () => {
     describe("useUsageState hook", () => {
         test("should return current usage state", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 50,
                 percentUsed: 0.5,
             };
 
@@ -239,8 +219,6 @@ describe("usageState", () => {
 
         test("should reflect reset state", () => {
             const dailyUsage: DailyUsage = {
-                limit: 100,
-                current: 50,
                 percentUsed: 0.5,
             };
 
@@ -259,24 +237,20 @@ describe("usageState", () => {
         test("should handle typical usage flow: update -> update -> reset", () => {
             // Initial update
             const usage1: DailyUsage = {
-                limit: 100,
-                current: 25,
                 percentUsed: 0.25,
             };
             usageManager.updateUsage(usage1);
 
-            expect(usageStateSignal.value.dailyUsage?.current).toBe(25);
+            expect(usageStateSignal.value.dailyUsage?.percentUsed).toBe(0.25);
             expect(usageStateSignal.value.isLimitExceeded).toBe(false);
 
             // Second update with higher usage
             const usage2: DailyUsage = {
-                limit: 100,
-                current: 75,
                 percentUsed: 0.75,
             };
             usageManager.updateUsage(usage2);
 
-            expect(usageStateSignal.value.dailyUsage?.current).toBe(75);
+            expect(usageStateSignal.value.dailyUsage?.percentUsed).toBe(0.75);
             expect(usageStateSignal.value.isLimitExceeded).toBe(false);
 
             // Reset
@@ -289,8 +263,6 @@ describe("usageState", () => {
         test("should handle manual limit override after automatic calculation", () => {
             // Update with usage below limit
             const usage: DailyUsage = {
-                limit: 100,
-                current: 50,
                 percentUsed: 0.5,
             };
             usageManager.updateUsage(usage);
@@ -307,8 +279,6 @@ describe("usageState", () => {
         test("should handle reaching and then resetting limit", () => {
             // Reach limit
             const usageAtLimit: DailyUsage = {
-                limit: 100,
-                current: 100,
                 percentUsed: 1.0,
             };
             usageManager.updateUsage(usageAtLimit);

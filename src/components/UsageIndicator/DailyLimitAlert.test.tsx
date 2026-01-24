@@ -48,7 +48,7 @@ describe("DailyLimitAlert", () => {
             render(<DailyLimitAlert />);
 
             expect(
-                screen.getByText(/You've reached your daily message limit/)
+                screen.getByText(/You've reached your daily usage limit/)
             ).toBeInTheDocument();
         });
 
