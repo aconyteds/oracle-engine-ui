@@ -25,3 +25,9 @@ query GetUsageLimits {
         }
     }
 }
+
+mutation SendAppFeedback($input: SendFeedbackInput!) {
+    sendFeedback(input: $input) {
+        success
+    }
+}

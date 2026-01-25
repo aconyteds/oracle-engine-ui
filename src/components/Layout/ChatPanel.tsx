@@ -1,8 +1,10 @@
 import { useThreadsContext } from "@context";
 import { useUsageState } from "@signals";
 import React, { useRef } from "react";
-import { Container } from "react-bootstrap";
+import { Alert, Container } from "react-bootstrap";
 import "./ChatPanel.scss";
+import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MessageInput } from "../CreateMessage";
 import { Message, ScrollToBottomButton } from "../Messages";
 import { DailyLimitAlert } from "../UsageIndicator";
@@ -31,6 +33,14 @@ export const ChatPanel: React.FC = () => {
                         <p className="lead text-body-secondary">
                             Start a new conversation by sending a message below
                         </p>
+                        <Alert variant="info" className="mt-4">
+                            <FontAwesomeIcon
+                                icon={faCircleExclamation}
+                                className="me-2"
+                            />
+                            AI responses may contain errors. Always verify
+                            important details.
+                        </Alert>
                     </Container>
                 ) : (
                     <Container className="messages-container">

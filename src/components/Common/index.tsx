@@ -1,3 +1,4 @@
+export * from "./AppFeedbackModal";
 export * from "./CodeBlock";
 export * from "./DraggableModal";
 export * from "./ExpandingTextArea";
