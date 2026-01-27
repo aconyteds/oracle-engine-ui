@@ -411,7 +411,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                 >
                     <h5 className="modal-title">{title}</h5>
                     <div className="d-flex gap-2 align-items-center">
-                        {headerButtons?.map((btn, index) => {
+                        {headerButtons?.map((btn) => {
                             if (isMinimized && !btn.showMinimized) return null;
                             return (
                                 <button
