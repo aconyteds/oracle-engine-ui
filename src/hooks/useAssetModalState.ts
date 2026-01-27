@@ -1,4 +1,5 @@
 import {
+    CampaignAssetVersionFragment,
     FullCampaignAssetDetailsFragment,
     RecordType,
     useGetCampaignAssetQuery,
@@ -50,6 +51,8 @@ export interface UseAssetModalStateReturn {
     handleSaveComplete: () => Promise<void>;
     /** Refetch data from server */
     refetch: () => Promise<void>;
+    /** Previous versions of the asset for version history */
+    versionHistory: Array<CampaignAssetVersionFragment>;
 }
 
 /**
@@ -248,5 +251,6 @@ export function useAssetModalState(
         handleReload,
         handleSaveComplete,
         refetch,
+        versionHistory: serverData?.versions || [],
     };
 }

@@ -51,7 +51,7 @@ export const showToast = {
     },
     danger: (options: ToastOptions) => {
         // Log danger toasts to Sentry for monitoring
-        Sentry.captureMessage(`Danger Toast: ${options.title || "Error"}`, {
+        Sentry.logger.error(`Danger Toast: ${options.title || "Error"}`, {
             level: "error",
             extra: {
                 title: options.title,

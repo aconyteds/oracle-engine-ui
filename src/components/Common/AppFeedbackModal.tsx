@@ -2,6 +2,7 @@ import { useSendAppFeedbackMutation } from "@graphql";
 import React, { useCallback, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { useToaster } from "@/contexts";
+import { LogEvent } from "../firebase";
 
 export type AppFeedbackModalProps = {
     show: boolean;
@@ -18,6 +19,7 @@ export const AppFeedbackModal: React.FC<AppFeedbackModalProps> = ({
 
     const handleSubmit = useCallback(async () => {
         try {
+            LogEvent("app_feedback");
             await sendAppFeedback({
                 variables: {
                     input: {

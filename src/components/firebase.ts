@@ -29,8 +29,12 @@ type AvailableEvents =
     | "create_asset"
     | "edit_asset"
     | "delete_asset"
+    | "revert_asset_version"
     | "human_feedback"
-    | "sign_up";
+    | "sign_up"
+    | "app_feedback"
+    | "send_message"
+    | "create_thread";
 
 export function LogEvent(
     eventName: AvailableEvents,

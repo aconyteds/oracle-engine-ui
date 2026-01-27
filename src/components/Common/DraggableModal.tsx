@@ -1,3 +1,4 @@
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
     faWindowMaximize,
     faWindowMinimize,
@@ -19,6 +20,15 @@ const MIN_VISIBLE_HEADER_PX = 50;
 const MIN_WIDTH_PX = 400;
 const MIN_HEIGHT_PX = 200;
 
+export type HeaderButtonConfig = {
+    activeIcon: IconDefinition;
+    inactiveIcon: IconDefinition;
+    isActive: boolean;
+    onToggle: () => void;
+    title: string;
+    showMinimized?: boolean; // default false
+};
+
 export type DraggableModalProps = {
     onClose: () => void;
     onMinimize?: () => void;
@@ -32,6 +42,7 @@ export type DraggableModalProps = {
     onInteract?: () => void;
     isMinimized?: boolean;
     onMaximize?: () => void;
+    headerButtons?: HeaderButtonConfig[];
 };
 
 export const DraggableModal: React.FC<DraggableModalProps> = ({
@@ -47,6 +58,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     onInteract,
     isMinimized = false,
     onMaximize,
+    headerButtons,
 }) => {
     const [position, setPosition] = useState({ x: initialX, y: initialY });
     const [size, setSize] = useState({ width: 750, height: 0 }); // height 0 = auto
@@ -357,6 +369,8 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         return `${Math.max(400, containerHeight - 80)}px`;
     }, [containerHeight]);
 
+    const buttonClass = "btn btn-sm btn-link text-secondary p-0";
+
     return (
         <div
             ref={modalRef}
@@ -396,10 +410,31 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                 >
                     <h5 className="modal-title">{title}</h5>
                     <div className="d-flex gap-2 align-items-center">
+                        {headerButtons?.map((btn, index) => {
+                            if (isMinimized && !btn.showMinimized) return null;
+                            return (
+                                <button
+                                    key={index}
+                                    type="button"
+                                    className={buttonClass}
+                                    onClick={btn.onToggle}
+                                    aria-label={btn.title}
+                                    title={btn.title}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={
+                                            btn.isActive
+                                                ? btn.activeIcon
+                                                : btn.inactiveIcon
+                                        }
+                                    />
+                                </button>
+                            );
+                        })}
                         {onMinimize && !isMinimized && (
                             <button
                                 type="button"
-                                className="btn btn-sm btn-link text-secondary p-0"
+                                className={buttonClass}
                                 onClick={handleMinimize}
                                 aria-label="Minimize"
                                 title="Minimize"
@@ -410,7 +445,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                         {onMaximize && isMinimized && (
                             <button
                                 type="button"
-                                className="btn btn-sm btn-link text-secondary p-0"
+                                className={buttonClass}
                                 onClick={onMaximize}
                                 aria-label="Maximize"
                                 title="Maximize"

@@ -49,6 +49,12 @@ fragment CampaignAssetSummary on CampaignAsset {
     updatedAt
 }
 
+fragment CampaignAssetVersion on CampaignAssetVersion {
+    id
+    name
+    createdAt
+}
+
 query ListCampaignAssets($input: ListCampaignAssetsInput!) {
     listCampaignAssets(input: $input) {
         assets {
@@ -61,6 +67,9 @@ query GetCampaignAsset($input: GetCampaignAssetInput!) {
     getCampaignAsset(input: $input) {
         asset {
             ...FullCampaignAssetDetails
+            versions {
+                ...CampaignAssetVersion
+            }
         }
     }
 }
@@ -105,6 +114,15 @@ query SearchCampaignAssets($input: SearchCampaignAssetsInput!) {
                 ...CampaignAssetSummary
             }
             score
+        }
+    }
+}
+
+mutation RevertToAssetVersion($input: RevertCampaignAssetVersionInput!) {
+    revertCampaignAssetVersion(input: $input) {
+        asset {
+            id
+            updatedAt
         }
     }
 }
