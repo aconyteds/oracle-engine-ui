@@ -1,4 +1,4 @@
-import { faSync } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faEye, faSync } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     CreateCampaignAssetInput,
@@ -6,6 +6,7 @@ import {
     UpdateCampaignAssetInput,
     useCreateCampaignAssetMutation,
     useDeleteCampaignAssetMutation,
+    useRevertToAssetVersionMutation,
     useUpdateCampaignAssetMutation,
 } from "@graphql";
 import { useAssetModalState } from "@hooks";
@@ -24,7 +25,11 @@ import {
     Spinner,
 } from "react-bootstrap";
 import { useCampaignContext, useToaster } from "../../contexts";
-import { DraggableModal, HoldConfirmButton } from "../Common";
+import {
+    DraggableModal,
+    HeaderButtonConfig,
+    HoldConfirmButton,
+} from "../Common";
 import { LogEvent } from "../firebase";
 import { LocationForm, NPCForm, PlotForm } from "./forms";
 import { ASSET_TYPE_ICONS } from "./models";
@@ -35,6 +40,7 @@ import type {
     NPCFormData,
     PlotFormData,
 } from "./types";
+import { VersionHistoryDropdown } from "./VersionHistoryDropdown";
 import { LocationView, NPCView, PlotView } from "./views";
 export interface AssetModalProps {
     modalState: AssetModalState;
@@ -89,6 +95,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         setFormField,
         handleReload,
         handleSaveComplete,
+        versionHistory,
     } = useAssetModalState({
         assetId,
         assetType,
@@ -100,6 +107,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     const [createAsset] = useCreateCampaignAssetMutation();
     const [updateAsset] = useUpdateCampaignAssetMutation();
     const [deleteAsset] = useDeleteCampaignAssetMutation();
+    const [revertToVersion, { loading: isReverting }] =
+        useRevertToAssetVersionMutation();
 
     const handleClose = () => {
         assetModalManager.closeModal(modalId);
@@ -306,6 +315,29 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         }
     };
 
+    const handleRevert = async (versionId: string) => {
+        if (!assetId) return;
+        try {
+            await revertToVersion({
+                variables: { input: { assetId, versionId } },
+                awaitRefetchQueries: true,
+                refetchQueries: ["ListCampaignAssets"],
+            });
+            toast.success({
+                message: "Reverted to previous version successfully",
+            });
+            await handleReload();
+            setMode("view"); // Return to view mode after revert
+            LogEvent("revert_asset_version", {
+                assetType: assetType,
+            });
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : "Unknown error";
+            toast.danger({ message: `Failed to revert: ${errorMessage}` });
+        }
+    };
+
     // Generic onChange handler that works with all form types
     const handleFormChange = useCallback(
         <T extends AssetFormData, K extends keyof T>(field: K, value: T[K]) => {
@@ -379,12 +411,31 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         }
     };
 
+    const headerButtons: HeaderButtonConfig[] = assetId
+        ? [
+              {
+                  id: "edit-button",
+                  activeIcon: faEye, // Show eye when in edit mode (click to view)
+                  inactiveIcon: faEdit, // Show edit when in view mode (click to edit)
+                  isActive: mode === "edit",
+                  onToggle: changeMode,
+                  title: mode === "view" ? "Edit" : "View",
+                  showMinimized: false,
+              },
+          ]
+        : [];
+
     const footer = (
         <Row className="d-flex justify-content-between w-100 gap-2">
             <Col xs="auto" className="d-flex gap-2 align-items-center">
-                <Button variant="secondary" onClick={changeMode}>
-                    {mode === "view" ? "Edit" : "View"}
-                </Button>
+                {assetId && (
+                    <VersionHistoryDropdown
+                        versions={versionHistory}
+                        onRevert={handleRevert}
+                        disabled={isResetting}
+                        isReverting={isReverting}
+                    />
+                )}
                 {isStale && isDirty && (
                     <OverlayTrigger
                         placement="top"
@@ -515,6 +566,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             footer={footer}
             zIndex={zIndex}
             onInteract={bringToFront}
+            headerButtons={headerButtons}
         >
             {renderContent()}
         </DraggableModal>

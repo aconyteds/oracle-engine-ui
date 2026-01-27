@@ -1,6 +1,11 @@
+import { faEdit, faEye } from "@fortawesome/free-solid-svg-icons";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "../../test-utils";
-import { DraggableModal, type DraggableModalProps } from "./DraggableModal";
+import {
+    DraggableModal,
+    type DraggableModalProps,
+    type HeaderButtonConfig,
+} from "./DraggableModal";
 
 // Extend Element interface for test purposes
 interface ElementWithCallback extends Element {
@@ -183,6 +188,191 @@ describe("DraggableModal Component", () => {
 
         expect(resizeHandle).toBeInTheDocument();
         expect(mockOnInteract).toHaveBeenCalled();
+    });
+
+    describe("Header Buttons", () => {
+        const mockToggle = vi.fn();
+
+        const headerButtons: HeaderButtonConfig[] = [
+            {
+                id: "edit-button",
+                activeIcon: faEye,
+                inactiveIcon: faEdit,
+                isActive: false,
+                onToggle: mockToggle,
+                title: "Edit",
+                showMinimized: false,
+            },
+        ];
+
+        beforeEach(() => {
+            mockToggle.mockClear();
+        });
+
+        test("should render header buttons when provided", () => {
+            render(
+                <DraggableModal
+                    {...defaultProps}
+                    headerButtons={headerButtons}
+                />
+            );
+
+            const editButton = screen.getByLabelText("Edit");
+            expect(editButton).toBeInTheDocument();
+        });
+
+        test("should call onToggle when header button is clicked", () => {
+            render(
+                <DraggableModal
+                    {...defaultProps}
+                    headerButtons={headerButtons}
+                />
+            );
+
+            const editButton = screen.getByLabelText("Edit");
+            fireEvent.click(editButton);
+
+            expect(mockToggle).toHaveBeenCalledTimes(1);
+        });
+
+        test("should render inactive icon when isActive is false", () => {
+            render(
+                <DraggableModal
+                    {...defaultProps}
+                    headerButtons={headerButtons}
+                />
+            );
+
+            // faEdit icon should be rendered (inactive state)
+            const editButton = screen.getByLabelText("Edit");
+            const icon = editButton.querySelector("svg");
+            expect(icon).toHaveAttribute("data-icon", "pen-to-square");
+        });
+
+        test("should render active icon when isActive is true", () => {
+            const activeButtons: HeaderButtonConfig[] = [
+                {
+                    ...headerButtons[0],
+                    isActive: true,
+                    title: "View",
+                },
+            ];
+
+            render(
+                <DraggableModal
+                    {...defaultProps}
+                    headerButtons={activeButtons}
+                />
+            );
+
+            // faEye icon should be rendered (active state)
+            const viewButton = screen.getByLabelText("View");
+            const icon = viewButton.querySelector("svg");
+            expect(icon).toHaveAttribute("data-icon", "eye");
+        });
+
+        test("should hide header button when minimized and showMinimized is false", () => {
+            const mockOnMinimize = vi.fn();
+            const mockOnMaximize = vi.fn();
+
+            render(
+                <DraggableModal
+                    {...defaultProps}
+                    headerButtons={headerButtons}
+                    onMinimize={mockOnMinimize}
+                    onMaximize={mockOnMaximize}
+                    isMinimized={true}
+                />
+            );
+
+            expect(screen.queryByLabelText("Edit")).not.toBeInTheDocument();
+        });
+
+        test("should show header button when minimized and showMinimized is true", () => {
+            const mockOnMinimize = vi.fn();
+            const mockOnMaximize = vi.fn();
+
+            const buttonsWithShowMinimized: HeaderButtonConfig[] = [
+                {
+                    ...headerButtons[0],
+                    showMinimized: true,
+                },
+            ];
+
+            render(
+                <DraggableModal
+                    {...defaultProps}
+                    headerButtons={buttonsWithShowMinimized}
+                    onMinimize={mockOnMinimize}
+                    onMaximize={mockOnMaximize}
+                    isMinimized={true}
+                />
+            );
+
+            expect(screen.getByLabelText("Edit")).toBeInTheDocument();
+        });
+
+        test("should render multiple header buttons", () => {
+            const multipleButtons: HeaderButtonConfig[] = [
+                {
+                    id: "edit-button",
+                    activeIcon: faEye,
+                    inactiveIcon: faEdit,
+                    isActive: false,
+                    onToggle: vi.fn(),
+                    title: "Edit",
+                },
+                {
+                    id: "preview-button",
+                    activeIcon: faEdit,
+                    inactiveIcon: faEye,
+                    isActive: true,
+                    onToggle: vi.fn(),
+                    title: "Preview",
+                },
+            ];
+
+            render(
+                <DraggableModal
+                    {...defaultProps}
+                    headerButtons={multipleButtons}
+                />
+            );
+
+            expect(screen.getByLabelText("Edit")).toBeInTheDocument();
+            expect(screen.getByLabelText("Preview")).toBeInTheDocument();
+        });
+
+        test("should render header buttons before minimize button", () => {
+            const mockOnMinimize = vi.fn();
+
+            render(
+                <DraggableModal
+                    {...defaultProps}
+                    headerButtons={headerButtons}
+                    onMinimize={mockOnMinimize}
+                />
+            );
+
+            const header = screen.getByTestId("draggable-modal-header");
+            const buttons = header.querySelectorAll("button");
+
+            // First button should be the header button (Edit)
+            expect(buttons[0]).toHaveAttribute("aria-label", "Edit");
+            // Second button should be minimize
+            expect(buttons[1]).toHaveAttribute("aria-label", "Minimize");
+        });
+
+        test("should not render header buttons when not provided", () => {
+            render(<DraggableModal {...defaultProps} />);
+
+            // Only close button should be present
+            const header = screen.getByTestId("draggable-modal-header");
+            const buttons = header.querySelectorAll("button");
+
+            expect(buttons).toHaveLength(1); // Only close button
+            expect(buttons[0]).toHaveClass("btn-close");
+        });
     });
 
     describe("Container Resize Behavior", () => {

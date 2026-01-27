@@ -1,4 +1,5 @@
 import {
+    CampaignAssetVersionFragment,
     FullCampaignAssetDetailsFragment,
     RecordType,
     useGetCampaignAssetQuery,
@@ -50,6 +51,8 @@ export interface UseAssetModalStateReturn {
     handleSaveComplete: () => Promise<void>;
     /** Refetch data from server */
     refetch: () => Promise<void>;
+    /** Previous versions of the asset for version history */
+    versionHistory: Array<CampaignAssetVersionFragment>;
 }
 
 /**
@@ -202,6 +205,11 @@ export function useAssetModalState(
                 // Force update form data from server
                 const newFormData = assetToFormData(asset, assetType);
                 setFormData(newFormData);
+
+                // Sync modal name with server data
+                if (asset.name) {
+                    assetModalManager.updateModalName(modalId, asset.name);
+                }
             }
 
             // Reset edit tracking since we've synced with server
@@ -248,5 +256,6 @@ export function useAssetModalState(
         handleReload,
         handleSaveComplete,
         refetch,
+        versionHistory: serverData?.versions || [],
     };
 }

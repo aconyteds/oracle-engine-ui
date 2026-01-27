@@ -8,3 +8,4 @@ export {
     validateFormData,
 } from "./forms";
 export * from "./types";
+export * from "./VersionHistoryDropdown";
