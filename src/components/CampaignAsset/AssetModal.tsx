@@ -320,6 +320,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
         try {
             await revertToVersion({
                 variables: { input: { assetId, versionId } },
+                awaitRefetchQueries: true,
+                refetchQueries: ["ListCampaignAssets"],
             });
             toast.success({
                 message: "Reverted to previous version successfully",
@@ -327,7 +329,6 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
             await handleReload();
             setMode("view"); // Return to view mode after revert
             LogEvent("revert_asset_version", {
-                campaignId: selectedCampaign?.id || "",
                 assetType: assetType,
             });
         } catch (error) {
@@ -413,6 +414,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ modalState }) => {
     const headerButtons: HeaderButtonConfig[] = assetId
         ? [
               {
+                  id: "edit-button",
                   activeIcon: faEye, // Show eye when in edit mode (click to view)
                   inactiveIcon: faEdit, // Show edit when in view mode (click to edit)
                   isActive: mode === "edit",

@@ -205,6 +205,11 @@ export function useAssetModalState(
                 // Force update form data from server
                 const newFormData = assetToFormData(asset, assetType);
                 setFormData(newFormData);
+
+                // Sync modal name with server data
+                if (asset.name) {
+                    assetModalManager.updateModalName(modalId, asset.name);
+                }
             }
 
             // Reset edit tracking since we've synced with server

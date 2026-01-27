@@ -21,6 +21,7 @@ const MIN_WIDTH_PX = 400;
 const MIN_HEIGHT_PX = 200;
 
 export type HeaderButtonConfig = {
+    id: string;
     activeIcon: IconDefinition;
     inactiveIcon: IconDefinition;
     isActive: boolean;
@@ -414,7 +415,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                             if (isMinimized && !btn.showMinimized) return null;
                             return (
                                 <button
-                                    key={index}
+                                    key={btn.id}
                                     type="button"
                                     className={buttonClass}
                                     onClick={btn.onToggle}

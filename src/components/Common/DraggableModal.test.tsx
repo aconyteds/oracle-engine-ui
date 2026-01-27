@@ -195,6 +195,7 @@ describe("DraggableModal Component", () => {
 
         const headerButtons: HeaderButtonConfig[] = [
             {
+                id: "edit-button",
                 activeIcon: faEye,
                 inactiveIcon: faEdit,
                 isActive: false,
@@ -314,6 +315,7 @@ describe("DraggableModal Component", () => {
         test("should render multiple header buttons", () => {
             const multipleButtons: HeaderButtonConfig[] = [
                 {
+                    id: "edit-button",
                     activeIcon: faEye,
                     inactiveIcon: faEdit,
                     isActive: false,
@@ -321,6 +323,7 @@ describe("DraggableModal Component", () => {
                     title: "Edit",
                 },
                 {
+                    id: "preview-button",
                     activeIcon: faEdit,
                     inactiveIcon: faEye,
                     isActive: true,

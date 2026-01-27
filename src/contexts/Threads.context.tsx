@@ -99,9 +99,8 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                     message: error.message || "Failed to generate message",
                     duration: 5000,
                 });
-                Sentry.captureException("Message Generation Error", {
+                Sentry.captureException(error, {
                     extra: {
-                        error,
                         selectedThreadId: selectedThread?.id,
                         selectedCampaignId: selectedCampaign?.id,
                         reminder:
