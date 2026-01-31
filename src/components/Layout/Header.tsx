@@ -41,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowIntro }) => {
                             variant="outline-primary"
                             size="sm"
                             onClick={onShowIntro}
+                            aria-label="Show application help"
                         >
                             <FontAwesomeIcon icon={faCircleQuestion} />
                         </Button>
