@@ -119,7 +119,7 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
             }
             setTimeout(() => {
                 removeItem(toast.id);
-            }, options.duration || 5000);
+            }, toast.duration);
         },
         [removeItem, setItem]
     );
@@ -161,8 +161,11 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
                         key={toast.id}
                         bg={toast.type}
                         onClose={() => removeItem(toast.id)}
-                        delay={toast.duration || 5000}
-                        autohide={toast.closable !== false}
+                        delay={toast.duration ?? 5000}
+                        autohide={
+                            toast.duration !== null &&
+                            toast.closable !== false
+                        }
                     >
                         {toast.title && (
                             <Toast.Header
