@@ -12,17 +12,17 @@ vi.mock("@hooks", async (importOriginal) => {
     };
 });
 
-// Mock image imports
-vi.mock("../../assets/chat_with_work_012926.png", () => ({
+// Mock image imports (match actual *_optimized.webp assets used by IntroductionModal)
+vi.mock("../../assets/chat_with_work_012926_optimized.webp", () => ({
     default: "chat-image.png",
 }));
-vi.mock("../../assets/npc_asset_012926.png", () => ({
+vi.mock("../../assets/npc_asset_012926_optimized.webp", () => ({
     default: "asset-image.png",
 }));
-vi.mock("../../assets/oracle_engine_012926.png", () => ({
+vi.mock("../../assets/oracle_engine_012926_optimized.webp", () => ({
     default: "welcome-image.png",
 }));
-vi.mock("../../assets/recent_work_chat_012926.png", () => ({
+vi.mock("../../assets/recent_work_chat_012926_optimized.webp", () => ({
     default: "search-image.png",
 }));
 
