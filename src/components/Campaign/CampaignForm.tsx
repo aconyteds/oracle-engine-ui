@@ -43,7 +43,7 @@ export const RULESET_OPTIONS = [
     "Vampire: The Masquerade",
     "Werewolf: The Apocalypse",
     "Mage: The Ascension",
-    "Mages: The Awakening",
+    "Mage: The Awakening",
     "AD&D",
     "D&D 3e",
     "D&D 3.5e",
