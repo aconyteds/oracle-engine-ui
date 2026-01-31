@@ -61,18 +61,21 @@ export const CampaignRequirement: React.FC<CampaignRequirementProps> = ({
     if (!selectedCampaign) {
         return (
             <Container className="d-flex justify-content-center align-items-center h-100">
-                <Card style={{ maxWidth: "600px", width: "100%" }}>
+                <Card style={{ maxWidth: "800px", width: "100%" }}>
                     <Card.Header>
-                        <h3 className="mb-0">Campaign Required</h3>
+                        <h3 className="mb-0">
+                            {hasExistingCampaigns
+                                ? "Campaign Required"
+                                : "Create Your First Campaign"}
+                        </h3>
                     </Card.Header>
                     <Card.Body>
-                        <p className="mb-4">
-                            You need to select or create a campaign to continue
-                            using Oracle Engine.
-                        </p>
-
-                        {hasExistingCampaigns && (
+                        {hasExistingCampaigns ? (
                             <>
+                                <p className="mb-4">
+                                    You need to select or create a campaign to
+                                    continue using Oracle Engine.
+                                </p>
                                 <h5>Select Existing Campaign</h5>
                                 <div className="mb-4">
                                     {campaignList.map((campaign) => (
@@ -99,17 +102,19 @@ export const CampaignRequirement: React.FC<CampaignRequirementProps> = ({
                                 </div>
                                 <hr />
                                 <h5 className="mb-3">Or Create New Campaign</h5>
+                                <CampaignForm
+                                    onSuccess={handleSuccess}
+                                    submitButtonClassName="w-100"
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <CampaignForm
+                                    onSuccess={handleSuccess}
+                                    submitButtonClassName="w-100"
+                                />
                             </>
                         )}
-
-                        {!hasExistingCampaigns && (
-                            <h5 className="mb-3">Create Your First Campaign</h5>
-                        )}
-
-                        <CampaignForm
-                            onSuccess={handleSuccess}
-                            submitButtonClassName="w-100"
-                        />
                     </Card.Body>
                 </Card>
             </Container>

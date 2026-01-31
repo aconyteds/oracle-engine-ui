@@ -1,14 +1,18 @@
-import { faComment } from "@fortawesome/free-solid-svg-icons";
+import { faCircleQuestion, faComment } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
-import { Button, Col, Row } from "react-bootstrap";
+import { Button, Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { CampaignSelector } from "../Campaign";
 import { AssetManager } from "../CampaignAsset";
 import { AppFeedbackModal } from "../Common/AppFeedbackModal";
 import { ThemeToggle } from "../Common/ThemeToggle";
 import { AssetSearch } from "../Search";
 
-export const Header: React.FC = () => {
+type HeaderProps = {
+    onShowIntro: () => void;
+};
+
+export const Header: React.FC<HeaderProps> = ({ onShowIntro }) => {
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
     return (
@@ -25,6 +29,23 @@ export const Header: React.FC = () => {
                     <AssetSearch />
                 </Col>
                 <Col xs="auto" className="d-flex align-items-center gap-2">
+                    <OverlayTrigger
+                        placement="bottom"
+                        overlay={
+                            <Tooltip id="help-tooltip">
+                                Application Features
+                            </Tooltip>
+                        }
+                    >
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={onShowIntro}
+                            aria-label="Show application help"
+                        >
+                            <FontAwesomeIcon icon={faCircleQuestion} />
+                        </Button>
+                    </OverlayTrigger>
                     <Button
                         variant="outline-primary"
                         size="sm"

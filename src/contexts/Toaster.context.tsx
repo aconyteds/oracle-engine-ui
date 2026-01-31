@@ -103,11 +103,12 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
     const addToast = useCallback(
         (type: string, options: ToastOptions) => {
             const id = Date.now();
+            const closable = options.closable ?? true;
             const toast = {
                 id: id.toString(),
                 duration: 5000,
-                closable: false,
                 ...options,
+                closable,
                 type,
             };
 
@@ -118,7 +119,7 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
             }
             setTimeout(() => {
                 removeItem(toast.id);
-            }, options.duration || 5000);
+            }, toast.duration);
         },
         [removeItem, setItem]
     );
@@ -159,16 +160,17 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
                     <Toast
                         key={toast.id}
                         bg={toast.type}
-                        onClose={
-                            toast.closable
-                                ? () => removeItem(toast.id)
-                                : undefined
+                        onClose={() => removeItem(toast.id)}
+                        delay={toast.duration ?? 5000}
+                        autohide={
+                            toast.duration !== null &&
+                            toast.closable !== false
                         }
-                        delay={toast.duration || 5000}
-                        autohide={toast.closable !== false}
                     >
                         {toast.title && (
-                            <Toast.Header>
+                            <Toast.Header
+                                closeButton={toast.closable !== false}
+                            >
                                 <strong className="me-auto">
                                     {toast.title}
                                 </strong>

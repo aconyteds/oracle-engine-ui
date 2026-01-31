@@ -16,15 +16,79 @@ import { HoldConfirmButton } from "../Common";
 
 // Hardcoded ruleset options
 export const RULESET_OPTIONS = [
+    "Call of Cthulhu",
+    "Shadowrun",
+    "World of Darkness",
+    "Godbound",
+    "Fate",
+    "Starfinder",
+    "Star Wars RPG",
+    "Cyberpunk 2020",
+    "Cyberpunk RED",
+    "Blades in the Dark",
+    "Mutants & Masterminds",
+    "Savage Worlds",
+    "7th Sea",
+    "Exalted",
+    "Legend of the Five Rings",
+    "The Strange",
+    "Numenera",
+    "Dresden Files RPG",
+    "Chronicles of Darkness",
+    "Exalted 3rd Edition",
+    "Scion",
+    "Trinity Continuum",
     "Masks",
     "Hunter: The Reckoning",
     "Vampire: The Masquerade",
     "Werewolf: The Apocalypse",
     "Mage: The Ascension",
+    "Mage: The Awakening",
+    "AD&D",
+    "D&D 3e",
+    "D&D 3.5e",
+    "D&D 4e",
     "D&D 5e",
     "Pathfinder",
+    "Pathfinder 2e",
+    "Star Wars Saga Edition",
+    "Star Wars Edge of the Empire",
+    "Star Wars Age of Rebellion",
+    "Star Wars Force and Destiny",
+    "Warhammer 40k RPG",
+    "Warhammer Fantasy RPG",
+    "Dungeon World",
+    "FATE Core",
+    "FATE Accelerated",
+    "Powered by the Apocalypse",
+    "Dungeon Crawl Classics",
     "Custom",
-];
+].sort();
+
+// Quick start campaign templates
+export const CAMPAIGN_TEMPLATES = {
+    classicFantasy: {
+        name: "Classic Fantasy",
+        setting: "High fantasy adventure, heroic quests, party level 1-5",
+        tone: "Heroic and adventurous, good vs evil, players are the heroes",
+    },
+    grittyHorror: {
+        name: "Gritty Horror",
+        setting:
+            "Dangerous world, death is a real threat, resources are scarce",
+        tone: "Tense, unsettling, survival-focused, victories are hard-won",
+    },
+    beerPretzels: {
+        name: "Beer & Pretzels Comedy",
+        setting: "Lighthearted adventure, rule of cool applies",
+        tone: "Funny, irreverent, pop culture references welcome, nothing too serious",
+    },
+    murderHobos: {
+        name: "Murder Hobos on Parade",
+        setting: "Morally flexible adventuring, chaos is expected",
+        tone: "Absurdist, plans will derail, lean into the mayhem",
+    },
+};
 
 type CampaignFormProps = {
     campaign?: RelevantCampaignDetailsFragment | null;
@@ -231,10 +295,63 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
     const canSubmit =
         formData.name.trim() && !isLoading && !nameExists && !validating;
 
+    const handleTemplateClick = useCallback(
+        (templateKey: keyof typeof CAMPAIGN_TEMPLATES) => {
+            const template = CAMPAIGN_TEMPLATES[templateKey];
+            setFormData((prev) => ({
+                ...prev,
+                setting: template.setting,
+                tone: template.tone,
+            }));
+        },
+        []
+    );
+
     return (
         <Form onSubmit={handleSubmit}>
+            {!isEditMode && (
+                <p className="text-muted mb-3">
+                    The Oracle uses this information to tailor everything it
+                    creates. You can change these anytime.
+                </p>
+            )}
+
+            {!isEditMode && (
+                <div className="mb-4">
+                    <Form.Label>Quick Start Templates</Form.Label>
+                    <div className="d-flex flex-wrap gap-2">
+                        {Object.entries(CAMPAIGN_TEMPLATES).map(
+                            ([key, template]) => (
+                                <Button
+                                    key={key}
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    onClick={() =>
+                                        handleTemplateClick(
+                                            key as keyof typeof CAMPAIGN_TEMPLATES
+                                        )
+                                    }
+                                    disabled={isLoading}
+                                >
+                                    {template.name}
+                                </Button>
+                            )
+                        )}
+                    </div>
+                </div>
+            )}
+
             <Form.Group className="mb-3" controlId="campaignName">
                 <Form.Label>Campaign Name *</Form.Label>
+                {!isEditMode && (
+                    <div
+                        className="mb-1 text-muted font-monospace"
+                        style={{ fontSize: "0.75rem" }}
+                    >
+                        What you call your game — "Tuesday Night Crew" or "Curse
+                        of Strahd" both work
+                    </div>
+                )}
                 <Form.Control
                     type="text"
                     name="name"
@@ -258,6 +375,15 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
 
             <Form.Group className="mb-3" controlId="campaignSetting">
                 <Form.Label>Setting</Form.Label>
+                {!isEditMode && (
+                    <div
+                        className="mb-1 text-muted font-monospace"
+                        style={{ fontSize: "0.75rem" }}
+                    >
+                        Where and when: world, region, party level, module name
+                        if using one
+                    </div>
+                )}
                 <Form.Control
                     as="textarea"
                     rows={3}
@@ -271,6 +397,15 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
 
             <Form.Group className="mb-3" controlId="campaignTone">
                 <Form.Label>Tone</Form.Label>
+                {!isEditMode && (
+                    <div
+                        className="mb-1 text-muted font-monospace"
+                        style={{ fontSize: "0.75rem" }}
+                    >
+                        The overall mood: dark and gritty, light and humorous,
+                        epic and heroic
+                    </div>
+                )}
                 <Form.Control
                     as="textarea"
                     rows={2}

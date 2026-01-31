@@ -30,7 +30,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                 toast.info({
                     title: "Copied!",
                     message: "Code copied to clipboard",
-                    duration: null,
+                    duration: 3000,
                 });
             } catch {
                 toast.danger({

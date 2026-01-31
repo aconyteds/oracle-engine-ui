@@ -179,7 +179,7 @@ describe("ToasterContext", () => {
         expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
     });
 
-    it("manually closing a toast should not be possible when closable is false", async () => {
+    it("should still auto-remove toast after duration when closable is false", () => {
         render(
             <ToasterProvider>
                 <TestComponent closable={false} />
@@ -190,14 +190,13 @@ describe("ToasterContext", () => {
             screen.getByRole("button").click();
         });
 
-        const toast = screen.getByTestId("mock-toast");
-        expect(toast).toBeInTheDocument();
+        expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
 
         act(() => {
-            toast.click();
+            vi.advanceTimersByTime(5000);
         });
 
-        expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
+        expect(screen.queryByTestId("mock-toast")).not.toBeInTheDocument();
     });
 
     it("should handle closing toast manually", async () => {
