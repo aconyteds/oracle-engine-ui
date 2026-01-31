@@ -1,0 +1,114 @@
+.introduction-modal {
+    .modal-dialog {
+        max-width: 900px;
+    }
+
+    .modal-body {
+        padding: 1.5rem 2rem;
+
+        h2 {
+            font-weight: 600;
+        }
+    }
+
+    .introduction-content {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+        }
+    }
+
+    .introduction-text {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        p {
+            margin-bottom: 0.75rem;
+        }
+
+        ul {
+            padding-left: 1.25rem;
+            margin-bottom: 0.75rem;
+
+            li {
+                margin-bottom: 0.5rem;
+            }
+        }
+    }
+
+    .introduction-image {
+        flex: 1;
+        min-width: 0;
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .image-placeholder {
+            background: var(--bs-secondary-bg, #e9ecef);
+            border-radius: 8px;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--bs-secondary-color, #6c757d);
+            font-style: italic;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    .introduction-footer {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        width: 100%;
+
+        .footer-left {
+            justify-self: start;
+        }
+
+        .footer-right {
+            justify-self: end;
+            display: flex;
+            gap: 0.5rem;
+        }
+    }
+
+    .introduction-dots {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: center;
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--bs-primary, #0d6efd);
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+            transition:
+                background-color 0.2s ease,
+                transform 0.2s ease;
+
+            &:hover {
+                transform: scale(1.1);
+            }
+
+            &.active {
+                background: var(--bs-primary, #0d6efd);
+            }
+        }
+    }
+}
