@@ -20,6 +20,8 @@ jobs:
       VITE_ALLOW_REGISTRATION: "${{ vars.VITE_ALLOW_REGISTRATION }}"
       VITE_SENTRY_DSN: "${{ vars.VITE_SENTRY_DSN }}"
       VITE_ENV: "production"
+      VITE_FIREBASE_API_KEY: "${{ secrets.VITE_FIREBASE_API_KEY }}"
+      VITE_FIREBASE_PROJECT_ID: "${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
 
     steps:
       - name: Checkout code

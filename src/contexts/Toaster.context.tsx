@@ -9,6 +9,7 @@ interface ToastOptions {
     message: React.ReactNode | string;
     duration?: number | null;
     closable?: boolean;
+    onClick?: () => void;
 }
 
 interface ToasterContextProps {
@@ -163,8 +164,7 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
                         onClose={() => removeItem(toast.id)}
                         delay={toast.duration ?? 5000}
                         autohide={
-                            toast.duration !== null &&
-                            toast.closable !== false
+                            toast.duration !== null && toast.closable !== false
                         }
                     >
                         {toast.title && (
@@ -176,7 +176,25 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
                                 </strong>
                             </Toast.Header>
                         )}
-                        <Toast.Body>{toast.message}</Toast.Body>
+                        <Toast.Body
+                            onClick={toast.onClick}
+                            onKeyDown={(e: React.KeyboardEvent) => {
+                                if (
+                                    toast.onClick &&
+                                    (e.key === "Enter" || e.key === " ")
+                                ) {
+                                    e.preventDefault();
+                                    toast.onClick();
+                                }
+                            }}
+                            role={toast.onClick ? "button" : undefined}
+                            tabIndex={toast.onClick ? 0 : undefined}
+                            style={{
+                                cursor: toast.onClick ? "pointer" : "default",
+                            }}
+                        >
+                            {toast.message}
+                        </Toast.Body>
                     </Toast>
                 ))}
             </ToastContainer>

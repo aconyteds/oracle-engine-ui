@@ -7,6 +7,7 @@ import {
     faStar as faStarSolid,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useGenerationState } from "@signals";
 import React, { useMemo, useState } from "react";
 import { Collapse, Dropdown } from "react-bootstrap";
 import { HistoryThreadItem } from "./HistoryThreadItem";
@@ -15,13 +16,9 @@ import "./ChatHistoryMenu.scss";
 const THREADS_TO_SHOW_INITIALLY = 3;
 
 export const ChatHistoryMenu: React.FC = () => {
-    const {
-        threadList,
-        selectThread,
-        isGenerating,
-        selectedThread,
-        togglePinThread,
-    } = useThreadsContext();
+    const { threadList, selectThread, selectedThread, togglePinThread } =
+        useThreadsContext();
+    const { isThreadGenerating } = useGenerationState();
     const [showAll, setShowAll] = useState(false);
 
     const handleNewChat = () => {
@@ -92,7 +89,6 @@ export const ChatHistoryMenu: React.FC = () => {
                 variant="outline-secondary"
                 size="sm"
                 id="chat-history-dropdown"
-                disabled={isGenerating}
                 className="d-flex align-items-center gap-2"
                 bsPrefix="btn"
             >
@@ -112,10 +108,7 @@ export const ChatHistoryMenu: React.FC = () => {
 
                 {showNewChatButton && (
                     <>
-                        <Dropdown.Item
-                            onClick={handleNewChat}
-                            disabled={isGenerating}
-                        >
+                        <Dropdown.Item onClick={handleNewChat}>
                             <FontAwesomeIcon icon={faPlus} className="me-2" />
                             New Chat
                         </Dropdown.Item>
@@ -140,6 +133,7 @@ export const ChatHistoryMenu: React.FC = () => {
                                     isSelected={
                                         selectedThread?.id === thread.id
                                     }
+                                    isGenerating={isThreadGenerating(thread.id)}
                                     onSelect={handleSelectThread}
                                     onTogglePin={handleTogglePin}
                                 />
@@ -160,6 +154,7 @@ export const ChatHistoryMenu: React.FC = () => {
                                     isSelected={
                                         selectedThread?.id === thread.id
                                     }
+                                    isGenerating={isThreadGenerating(thread.id)}
                                     onSelect={handleSelectThread}
                                     onTogglePin={handleTogglePin}
                                 />
@@ -190,6 +185,9 @@ export const ChatHistoryMenu: React.FC = () => {
                                         isSelected={
                                             selectedThread?.id === thread.id
                                         }
+                                        isGenerating={isThreadGenerating(
+                                            thread.id
+                                        )}
                                         onSelect={handleSelectThread}
                                         onTogglePin={handleTogglePin}
                                     />

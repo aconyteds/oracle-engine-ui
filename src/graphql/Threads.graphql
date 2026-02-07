@@ -29,3 +29,21 @@ mutation UpdateThread($input: UpdateThreadInput!) {
         }
     }
 }
+
+fragment ActiveGenerationData on ActiveGeneration {
+    threadId
+    status
+}
+
+query GetActiveGenerations {
+    activeGenerations {
+        ...ActiveGenerationData
+    }
+}
+
+mutation AbortGeneration($input: AbortGenerationInput!) {
+    abortGeneration(input: $input) {
+        success
+        message
+    }
+}
