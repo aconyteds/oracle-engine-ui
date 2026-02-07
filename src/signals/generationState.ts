@@ -249,9 +249,13 @@ function createSubscription(
         },
         complete: () => {
             // Subscription ended without final message - unusual but handle gracefully
-            console.warn(
-                `Subscription for thread ${threadId} completed without final message`
-            );
+            if (generationManager.isThreadGenerating(threadId)) {
+                const error = new Error(
+                    `Generation stream for thread ${threadId} completed without a final message`
+                );
+                console.warn(error.message);
+                generationManager.setError(threadId, error);
+            }
         },
     });
 
