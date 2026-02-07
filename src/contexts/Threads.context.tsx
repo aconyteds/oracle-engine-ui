@@ -92,6 +92,9 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     // Track previous campaign ID to distinguish initial load from campaign switch
     const prevCampaignIdRef = useRef<string | null>(null);
 
+    // Track optimistic message count to prevent stale Apollo data from overwriting
+    const optimisticMessageCountRef = useRef<number>(0);
+
     // Use generation state from signals
     const { isGenerating, generatingContent, canStartGeneration } =
         useGenerationState();
@@ -170,14 +173,33 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
     // Fetches the messages for the currently selected thread
     useEffect(() => {
         if (loadingSelectedThread) return;
-        const currThreadMessages =
-            selectedThreadData?.getThread?.thread?.messages;
-        if (!currThreadMessages) {
+
+        // If no thread is selected, clear messages
+        if (!selectedThread) {
+            optimisticMessageCountRef.current = 0;
             setMessageList([]);
             return;
         }
-        setMessageList(currThreadMessages);
-    }, [selectedThreadData, loadingSelectedThread, setMessageList]);
+
+        const currThreadMessages =
+            selectedThreadData?.getThread?.thread?.messages;
+        // Only update messages when we have data - don't clear during refetches
+        // Message clearing on thread switch is handled explicitly in selectThread
+        if (currThreadMessages) {
+            // Don't overwrite if we have optimistic messages that Apollo doesn't know about yet
+            if (
+                currThreadMessages.length >= optimisticMessageCountRef.current
+            ) {
+                setMessageList(currThreadMessages);
+                optimisticMessageCountRef.current = currThreadMessages.length;
+            }
+        }
+    }, [
+        selectedThread,
+        selectedThreadData,
+        loadingSelectedThread,
+        setMessageList,
+    ]);
 
     const selectThread = useCallback(
         (threadId: string | null) => {
@@ -188,6 +210,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
 
             // Clear messages immediately to prevent showing old messages
             setMessageList([]);
+            optimisticMessageCountRef.current = 0;
 
             // Update the selected thread signal for generation notifications
             selectedThreadIdSignal.value = threadId;
@@ -341,6 +364,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                                 selectedThreadIdSignal.value ===
                                 completedThreadId
                             ) {
+                                optimisticMessageCountRef.current += 1;
                                 addMessage(message);
                             }
                             // If different thread, message will be fetched when thread is selected
@@ -432,6 +456,7 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                 }
 
                 // Step 4: Add user message to list (optimistic update)
+                optimisticMessageCountRef.current += 1;
                 addMessage(messageFragment);
                 // Note: We don't refetch messages here because we're adding them optimistically
                 // The AI message will be added via onComplete callback
@@ -442,16 +467,18 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                     threadTitle,
                     {
                         onComplete: (message, completedThreadId) => {
-                            refreshThreads(); // Refresh thread list to update last updated time and pin status
                             // Add AI message to the correct thread if it's selected
                             if (
                                 selectedThreadIdSignal.value ===
                                 completedThreadId
                             ) {
+                                optimisticMessageCountRef.current += 1;
                                 addMessage(message);
                             }
                             // If different thread, message will be fetched when thread is selected
                             refreshUsage();
+                            // Refresh thread list to update ordering in the menu
+                            refreshThreads();
                         },
                         onError: onGenerationError,
                         onAssetModified,
