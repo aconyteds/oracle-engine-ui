@@ -1,5 +1,8 @@
 import { faStar } from "@fortawesome/free-regular-svg-icons";
-import { faStar as faStarSolid } from "@fortawesome/free-solid-svg-icons";
+import {
+    faSpinner,
+    faStar as faStarSolid,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRelativeTime } from "@hooks";
 import React from "react";
@@ -13,6 +16,7 @@ type HistoryThreadItemProps = {
         isPinned: boolean;
     };
     isSelected: boolean;
+    isGenerating?: boolean;
     onSelect: (threadId: string) => void;
     onTogglePin: (
         threadId: string,
@@ -24,6 +28,7 @@ type HistoryThreadItemProps = {
 export const HistoryThreadItem: React.FC<HistoryThreadItemProps> = ({
     thread,
     isSelected,
+    isGenerating = false,
     onSelect,
     onTogglePin,
 }) => {
@@ -37,8 +42,19 @@ export const HistoryThreadItem: React.FC<HistoryThreadItemProps> = ({
             className="thread-item d-flex justify-content-between align-items-center"
         >
             <div className="thread-info flex-grow-1">
-                <div className="thread-title">
+                <div className="thread-title d-flex align-items-center gap-2">
                     <strong>{thread.title}</strong>
+                    {isGenerating && (
+                        <FontAwesomeIcon
+                            icon={faSpinner}
+                            spin
+                            className={
+                                isSelected ? "text-warning" : "text-primary"
+                            }
+                            title="Generating..."
+                            size="sm"
+                        />
+                    )}
                 </div>
                 <div className="thread-time text-muted small">
                     <small>

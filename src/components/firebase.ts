@@ -34,7 +34,11 @@ type AvailableEvents =
     | "sign_up"
     | "app_feedback"
     | "send_message"
-    | "create_thread";
+    | "create_thread"
+    | "generation_start"
+    | "abort_generation"
+    | "generation_complete"
+    | "generation_error";
 
 export function LogEvent(
     eventName: AvailableEvents,

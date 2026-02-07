@@ -9,6 +9,7 @@ interface ToastOptions {
     message: React.ReactNode | string;
     duration?: number | null;
     closable?: boolean;
+    onClick?: () => void;
 }
 
 interface ToasterContextProps {
@@ -163,9 +164,12 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
                         onClose={() => removeItem(toast.id)}
                         delay={toast.duration ?? 5000}
                         autohide={
-                            toast.duration !== null &&
-                            toast.closable !== false
+                            toast.duration !== null && toast.closable !== false
                         }
+                        onClick={toast.onClick}
+                        style={{
+                            cursor: toast.onClick ? "pointer" : "default",
+                        }}
                     >
                         {toast.title && (
                             <Toast.Header
