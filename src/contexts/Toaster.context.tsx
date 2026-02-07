@@ -166,10 +166,6 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
                         autohide={
                             toast.duration !== null && toast.closable !== false
                         }
-                        onClick={toast.onClick}
-                        style={{
-                            cursor: toast.onClick ? "pointer" : "default",
-                        }}
                     >
                         {toast.title && (
                             <Toast.Header
@@ -180,7 +176,25 @@ export const ToasterProvider: React.FC<{ children: React.ReactNode }> = ({
                                 </strong>
                             </Toast.Header>
                         )}
-                        <Toast.Body>{toast.message}</Toast.Body>
+                        <Toast.Body
+                            onClick={toast.onClick}
+                            onKeyDown={(e: React.KeyboardEvent) => {
+                                if (
+                                    toast.onClick &&
+                                    (e.key === "Enter" || e.key === " ")
+                                ) {
+                                    e.preventDefault();
+                                    toast.onClick();
+                                }
+                            }}
+                            role={toast.onClick ? "button" : undefined}
+                            tabIndex={toast.onClick ? 0 : undefined}
+                            style={{
+                                cursor: toast.onClick ? "pointer" : "default",
+                            }}
+                        >
+                            {toast.message}
+                        </Toast.Body>
                     </Toast>
                 ))}
             </ToastContainer>

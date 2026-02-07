@@ -445,13 +445,32 @@ export const ThreadsProvider: React.FC<ThreadsProviderProps> = ({
                     // Refresh thread list to get the new thread
                     const threadMap = await refreshThreads();
                     const thread = threadMap.get(threadId);
-                    if (thread) {
-                        threadTitle = thread.title;
-                        setSelectedThread(thread);
-                        setStoredThreadId(threadId);
-                        // Update selectedThreadId signal for notifications
-                        selectedThreadIdSignal.value = threadId;
+
+                    if (!thread) {
+                        const error = new Error(
+                            "Thread was not found after message creation."
+                        );
+                        toast.danger({
+                            title: "Thread Not Found",
+                            message:
+                                "The thread for your new message could not be found. Please refresh and try again.",
+                            duration: 5000,
+                        });
+                        Sentry.captureException(error, {
+                            extra: {
+                                threadId,
+                                reminder:
+                                    "This error occurred after successfully creating a message, which should have created a thread. This likely means that we queried for the thread too soon after it was created, and it has not propagated to all Read nodes. If you see this error frequently, we may need to implement a retry mechanism with exponential backoff for fetching the thread after message creation.",
+                            },
+                        });
+                        // We return because we don't need to start generation and send another error log
+                        return;
                     }
+                    threadTitle = thread.title;
+                    setSelectedThread(thread);
+                    setStoredThreadId(threadId);
+                    // Update selectedThreadId signal for notifications
+                    selectedThreadIdSignal.value = threadId;
                     LogEvent("create_thread");
                 }
 

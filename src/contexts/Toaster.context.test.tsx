@@ -16,7 +16,10 @@ vi.mock("react-bootstrap", () => ({
             children: React.ReactNode;
             onClose: () => void;
         }) => (
-            <div data-testid="mock-toast" onClick={onClose}>
+            <div data-testid="mock-toast">
+                <button data-testid="mock-close" onClick={onClose}>
+                    Close
+                </button>
                 {children}
             </div>
         ),
@@ -24,8 +27,31 @@ vi.mock("react-bootstrap", () => ({
             Header: ({ children }: { children: React.ReactNode }) => (
                 <div data-testid="mock-toast-header">{children}</div>
             ),
-            Body: ({ children }: { children: React.ReactNode }) => (
-                <div data-testid="mock-toast-body">{children}</div>
+            Body: ({
+                children,
+                onClick,
+                role,
+                tabIndex,
+                onKeyDown,
+                style,
+            }: {
+                children: React.ReactNode;
+                onClick?: () => void;
+                role?: string;
+                tabIndex?: number;
+                onKeyDown?: (e: React.KeyboardEvent) => void;
+                style?: React.CSSProperties;
+            }) => (
+                <div
+                    data-testid="mock-toast-body"
+                    onClick={onClick}
+                    role={role}
+                    tabIndex={tabIndex}
+                    onKeyDown={onKeyDown}
+                    style={style}
+                >
+                    {children}
+                </div>
             ),
         }
     ),
@@ -210,14 +236,88 @@ describe("ToasterContext", () => {
             screen.getByRole("button").click();
         });
 
-        const toast = screen.getByTestId("mock-toast");
-        expect(toast).toBeInTheDocument();
+        expect(screen.getByTestId("mock-toast")).toBeInTheDocument();
 
         act(() => {
-            toast.click();
+            screen.getByTestId("mock-close").click();
         });
 
         expect(screen.queryByTestId("mock-toast")).not.toBeInTheDocument();
+    });
+
+    it("should trigger onClick on body click, not on close", () => {
+        const onClickSpy = vi.fn();
+        const TestClickToast = () => {
+            const { toast } = useToaster();
+            return (
+                <button
+                    onClick={() =>
+                        toast.success({
+                            message: "Clickable",
+                            title: "Test",
+                            onClick: onClickSpy,
+                        })
+                    }
+                >
+                    Show Toast
+                </button>
+            );
+        };
+
+        render(
+            <ToasterProvider>
+                <TestClickToast />
+            </ToasterProvider>
+        );
+
+        act(() => {
+            screen.getByRole("button", { name: "Show Toast" }).click();
+        });
+
+        // Clicking the body should trigger onClick
+        act(() => {
+            screen.getByTestId("mock-toast-body").click();
+        });
+        expect(onClickSpy).toHaveBeenCalledTimes(1);
+
+        // Clicking close should NOT trigger onClick
+        onClickSpy.mockClear();
+        act(() => {
+            screen.getByTestId("mock-close").click();
+        });
+        expect(onClickSpy).not.toHaveBeenCalled();
+    });
+
+    it("should set role and tabIndex on body when onClick is provided", () => {
+        const TestClickableToast = () => {
+            const { toast } = useToaster();
+            return (
+                <button
+                    onClick={() =>
+                        toast.success({
+                            message: "Clickable",
+                            onClick: vi.fn(),
+                        })
+                    }
+                >
+                    Show Toast
+                </button>
+            );
+        };
+
+        render(
+            <ToasterProvider>
+                <TestClickableToast />
+            </ToasterProvider>
+        );
+
+        act(() => {
+            screen.getByRole("button", { name: "Show Toast" }).click();
+        });
+
+        const body = screen.getByTestId("mock-toast-body");
+        expect(body).toHaveAttribute("role", "button");
+        expect(body).toHaveAttribute("tabindex", "0");
     });
 
     describe("Global Toast Service", () => {

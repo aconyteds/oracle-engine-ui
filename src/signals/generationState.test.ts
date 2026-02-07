@@ -76,6 +76,7 @@ describe("generationManager", () => {
         // Reset mocks
         vi.clearAllMocks();
         delete global.__subscriptionHandlers;
+        localStorage.clear();
     });
 
     afterEach(() => {
@@ -483,6 +484,7 @@ describe("subscription handling", () => {
         selectedThreadIdSignal.value = null;
         vi.clearAllMocks();
         delete global.__subscriptionHandlers;
+        localStorage.clear();
     });
 
     afterEach(() => {

@@ -21,6 +21,7 @@ export const MessageInput = () => {
 
     const handleSubmit = (text: string) => {
         if (!canStartGeneration) return;
+        if (!text.trim()) return;
         sendMessage(text);
         setText("");
     };
