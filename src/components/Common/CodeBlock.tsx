@@ -1,9 +1,13 @@
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useTheme } from "@hooks";
 import React, { useCallback } from "react";
 import { Button, Card } from "react-bootstrap";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+    oneDark,
+    oneLight,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useToaster } from "../../contexts";
 
 interface CodeBlockProps {
@@ -22,6 +26,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     const language = match ? match[1] : "";
     const code = String(children || "").replace(/\n$/, "");
     const { toast } = useToaster();
+    const { theme } = useTheme();
+    const isDark = theme === "dark";
+    const syntaxStyle = isDark ? oneDark : oneLight;
 
     const copyToClipboard = useCallback(
         async (code: string) => {
@@ -44,15 +51,25 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     );
 
     if (inline) {
-        return <code className="bg-light p-1 rounded">{children}</code>;
+        return (
+            <code className="bg-body-secondary text-body p-1 rounded border">
+                {children}
+            </code>
+        );
     }
 
     return (
-        <Card>
-            <Card.Header className="d-flex justify-content-between align-items-center bg-dark text-white">
+        <Card className="code-block-card">
+            <Card.Header
+                className={`d-flex justify-content-between align-items-center ${
+                    isDark
+                        ? "bg-dark text-white"
+                        : "bg-body-secondary text-body"
+                }`}
+            >
                 <span className="text-capitalize">{language || "Code"}</span>
                 <Button
-                    variant="outline-light"
+                    variant={isDark ? "outline-light" : "outline-secondary"}
                     size="sm"
                     onClick={() => copyToClipboard(code)}
                     className="d-flex align-items-center gap-1"
@@ -61,9 +78,13 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                     Copy
                 </Button>
             </Card.Header>
-            <Card.Body className="p-0 pb-1 bg-dark border-top">
+            <Card.Body
+                className={`p-0 pb-1 border-top ${
+                    isDark ? "bg-dark" : "bg-body-tertiary"
+                }`}
+            >
                 <SyntaxHighlighter
-                    style={oneDark}
+                    style={syntaxStyle}
                     language={language}
                     PreTag="div"
                     className="mb-0 mt-0"

@@ -19,3 +19,62 @@
         }
     }
 }
+
+// User message styling - Light theme
+.theme-light {
+    .user-message {
+        color: var(--bs-primary-text-emphasis) !important;
+    }
+
+    .user-message-role {
+        color: var(--bs-primary-text-emphasis) !important;
+        opacity: 0.85;
+    }
+
+    .user-message-content {
+        color: var(--bs-primary-text-emphasis) !important;
+    }
+
+    .workspace-item {
+        background-color: #f8f9fa !important;
+        color: #495057 !important;
+        border-color: #dee2e6 !important;
+
+        .message-workspace-role {
+            color: #6c757d !important;
+        }
+
+        .message-workspace-content {
+            color: #212529 !important;
+        }
+    }
+}
+
+// User message styling - Dark theme
+.theme-dark {
+    .user-message {
+        color: white !important;
+    }
+
+    .user-message-role {
+        color: white !important;
+        opacity: 0.75;
+    }
+
+    .user-message-content {
+        color: white !important;
+    }
+
+    .workspace-item {
+        background-color: #1e1e1e !important;
+        color: #adb5bd !important;
+
+        .message-workspace-role {
+            color: #868e96 !important;
+        }
+
+        .message-workspace-content {
+            color: #adb5bd !important;
+        }
+    }
+}
