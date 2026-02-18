@@ -53,7 +53,7 @@ export const Message: React.FC<MessageProps> = ({
                                 "-" +
                                 indx.toString()
                             }
-                            className="message-workspace pt-1 pb-0 rounded-0 border-top-0 text-muted small bg-dark"
+                            className="message-workspace pt-1 pb-0 rounded-0 border-top-0 small workspace-item"
                         >
                             <h6 className="message-workspace-role fw-bold d-block mb-2 small text-uppercase">
                                 {workspaceItem.messageType}
@@ -76,7 +76,7 @@ export const Message: React.FC<MessageProps> = ({
             <div
                 className={`message p-3 rounded shadow-sm border ${
                     isUser
-                        ? "bg-primary-subtle text-white border-primary-subtle"
+                        ? "bg-primary-subtle border-primary-subtle user-message"
                         : isAssistant
                           ? "bg-light-subtle border-light-subtle"
                           : "bg-secondary-subtle border-secondary-subtle"
@@ -89,7 +89,7 @@ export const Message: React.FC<MessageProps> = ({
             >
                 <span
                     className={`message-role fw-bold d-block mb-2 small text-uppercase ${
-                        isUser ? "text-white opacity-75" : "text-body-secondary"
+                        isUser ? "user-message-role" : "text-body-secondary"
                     }`}
                 >
                     {role}
@@ -123,7 +123,7 @@ export const Message: React.FC<MessageProps> = ({
                 </Collapse>
                 <div
                     className={`message-content ${
-                        isUser ? "text-white" : "text-body"
+                        isUser ? "user-message-content" : "text-body"
                     } mt-3`}
                 >
                     <MarkdownRenderer content={content} />

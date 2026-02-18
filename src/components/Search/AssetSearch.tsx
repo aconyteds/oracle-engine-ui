@@ -133,7 +133,7 @@ export const AssetSearch: React.FC = () => {
                 <div className="search-results-dropdown">
                     <ListGroup variant="flush">
                         {loading ? (
-                            <div className="p-3 text-center">
+                            <div className="p-3 text-center searching-spinner">
                                 <Spinner animation="border" size="sm" />
                             </div>
                         ) : assets.length > 0 ? (

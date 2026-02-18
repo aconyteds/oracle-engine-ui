@@ -25,3 +25,52 @@
         }
     }
 }
+
+// Asset search dropdown - Light theme
+.theme-light {
+    .search-results-dropdown {
+        background: none;
+        .list-group {
+            background: none;
+        }
+
+        .searching-spinner {
+            background: #ffffff !important;
+        }
+        
+        .list-group-item {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border-color: #e9ecef !important;
+
+            &:hover,
+            &.active {
+                background-color: #f8f9fa !important;
+            }
+
+            .text-muted {
+                color: #6c757d !important;
+            }
+        }
+    }
+}
+
+// Asset search dropdown - Dark theme
+.theme-dark {
+    .search-results-dropdown {
+        .list-group-item {
+            background-color: #212529 !important;
+            color: #ced4da !important;
+            border-color: #3a3f47 !important;
+
+            &:hover,
+            &.active {
+                background-color: #2c3034 !important;
+            }
+
+            .text-muted {
+                color: #868e96 !important;
+            }
+        }
+    }
+}
