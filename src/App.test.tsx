@@ -43,6 +43,12 @@ describe("App Component", () => {
     });
 
     describe("subscription routes", () => {
+        const originalMonetization = import.meta.env.VITE_MONETIZATION_ENABLED;
+
+        afterEach(() => {
+            (import.meta.env as Record<string, string>).VITE_MONETIZATION_ENABLED = originalMonetization;
+        });
+
         it("redirects /subscription to / when monetization is disabled", () => {
             (
                 import.meta.env as Record<string, string>

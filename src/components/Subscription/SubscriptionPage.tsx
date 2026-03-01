@@ -53,7 +53,7 @@ export const SubscriptionPage: React.FC = () => {
     };
 
     const handleManageSubscription = async () => {
-        LogEvent("tier_badge_click");
+        LogEvent("subscription_manage_click");
         const { data: portalData } = await manageSubscription({
             variables: {
                 input: { returnUrl: window.location.origin },

@@ -51,7 +51,7 @@ type AvailableEvents =
     | "view_subscription_page"
     | "subscription_checkout_start"
     | "subscription_success"
-    | "subscription_manage_return"
+    | "subscription_manage_click"
     | "tier_badge_click";
 
 export function LogEvent(
