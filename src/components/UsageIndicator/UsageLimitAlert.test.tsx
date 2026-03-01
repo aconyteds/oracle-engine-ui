@@ -117,10 +117,10 @@ describe("UsageLimitAlert", () => {
             ).toBeInTheDocument();
         });
 
-        test("should mention 1st of next month reset when no subscription expiry", () => {
+        test("should show default message when no subscription expiry", () => {
             render(<UsageLimitAlert />);
 
-            expect(screen.getByText(/1st of next month/)).toBeInTheDocument();
+            expect(screen.getByText(/resets every month/)).toBeInTheDocument();
         });
     });
 
@@ -229,6 +229,20 @@ describe("UsageLimitAlert", () => {
             ).not.toBeInTheDocument();
         });
 
+        test("should hide upgrade link when upgradeAvailable is false", async () => {
+            await mockUser({ upgradeAvailable: false });
+
+            render(<UsageLimitAlert />, {
+                env: { VITE_MONETIZATION_ENABLED: "true" },
+            });
+
+            expect(
+                screen.queryByRole("link", {
+                    name: /upgrading your subscription/,
+                })
+            ).not.toBeInTheDocument();
+        });
+
         test("should show upgrade link in monthly alert when monetization is enabled", async () => {
             await mockUsage({
                 monthlyUsage: { percentUsed: 1.0 },
@@ -278,7 +292,7 @@ describe("UsageLimitAlert", () => {
             expect(screen.getByText(/renews on April 15/)).toBeInTheDocument();
         });
 
-        test("should show default 1st of next month when no subscriptionExpiresAt", async () => {
+        test("should show default message when no subscriptionExpiresAt", async () => {
             await mockUser({ subscriptionExpiresAt: null });
             await mockUsage({
                 monthlyUsage: { percentUsed: 1.0 },
@@ -287,7 +301,7 @@ describe("UsageLimitAlert", () => {
 
             render(<UsageLimitAlert />);
 
-            expect(screen.getByText(/1st of next month/)).toBeInTheDocument();
+            expect(screen.getByText(/resets every month/)).toBeInTheDocument();
         });
     });
 });

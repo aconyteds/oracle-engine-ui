@@ -47,6 +47,7 @@ export const UsageIndicator = () => {
         useSessionStorage<string | null>("cancellation-toast-shown", null);
 
     const subscriptionExpiresAt = currentUser?.subscriptionExpiresAt;
+    const upgradeAvailable = currentUser?.upgradeAvailable ?? false;
     const expiresFormatted = subscriptionExpiresAt
         ? new Date(subscriptionExpiresAt).toLocaleDateString(undefined, {
               month: "long",
@@ -152,7 +153,7 @@ export const UsageIndicator = () => {
                         </span>
                     </p>
                 )}
-                <UpgradeLink upgradeAvailable />
+                <UpgradeLink upgradeAvailable={upgradeAvailable} />
             </Popover.Body>
         </Popover>
     );

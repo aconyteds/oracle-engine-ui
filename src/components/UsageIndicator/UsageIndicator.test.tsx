@@ -313,6 +313,24 @@ describe("UsageIndicator", () => {
             });
         });
 
+        test("should hide upgrade link when upgradeAvailable is false", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.7 },
+            });
+            await mockUser({ upgradeAvailable: false });
+
+            render(<UsageIndicator />, {
+                env: { VITE_MONETIZATION_ENABLED: "true" },
+            });
+
+            fireEvent.focus(screen.getByText(/remaining/));
+            await waitFor(() => {
+                expect(
+                    screen.queryByText(/upgrading your subscription/)
+                ).not.toBeInTheDocument();
+            });
+        });
+
         test("should hide upgrade link when monetization is disabled", async () => {
             await mockUsage({
                 dailyUsage: { percentUsed: 0.7 },

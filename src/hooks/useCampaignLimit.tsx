@@ -23,7 +23,7 @@ export const useCampaignLimit = () => {
 
     const limitMessage = `You've reached your limit of ${campaignLimit} ${
         campaignLimit === 1 ? "campaign" : "campaigns"
-    }. ${monetizationEnabled ? "To create more, upgrade your subscription or delete an existing campaign." : ""}`;
+    }.${monetizationEnabled ? " To create more, upgrade your subscription or delete an existing campaign." : ""}`;
 
     return {
         canCreate,

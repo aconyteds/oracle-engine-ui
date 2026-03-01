@@ -11,18 +11,25 @@ export function UsageLimitAlert() {
     const [timeTillReset, setTimeTillReset] = useState<string>("");
 
     const subscriptionExpiresAt = currentUser?.subscriptionExpiresAt;
+    const upgradeAvailable = currentUser?.upgradeAvailable ?? false;
 
     // Countdown timer that refreshes usage data when it reaches zero
     useEffect(() => {
+        const getNextMidnightUTC = () => {
+            const next = new Date();
+            next.setUTCHours(24, 0, 0, 0);
+            return next;
+        };
+
+        let nextReset = getNextMidnightUTC();
+
         const interval = setInterval(() => {
-            const now = new Date();
-            const nextReset = new Date();
-            nextReset.setUTCHours(24, 0, 0, 0);
-            const diff = nextReset.getTime() - now.getTime();
+            const diff = nextReset.getTime() - Date.now();
 
             // If we've passed midnight UTC, refresh usage data
             if (diff <= 0) {
                 refreshUsage();
+                nextReset = getNextMidnightUTC();
                 return;
             }
 
@@ -45,14 +52,7 @@ export function UsageLimitAlert() {
             });
             resetText = `renews on ${formatted}`;
         } else {
-            const nextMonth = new Date();
-            nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1, 1);
-            nextMonth.setUTCHours(0, 0, 0, 0);
-            const resetDate = nextMonth.toLocaleDateString(undefined, {
-                month: "long",
-                day: "numeric",
-            });
-            resetText = `resets on ${resetDate} (1st of next month)`;
+            resetText = `resets every month`;
         }
 
         return (
@@ -60,7 +60,8 @@ export function UsageLimitAlert() {
                 <Alert.Heading>Monthly Limit Reached</Alert.Heading>
                 <p className="mb-0 font-monospace">
                     You've reached your monthly usage limit. Your limit{" "}
-                    {resetText}. <UpgradeLink upgradeAvailable />
+                    {resetText}.{" "}
+                    <UpgradeLink upgradeAvailable={upgradeAvailable} />
                 </p>
             </Alert>
         );
@@ -72,7 +73,7 @@ export function UsageLimitAlert() {
             <p className="mb-0 font-monospace">
                 You've reached your daily usage limit. Your limit resets in{" "}
                 {timeTillReset} (midnight UTC).
-                <UpgradeLink upgradeAvailable />
+                <UpgradeLink upgradeAvailable={upgradeAvailable} />
             </p>
         </Alert>
     );
