@@ -47,7 +47,12 @@ type AvailableEvents =
     | "generation_start"
     | "abort_generation"
     | "generation_complete"
-    | "generation_error";
+    | "generation_error"
+    | "view_subscription_page"
+    | "subscription_checkout_start"
+    | "subscription_success"
+    | "subscription_manage_return"
+    | "tier_badge_click";
 
 export function LogEvent(
     eventName: AvailableEvents,

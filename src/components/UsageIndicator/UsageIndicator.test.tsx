@@ -1,14 +1,95 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { cleanup, render, screen } from "../../test-utils";
+import { SubscriptionStatus } from "../../graphql/generated";
+import { cleanup, fireEvent, render, screen, waitFor } from "../../test-utils";
 import { UsageIndicator } from "./UsageIndicator";
 
 vi.mock("@signals", () => ({
     useUsageState: vi.fn(),
 }));
 
+const mockToastInfo = vi.fn();
+
+vi.mock("../../contexts", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../../contexts")>();
+    return {
+        ...actual,
+        useUserContext: vi.fn(),
+        useToaster: vi.fn(() => ({
+            toast: {
+                info: mockToastInfo,
+                success: vi.fn(),
+                danger: vi.fn(),
+                warning: vi.fn(),
+            },
+        })),
+    };
+});
+
+let mockSessionValue: string | null = null;
+const mockSetSessionValue = vi.fn();
+
+vi.mock("../../hooks/useStorage", async (importOriginal) => {
+    const actual =
+        await importOriginal<typeof import("../../hooks/useStorage")>();
+    return {
+        ...actual,
+        useSessionStorage: vi.fn(
+            () => [mockSessionValue, mockSetSessionValue] as const
+        ),
+    };
+});
+
+const defaultUsageState = {
+    monthlyUsage: null,
+    isMonthlyLimitExceeded: false,
+    isLimitExceeded: false,
+    lastUpdated: new Date(),
+};
+
+const defaultUserContext = {
+    currentUser: {
+        __typename: "User" as const,
+        id: "1",
+        name: "Test",
+        subscriptionTier: "Free",
+        lastSelectedCampaign: null,
+        upgradeAvailable: true,
+        subscriptionExpiresAt: null,
+        subscriptionStatus: SubscriptionStatus.Free,
+    },
+    isLoggedIn: true,
+    setIsLoggedIn: vi.fn(),
+    handleLogin: vi.fn(),
+    isActive: true,
+    loading: false,
+    showDebug: false,
+    refreshUsage: vi.fn(),
+};
+
+const mockUsage = async (overrides: Record<string, unknown> = {}) => {
+    const { useUsageState } = await import("@signals");
+    vi.mocked(useUsageState).mockReturnValue({
+        ...defaultUsageState,
+        ...overrides,
+    } as ReturnType<typeof useUsageState>);
+};
+
+const mockUser = async (overrides: Record<string, unknown> = {}) => {
+    const { useUserContext } = await import("../../contexts");
+    vi.mocked(useUserContext).mockReturnValue({
+        ...defaultUserContext,
+        currentUser: {
+            ...defaultUserContext.currentUser,
+            ...overrides,
+        },
+    } as ReturnType<typeof useUserContext>);
+};
+
 describe("UsageIndicator", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
+        mockSessionValue = null;
+        await mockUser();
     });
 
     afterEach(() => {
@@ -17,11 +98,9 @@ describe("UsageIndicator", () => {
 
     describe("visibility thresholds", () => {
         test("should not render when dailyUsage is null", async () => {
-            const { useUsageState } = await import("@signals");
-            vi.mocked(useUsageState).mockReturnValue({
+            await mockUsage({
                 dailyUsage: null,
-                isLimitExceeded: false,
-                lastUpdated: null,
+                monthlyUsage: null,
             });
 
             render(<UsageIndicator />);
@@ -30,13 +109,8 @@ describe("UsageIndicator", () => {
         });
 
         test("should not render when percentUsed is below 50%", async () => {
-            const { useUsageState } = await import("@signals");
-            vi.mocked(useUsageState).mockReturnValue({
-                dailyUsage: {
-                    percentUsed: 0.49,
-                },
-                isLimitExceeded: false,
-                lastUpdated: new Date(),
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.49 },
             });
 
             render(<UsageIndicator />);
@@ -45,13 +119,8 @@ describe("UsageIndicator", () => {
         });
 
         test("should render when percentUsed is exactly 50%", async () => {
-            const { useUsageState } = await import("@signals");
-            vi.mocked(useUsageState).mockReturnValue({
-                dailyUsage: {
-                    percentUsed: 0.5,
-                },
-                isLimitExceeded: false,
-                lastUpdated: new Date(),
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
             });
 
             render(<UsageIndicator />);
@@ -60,13 +129,8 @@ describe("UsageIndicator", () => {
         });
 
         test("should render when percentUsed is above 50%", async () => {
-            const { useUsageState } = await import("@signals");
-            vi.mocked(useUsageState).mockReturnValue({
-                dailyUsage: {
-                    percentUsed: 0.6,
-                },
-                isLimitExceeded: false,
-                lastUpdated: new Date(),
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.6 },
             });
 
             render(<UsageIndicator />);
@@ -84,11 +148,9 @@ describe("UsageIndicator", () => {
         ])(
             "should display $expected remaining when percentUsed is $percentUsed",
             async ({ percentUsed, expected }) => {
-                const { useUsageState } = await import("@signals");
-                vi.mocked(useUsageState).mockReturnValue({
+                await mockUsage({
                     dailyUsage: { percentUsed },
                     isLimitExceeded: percentUsed >= 1,
-                    lastUpdated: new Date(),
                 });
 
                 render(<UsageIndicator />);
@@ -155,13 +217,9 @@ describe("UsageIndicator", () => {
         ])(
             "should render with $expectedSeverity severity when $description",
             async ({ percentUsed, expectedSeverity }) => {
-                const { useUsageState } = await import("@signals");
-                vi.mocked(useUsageState).mockReturnValue({
-                    dailyUsage: {
-                        percentUsed,
-                    },
+                await mockUsage({
+                    dailyUsage: { percentUsed },
                     isLimitExceeded: percentUsed >= 1,
-                    lastUpdated: new Date(),
                 });
 
                 render(<UsageIndicator />);
@@ -171,37 +229,26 @@ describe("UsageIndicator", () => {
                     screen.getByText(`${remaining}% remaining`)
                 ).toBeInTheDocument();
 
-                // Document expected severity for each threshold
                 expect(expectedSeverity).toBeDefined();
             }
         );
 
         test("should apply danger severity when isLimitExceeded is true regardless of percentage", async () => {
-            const { useUsageState } = await import("@signals");
-            vi.mocked(useUsageState).mockReturnValue({
-                dailyUsage: {
-                    percentUsed: 0.85, // Would normally be warning
-                },
-                isLimitExceeded: true, // But limit exceeded forces danger
-                lastUpdated: new Date(),
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.85 },
+                isLimitExceeded: true,
             });
 
             render(<UsageIndicator />);
 
-            // Component still renders, severity is determined by isLimitExceeded
             expect(screen.getByText("15% remaining")).toBeInTheDocument();
         });
     });
 
     describe("icon display", () => {
         test("should display chart-line icon", async () => {
-            const { useUsageState } = await import("@signals");
-            vi.mocked(useUsageState).mockReturnValue({
-                dailyUsage: {
-                    percentUsed: 0.6,
-                },
-                isLimitExceeded: false,
-                lastUpdated: new Date(),
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.6 },
             });
 
             render(<UsageIndicator />);
@@ -213,20 +260,217 @@ describe("UsageIndicator", () => {
 
     describe("overlay trigger", () => {
         test("should have hover and focus triggers for popover", async () => {
-            const { useUsageState } = await import("@signals");
-            vi.mocked(useUsageState).mockReturnValue({
-                dailyUsage: {
-                    percentUsed: 0.75,
-                },
-                isLimitExceeded: false,
-                lastUpdated: new Date(),
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.75 },
             });
 
             render(<UsageIndicator />);
 
-            // The component renders with cursor: help style indicating it's hoverable
             const row = screen.getByText("25% remaining").closest(".row");
             expect(row).toBeInTheDocument();
+        });
+    });
+
+    describe("monthly usage display", () => {
+        test("should show monthly remaining when monthly is higher than daily", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+                monthlyUsage: { percentUsed: 0.8 },
+            });
+
+            render(<UsageIndicator />);
+
+            expect(screen.getByText("20% remaining")).toBeInTheDocument();
+        });
+
+        test("should render when only monthly usage exceeds threshold", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.1 },
+                monthlyUsage: { percentUsed: 0.6 },
+            });
+
+            render(<UsageIndicator />);
+
+            expect(screen.getByText("40% remaining")).toBeInTheDocument();
+        });
+    });
+
+    describe("upgrade link", () => {
+        test("should show upgrade link when monetization is enabled", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.7 },
+            });
+
+            render(<UsageIndicator />, {
+                env: { VITE_MONETIZATION_ENABLED: "true" },
+            });
+
+            fireEvent.focus(screen.getByText(/remaining/));
+            await waitFor(() => {
+                expect(
+                    screen.getByText(/upgrading your subscription/)
+                ).toBeInTheDocument();
+            });
+        });
+
+        test("should hide upgrade link when monetization is disabled", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.7 },
+            });
+
+            render(<UsageIndicator />, {
+                env: { VITE_MONETIZATION_ENABLED: "false" },
+            });
+
+            fireEvent.focus(screen.getByText(/remaining/));
+            await waitFor(() => {
+                expect(
+                    screen.queryByText(/upgrading your subscription/)
+                ).not.toBeInTheDocument();
+            });
+        });
+    });
+
+    describe("renewal date in popover", () => {
+        test("should show renewal date when subscriptionExpiresAt is set", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+                monthlyUsage: { percentUsed: 0.6 },
+            });
+            await mockUser({
+                subscriptionExpiresAt: "2026-04-15T12:00:00Z",
+            });
+
+            render(<UsageIndicator />);
+
+            fireEvent.focus(screen.getByText(/remaining/));
+            await waitFor(() => {
+                expect(screen.getByText(/renews April 15/)).toBeInTheDocument();
+            });
+        });
+
+        test("should show default reset text when no subscriptionExpiresAt", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+                monthlyUsage: { percentUsed: 0.6 },
+            });
+            await mockUser({ subscriptionExpiresAt: null });
+
+            render(<UsageIndicator />);
+
+            fireEvent.focus(screen.getByText(/remaining/));
+            await waitFor(() => {
+                expect(
+                    screen.getByText(/resets on the 1st/)
+                ).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe("cancellation toast", () => {
+        const soonExpiryDate = new Date(
+            Date.now() + 3 * 24 * 60 * 60 * 1000
+        ).toISOString();
+
+        test("should show toast when canceled and expiring within 5 days", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+            });
+            await mockUser({
+                subscriptionStatus: SubscriptionStatus.CancelPending,
+                subscriptionExpiresAt: soonExpiryDate,
+            });
+            mockSessionValue = null;
+
+            render(<UsageIndicator />);
+
+            expect(mockToastInfo).toHaveBeenCalledOnce();
+            expect(mockToastInfo).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: "Subscription Expiring",
+                    duration: null,
+                })
+            );
+            expect(mockSetSessionValue).toHaveBeenCalledWith(
+                new Date().toDateString()
+            );
+        });
+
+        test("should not show toast when expiry is more than 5 days away", async () => {
+            const farExpiryDate = new Date(
+                Date.now() + 10 * 24 * 60 * 60 * 1000
+            ).toISOString();
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+            });
+            await mockUser({
+                subscriptionStatus: SubscriptionStatus.CancelPending,
+                subscriptionExpiresAt: farExpiryDate,
+            });
+
+            render(<UsageIndicator />);
+
+            expect(mockToastInfo).not.toHaveBeenCalled();
+        });
+
+        test("should not show toast when already shown today", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+            });
+            await mockUser({
+                subscriptionStatus: SubscriptionStatus.CancelPending,
+                subscriptionExpiresAt: soonExpiryDate,
+            });
+            mockSessionValue = new Date().toDateString();
+
+            render(<UsageIndicator />);
+
+            expect(mockToastInfo).not.toHaveBeenCalled();
+        });
+
+        test("should not show toast when subscription is active", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+            });
+            await mockUser({
+                subscriptionStatus: SubscriptionStatus.Active,
+            });
+
+            render(<UsageIndicator />);
+
+            expect(mockToastInfo).not.toHaveBeenCalled();
+        });
+
+        test("should not show toast when subscriptionExpiresAt is null", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+            });
+            await mockUser({
+                subscriptionStatus: SubscriptionStatus.CancelPending,
+                subscriptionExpiresAt: null,
+            });
+
+            render(<UsageIndicator />);
+
+            expect(mockToastInfo).not.toHaveBeenCalled();
+        });
+
+        test("should include expiry date in toast message", async () => {
+            await mockUsage({
+                dailyUsage: { percentUsed: 0.5 },
+            });
+            await mockUser({
+                subscriptionStatus: SubscriptionStatus.CancelPending,
+                subscriptionExpiresAt: soonExpiryDate,
+            });
+
+            render(<UsageIndicator />);
+
+            expect(mockToastInfo).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: expect.stringContaining("expire on"),
+                })
+            );
         });
     });
 });

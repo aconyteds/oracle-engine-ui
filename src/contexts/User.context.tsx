@@ -72,9 +72,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
             return;
         const dailyUsage = usageData.currentUser.usageLimits.dailyUsage;
         if (dailyUsage.percentUsed == null) return;
-        usageManager.updateUsage({
-            percentUsed: dailyUsage.percentUsed,
-        });
+        const monthlyUsage =
+            usageData.currentUser.usageLimits.monthlyUsage ?? null;
+        usageManager.updateUsage(
+            { percentUsed: dailyUsage.percentUsed },
+            monthlyUsage
+        );
     }, [usageData, usageLoading]);
 
     const checkUser = useCallback(async () => {
@@ -136,7 +139,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
             handleLogin,
             setIsLoggedIn: handleLogin,
             currentUser: data?.currentUser || null,
-            isActive: data?.currentUser?.isActive || false,
+            isActive: isLoggedIn,
             loading,
             showDebug,
             refreshUsage,

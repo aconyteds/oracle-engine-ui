@@ -1,0 +1,25 @@
+# Fetches a list of products, pass the input to filter for just subscriptions
+query GetProducts($input: ProductsInput) {
+    products(input: $input) {
+        name
+        description
+        productId
+        priceInCents
+        type
+        features
+    }
+}
+
+# Pass the ProductId from GetProducts
+mutation StartCheckout($input: StartCheckoutSessionInput!) {
+    startCheckoutSession(input: $input) {
+        checkoutUrl
+    }
+}
+
+# This provides a URL for the user to manage their subscription
+mutation ManageSubscription($input: CreateCustomerPortalSessionInput!) {
+    createCustomerPortalSession(input: $input) {
+        customerPortalUrl
+    }
+}

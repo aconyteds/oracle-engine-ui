@@ -13,6 +13,7 @@ import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { setAuthToken } from "../../apolloClient";
+import { useFeatures } from "../../hooks";
 import { auth, googleProvider, LogEvent } from "../firebase";
 
 export const Login: React.FC = () => {
@@ -21,9 +22,7 @@ export const Login: React.FC = () => {
     const [error, setError] = useState("");
     const navigate = useNavigate();
     const { setIsLoggedIn } = useUserContext();
-
-    const allowRegistration =
-        import.meta.env.VITE_ALLOW_REGISTRATION === "true";
+    const { registrationEnabled } = useFeatures();
 
     const handleSuccessfulLogin = async (userCredentials: UserCredential) => {
         const token = await userCredentials.user.getIdToken();
@@ -99,7 +98,7 @@ export const Login: React.FC = () => {
                             Welcome to Oracle-Engine
                         </h3>
                     </Row>
-                    {allowRegistration && (
+                    {registrationEnabled && (
                         <>
                             <Form.Group>
                                 <Form.Label>Email</Form.Label>

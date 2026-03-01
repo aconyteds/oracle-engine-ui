@@ -2,6 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import {
     type DailyUsage,
+    type MonthlyUsage,
     usageManager,
     usageStateSignal,
     useUsageState,
@@ -141,17 +142,80 @@ describe("usageState", () => {
         });
     });
 
+    describe("monthly usage", () => {
+        test("should track monthly usage when provided", () => {
+            const dailyUsage: DailyUsage = { percentUsed: 0.5 };
+            const monthlyUsage: MonthlyUsage = { percentUsed: 0.7 };
+
+            usageManager.updateUsage(dailyUsage, monthlyUsage);
+
+            expect(usageStateSignal.value.monthlyUsage).toEqual(monthlyUsage);
+            expect(usageStateSignal.value.isMonthlyLimitExceeded).toBe(false);
+        });
+
+        test("should set monthlyUsage to null when not provided", () => {
+            const dailyUsage: DailyUsage = { percentUsed: 0.5 };
+
+            usageManager.updateUsage(dailyUsage);
+
+            expect(usageStateSignal.value.monthlyUsage).toBeNull();
+            expect(usageStateSignal.value.isMonthlyLimitExceeded).toBe(false);
+        });
+
+        test("should set isMonthlyLimitExceeded when monthly percentUsed >= 1", () => {
+            const dailyUsage: DailyUsage = { percentUsed: 0.5 };
+            const monthlyUsage: MonthlyUsage = { percentUsed: 1.0 };
+
+            usageManager.updateUsage(dailyUsage, monthlyUsage);
+
+            expect(usageStateSignal.value.isMonthlyLimitExceeded).toBe(true);
+        });
+
+        test("should set isLimitExceeded when only monthly limit is hit", () => {
+            const dailyUsage: DailyUsage = { percentUsed: 0.5 };
+            const monthlyUsage: MonthlyUsage = { percentUsed: 1.2 };
+
+            usageManager.updateUsage(dailyUsage, monthlyUsage);
+
+            expect(usageStateSignal.value.isLimitExceeded).toBe(true);
+            expect(usageStateSignal.value.isMonthlyLimitExceeded).toBe(true);
+        });
+
+        test("should set isLimitExceeded when both limits are hit", () => {
+            const dailyUsage: DailyUsage = { percentUsed: 1.0 };
+            const monthlyUsage: MonthlyUsage = { percentUsed: 1.0 };
+
+            usageManager.updateUsage(dailyUsage, monthlyUsage);
+
+            expect(usageStateSignal.value.isLimitExceeded).toBe(true);
+            expect(usageStateSignal.value.isMonthlyLimitExceeded).toBe(true);
+        });
+
+        test("should not set isLimitExceeded when neither limit is hit", () => {
+            const dailyUsage: DailyUsage = { percentUsed: 0.5 };
+            const monthlyUsage: MonthlyUsage = { percentUsed: 0.8 };
+
+            usageManager.updateUsage(dailyUsage, monthlyUsage);
+
+            expect(usageStateSignal.value.isLimitExceeded).toBe(false);
+            expect(usageStateSignal.value.isMonthlyLimitExceeded).toBe(false);
+        });
+    });
+
     describe("usageManager.reset", () => {
         test("should reset all state to initial values", () => {
             const dailyUsage: DailyUsage = {
                 percentUsed: 0.5,
             };
 
-            usageManager.updateUsage(dailyUsage);
+            usageManager.updateUsage(dailyUsage, {
+                percentUsed: 0.3,
+            });
             usageManager.setLimitExceeded(true);
 
             // Verify state is not initial
             expect(usageStateSignal.value.dailyUsage).not.toBeNull();
+            expect(usageStateSignal.value.monthlyUsage).not.toBeNull();
             expect(usageStateSignal.value.lastUpdated).not.toBeNull();
             expect(usageStateSignal.value.isLimitExceeded).toBe(true);
 
@@ -159,7 +223,9 @@ describe("usageState", () => {
             usageManager.reset();
 
             expect(usageStateSignal.value.dailyUsage).toBeNull();
+            expect(usageStateSignal.value.monthlyUsage).toBeNull();
             expect(usageStateSignal.value.isLimitExceeded).toBe(false);
+            expect(usageStateSignal.value.isMonthlyLimitExceeded).toBe(false);
             expect(usageStateSignal.value.lastUpdated).toBeNull();
         });
 

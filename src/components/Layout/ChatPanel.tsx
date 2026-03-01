@@ -7,7 +7,7 @@ import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MessageInput } from "../CreateMessage";
 import { Message, ScrollToBottomButton } from "../Messages";
-import { DailyLimitAlert } from "../UsageIndicator";
+import { UsageLimitAlert } from "../UsageIndicator";
 import { ChatHistoryMenu } from "./ChatHistoryMenu";
 
 export const ChatPanel: React.FC = () => {
@@ -61,7 +61,7 @@ export const ChatPanel: React.FC = () => {
                 {selectedThread !== null && (
                     <ScrollToBottomButton containerRef={chatMessagesRef} />
                 )}
-                {isLimitExceeded ? <DailyLimitAlert /> : <MessageInput />}
+                {isLimitExceeded ? <UsageLimitAlert /> : <MessageInput />}
             </div>
         </div>
     );

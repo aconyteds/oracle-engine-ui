@@ -4,8 +4,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useUsageState } from "@signals";
+import { useEffect, useRef } from "react";
 import { Col, OverlayTrigger, Popover, Row } from "react-bootstrap";
 import styled from "styled-components";
+import { useToaster, useUserContext } from "../../contexts";
+import { SubscriptionStatus } from "../../graphql/generated";
+import { useSessionStorage } from "../../hooks/useStorage";
+import UpgradeLink from "../Subscription/UpgradeLink";
 
 const UsageRow = styled(Row)`
     width: fit-content;
@@ -35,18 +40,76 @@ const UsageText = styled.span<{
 `;
 
 export const UsageIndicator = () => {
-    const { dailyUsage, isLimitExceeded } = useUsageState();
+    const { dailyUsage, monthlyUsage, isLimitExceeded } = useUsageState();
+    const { currentUser } = useUserContext();
+    const { toast } = useToaster();
+    const [cancellationToastShown, setCancellationToastShown] =
+        useSessionStorage<string | null>("cancellation-toast-shown", null);
+
+    const subscriptionExpiresAt = currentUser?.subscriptionExpiresAt;
+    const expiresFormatted = subscriptionExpiresAt
+        ? new Date(subscriptionExpiresAt).toLocaleDateString(undefined, {
+              month: "long",
+              day: "numeric",
+          })
+        : null;
+
+    const toastShownRef = useRef(false);
+
+    useEffect(() => {
+        if (
+            currentUser?.subscriptionStatus !==
+                SubscriptionStatus.CancelPending ||
+            !subscriptionExpiresAt
+        )
+            return;
+
+        const daysUntilExpiry =
+            (new Date(subscriptionExpiresAt).getTime() - Date.now()) /
+            (1000 * 60 * 60 * 24);
+        if (daysUntilExpiry >= 5) return;
+
+        const today = new Date().toDateString();
+        if (cancellationToastShown === today || toastShownRef.current) return;
+
+        toastShownRef.current = true;
+        toast.info({
+            title: "Subscription Expiring",
+            message: `Your subscription is set to expire on ${expiresFormatted}. You can renew anytime from the subscription page.`,
+            duration: null,
+        });
+        setCancellationToastShown(today);
+    }, [
+        currentUser?.subscriptionStatus,
+        subscriptionExpiresAt,
+        cancellationToastShown,
+        setCancellationToastShown,
+        expiresFormatted,
+        toast,
+    ]);
+
+    const dailyPercent = (dailyUsage?.percentUsed ?? 0) * 100;
+    const monthlyPercent = (monthlyUsage?.percentUsed ?? 0) * 100;
+    // Show whichever is higher — that's what will limit the user first
+    const percentUsed = Math.max(dailyPercent, monthlyPercent);
 
     // Don't render if no usage data or below 50% threshold
-    // percentUsed comes as decimal (0.50 = 50%), so multiply by 100
-    const percentUsed = (dailyUsage?.percentUsed ?? 0) * 100;
-    if (!dailyUsage || percentUsed < 50) {
+    if ((!dailyUsage && !monthlyUsage) || percentUsed < 50) {
         return null;
     }
 
     const percentRemaining = Math.min(
         100,
         Math.max(0, Math.round(100 - percentUsed))
+    );
+
+    const dailyRemaining = Math.min(
+        100,
+        Math.max(0, Math.round(100 - dailyPercent))
+    );
+    const monthlyRemaining = Math.min(
+        100,
+        Math.max(0, Math.round(100 - monthlyPercent))
     );
 
     // Determine severity based on usage percentage
@@ -63,18 +126,33 @@ export const UsageIndicator = () => {
         severity = "success";
     }
 
+    const monthlyResetText = expiresFormatted
+        ? `(renews ${expiresFormatted})`
+        : "(resets on the 1st)";
+
     const popover = (
         <Popover>
-            <Popover.Header as="h3">Daily Usage</Popover.Header>
+            <Popover.Header as="h3">Usage</Popover.Header>
             <Popover.Body>
-                <p>
-                    <strong>{percentRemaining}%</strong> of your daily usage
-                    remaining
-                </p>
-                <p className="text-muted small mb-0">
-                    Resets at midnight UTC. Need more? Consider upgrading your
-                    subscription.
-                </p>
+                {dailyUsage && (
+                    <p className="mb-1">
+                        <strong>Daily:</strong> {dailyRemaining}% remaining
+                        <span className="text-muted small">
+                            {" "}
+                            (resets at midnight UTC)
+                        </span>
+                    </p>
+                )}
+                {monthlyUsage && (
+                    <p className="mb-1">
+                        <strong>Monthly:</strong> {monthlyRemaining}% remaining
+                        <span className="text-muted small">
+                            {" "}
+                            {monthlyResetText}
+                        </span>
+                    </p>
+                )}
+                <UpgradeLink upgradeAvailable />
             </Popover.Body>
         </Popover>
     );

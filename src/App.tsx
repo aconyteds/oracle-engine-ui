@@ -6,15 +6,26 @@ import {
 } from "@context";
 import React from "react";
 import { Container } from "react-bootstrap";
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import {
+    Navigate,
+    Route,
+    BrowserRouter as Router,
+    Routes,
+} from "react-router-dom";
 import { CampaignRequirement } from "./components/Campaign";
 import { LogEvent } from "./components/firebase";
 import { Layout } from "./components/Layout";
 import { Login } from "./components/Login";
 import { ActiveUserRequirement, ProtectedRoute } from "./components/Router";
+import {
+    SubscriptionPage,
+    SubscriptionSuccess,
+} from "./components/Subscription";
+import { useFeatures } from "./hooks";
 
 const App: React.FC = () => {
     LogEvent("load");
+    const { monetizationEnabled } = useFeatures();
 
     return (
         <ThemeProvider>
@@ -24,6 +35,31 @@ const App: React.FC = () => {
                         <Router>
                             <Routes>
                                 <Route path="/login" element={<Login />} />
+                                {monetizationEnabled ? (
+                                    <>
+                                        <Route
+                                            path="/subscription"
+                                            element={
+                                                <ProtectedRoute>
+                                                    <SubscriptionPage />
+                                                </ProtectedRoute>
+                                            }
+                                        />
+                                        <Route
+                                            path="/subscription/success"
+                                            element={
+                                                <ProtectedRoute>
+                                                    <SubscriptionSuccess />
+                                                </ProtectedRoute>
+                                            }
+                                        />
+                                    </>
+                                ) : (
+                                    <Route
+                                        path="/subscription/*"
+                                        element={<Navigate to="/" replace />}
+                                    />
+                                )}
                                 <Route
                                     path="/"
                                     element={

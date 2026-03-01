@@ -7,6 +7,7 @@ import { AssetManager } from "../CampaignAsset";
 import { AppFeedbackModal } from "../Common/AppFeedbackModal";
 import { ThemeToggle } from "../Common/ThemeToggle";
 import { AssetSearch } from "../Search";
+import { TierBadge } from "../Subscription";
 
 type HeaderProps = {
     onShowIntro: () => void;
@@ -29,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowIntro }) => {
                     <AssetSearch />
                 </Col>
                 <Col xs="auto" className="d-flex align-items-center gap-2">
+                    <TierBadge />
                     <OverlayTrigger
                         placement="bottom"
                         overlay={
