@@ -3,6 +3,7 @@ export * from "./useAssetModalState";
 export * from "./useAutoGrowTextarea";
 export * from "./useCampaignLimit";
 export * from "./useDebounce";
+export * from "./useFeatures";
 export * from "./useMap";
 export * from "./useRelativeTime";
 export * from "./useStorage";

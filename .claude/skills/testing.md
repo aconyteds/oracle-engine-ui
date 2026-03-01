@@ -75,6 +75,57 @@ test.each([
 });
 ```
 
+## Reducing Repetition with Shared Defaults
+
+When multiple tests need the same mock setup with small variations, extract shared defaults and a helper function. Combine with `test.each` to eliminate boilerplate.
+
+### Shared defaults + spread pattern
+```typescript
+const defaultUserContext = {
+    isLoggedIn: true,
+    setIsLoggedIn: vi.fn(),
+    handleLogin: vi.fn(),
+    isActive: true,
+    loading: false,
+};
+
+const defaultUser = {
+    __typename: "User" as const,
+    id: "1",
+    name: "Test",
+    lastSelectedCampaign: null,
+};
+
+// Helper that sets up the mock with only the varying field
+const mockWithTier = async (tier: string) => {
+    const { useUserContext } = await import("../../contexts");
+    vi.mocked(useUserContext).mockReturnValue({
+        ...defaultUserContext,
+        currentUser: { ...defaultUser, subscriptionTier: tier },
+    });
+};
+```
+
+### Combining with test.each
+```typescript
+test.each([
+    { tier: "Free", variant: "secondary" },
+    { tier: "Game Master", variant: "info" },
+])(
+    "should use $variant variant for $tier tier",
+    async ({ tier, variant }) => {
+        await mockWithTier(tier);
+        render(<TierBadge />);
+        expect(screen.getByText(tier)).toHaveClass(`text-${variant}`);
+    }
+);
+```
+
+This pattern works well when:
+- Tests share 90%+ identical mock setup with only 1-2 fields changing
+- The same component is rendered with different context/prop variations
+- You want to add new test cases by adding a single row instead of duplicating a full test block
+
 ## Mock Patterns
 
 ### Context mocks (top of file)

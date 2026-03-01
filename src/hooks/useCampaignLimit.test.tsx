@@ -170,6 +170,29 @@ describe("useCampaignLimit", () => {
     });
 
     describe("limitMessage", () => {
+        let savedMonetization: string | undefined;
+
+        beforeEach(() => {
+            savedMonetization = (
+                import.meta.env as Record<string, string | undefined>
+            ).VITE_MONETIZATION_ENABLED;
+        });
+
+        afterEach(() => {
+            if (savedMonetization === undefined) {
+                delete (
+                    import.meta.env as Record<
+                        string,
+                        string | undefined
+                    >
+                ).VITE_MONETIZATION_ENABLED;
+            } else {
+                (
+                    import.meta.env as Record<string, string>
+                ).VITE_MONETIZATION_ENABLED = savedMonetization;
+            }
+        });
+
         test("should use singular 'campaign' when limit is 1", async () => {
             const { useGetUsageLimitsQuery } = await import("@graphql");
             vi.mocked(useGetUsageLimitsQuery).mockReturnValue(
@@ -185,6 +208,9 @@ describe("useCampaignLimit", () => {
                     },
                 })
             );
+            (
+                import.meta.env as Record<string, string>
+            ).VITE_MONETIZATION_ENABLED = "true";
 
             const { result } = renderHook(() => useCampaignLimit());
 
@@ -208,6 +234,9 @@ describe("useCampaignLimit", () => {
                     },
                 })
             );
+            (
+                import.meta.env as Record<string, string>
+            ).VITE_MONETIZATION_ENABLED = "true";
 
             const { result } = renderHook(() => useCampaignLimit());
 
@@ -221,11 +250,40 @@ describe("useCampaignLimit", () => {
             vi.mocked(useGetUsageLimitsQuery).mockReturnValue(
                 mockQueryResult(undefined)
             );
+            (
+                import.meta.env as Record<string, string>
+            ).VITE_MONETIZATION_ENABLED = "true";
 
             const { result } = renderHook(() => useCampaignLimit());
 
             expect(result.current.limitMessage).toBe(
                 "You've reached your limit of 0 campaigns. To create more, upgrade your subscription or delete an existing campaign."
+            );
+        });
+
+        test("should omit upgrade text when monetization is disabled", async () => {
+            const { useGetUsageLimitsQuery } = await import("@graphql");
+            vi.mocked(useGetUsageLimitsQuery).mockReturnValue(
+                mockQueryResult({
+                    currentUser: {
+                        usageLimits: {
+                            campaignUsage: {
+                                canCreate: false,
+                                limit: 3,
+                                current: 3,
+                            },
+                        },
+                    },
+                })
+            );
+            (
+                import.meta.env as Record<string, string>
+            ).VITE_MONETIZATION_ENABLED = "false";
+
+            const { result } = renderHook(() => useCampaignLimit());
+
+            expect(result.current.limitMessage).toBe(
+                "You've reached your limit of 3 campaigns."
             );
         });
     });

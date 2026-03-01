@@ -6,7 +6,10 @@ query CurrentUser {
         lastSelectedCampaign {
             id
         }
-        isActive
+        subscriptionTier
+        upgradeAvailable
+        subscriptionExpiresAt
+        subscriptionStatus
     }
 }
 
@@ -14,6 +17,9 @@ query GetUsageLimits {
     currentUser {
         id
         usageLimits {
+            monthlyUsage {
+                percentUsed
+            }
             dailyUsage {
                 percentUsed
             }

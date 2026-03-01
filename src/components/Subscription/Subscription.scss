@@ -1,0 +1,59 @@
+.subscription-page {
+    max-width: 65rem;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.product-card {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-4px);
+    }
+
+    &.border-primary {
+        border-width: 2px !important;
+    }
+
+    .product-price {
+        font-size: 2rem;
+        font-weight: bold;
+
+        .price-interval {
+            font-size: 1rem;
+            font-weight: normal;
+        }
+    }
+
+    .feature-list li {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+}
+
+.subscription-result {
+    .success-icon {
+        font-size: 4rem;
+    }
+
+    .redirect-notice {
+        font-size: 0.9rem;
+    }
+}
+
+.tier-badge {
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+
+    &.actionable {
+        cursor: pointer;
+        transition: transform 0.15s ease;
+        &:hover {
+            transform: scale(1.05);
+        }
+    }
+}
